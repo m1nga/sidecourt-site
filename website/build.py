@@ -16,6 +16,7 @@ drop_html = (root/'drop.html').read_text()
 assert 'https://sidecourt.space/drops/cleanpause/' in drop_html
 assert 'file:' not in drop_html
 (out/'drops/cleanpause/index.html').write_text(drop_html)
+shutil.copytree(root/'origin-assets',out/'origin-assets')
 (out/'index.html').write_text('<!doctype html><html lang="en"><meta charset="utf-8"><title>SideCourt</title><meta http-equiv="refresh" content="0;url=./drops/cleanpause/"><link rel="canonical" href="https://sidecourt.space/drops/cleanpause/"><script>location.replace(new URL("./drops/cleanpause/",location.href).href)</script><a href="./drops/cleanpause/">Discover CleanPause on SideCourt</a></html>')
 (out/'404.html').write_text('<!doctype html><html lang="en"><meta charset="utf-8"><title>Not found</title><h1>Not found</h1></html>')
 (out/'.nojekyll').touch()
