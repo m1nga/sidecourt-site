@@ -19,7 +19,21 @@ assert 'file:' not in drop_html
 (out/'index.html').write_text('<!doctype html><html lang="en"><meta charset="utf-8"><title>SideCourt</title><meta http-equiv="refresh" content="0;url=./drops/cleanpause/"><link rel="canonical" href="https://sidecourt.space/drops/cleanpause/"><script>location.replace(new URL("./drops/cleanpause/",location.href).href)</script><a href="./drops/cleanpause/">Discover CleanPause on SideCourt</a></html>')
 (out/'404.html').write_text('<!doctype html><html lang="en"><meta charset="utf-8"><title>Not found</title><h1>Not found</h1></html>')
 (out/'.nojekyll').touch()
-(out/'robots.txt').write_text('User-agent: *\nAllow: /cleanpause/\nAllow: /drops/cleanpause/\nDisallow: /downloads/\n')
+(out/'robots.txt').write_text(
+ 'User-agent: *\n'
+ 'Allow: /cleanpause/\n'
+ 'Allow: /drops/cleanpause/\n'
+ 'Disallow: /downloads/\n'
+ 'Sitemap: https://sidecourt.space/sitemap.xml\n'
+)
+sitemap = '''<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://sidecourt.space/cleanpause/</loc></url>
+  <url><loc>https://sidecourt.space/drops/cleanpause/</loc></url>
+</urlset>
+'''
+(out/'sitemap.xml').write_text(sitemap)
+assert '/downloads/' not in sitemap
 assets = json.loads((root/'assets.json').read_text())
 updates = {}
 for a in assets:
