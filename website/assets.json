@@ -1,0 +1,56 @@
+[
+  {
+    "platform": "mac",
+    "version": "0.1.9",
+    "destination": "downloads/CleanPause-0.1.9.zip",
+    "source": "launch/downloads/CleanPause-0.1.9.zip",
+    "size": 4136953,
+    "sha256": "b47f1fb8fe8d71e96bfd759ee276d0f425fee09fec230affa662e26b01ed6328",
+    "release_id": 385506635
+  },
+  {
+    "platform": "windows",
+    "version": "0.1.0-preview.4",
+    "destination": "downloads/CleanPause-Windows-0.1.0-preview.4-x64.zip",
+    "source": "launch/downloads/CleanPause-Windows-0.1.0-preview.4-x64.zip",
+    "size": 78161279,
+    "sha256": "8f2a0d1cf41bdf7103b081e59457dd2866783ebbd030beec1de4c590897b5458",
+    "release_id": 385506648
+  },
+  {
+    "destination": "downloads/CleanPause-0.1.6.zip",
+    "source": "launch/downloads/CleanPause-0.1.6.zip",
+    "size": 4029109,
+    "sha256": "f2210e7d210dfeca63a1386e077e7d5aa91c6ebc349d56cfff7e0b219ef9a0e8",
+    "release_id": 385257538
+  },
+  {
+    "destination": "downloads/CleanPause-Windows-0.1.0-preview.1-x64.zip",
+    "source": "launch/downloads/CleanPause-Windows-0.1.0-preview.1-x64.zip",
+    "size": 72243384,
+    "sha256": "f99401839def35cf989054204f1e0b00f7b62b8da51c52d45c99943b55cb7cb7",
+    "release_id": 385197918
+  },
+  {
+    "destination": "cleanpause-assets/meadow.png",
+    "source": "Resources/CalmMeadow.png",
+    "size": 2616223,
+    "sha256": "a75f28870f8ae2edd3012b6f08f6ed63a6bac042da174a4f82c710850fc45e97",
+    "release_id": 385257538,
+    "asset_name": "CalmMeadow.png"
+  },
+  {
+    "destination": "downloads/CleanPause-0.1.8.zip",
+    "source": "launch/downloads/CleanPause-0.1.8.zip",
+    "size": 4111837,
+    "sha256": "3dbeb7fb0eae99e398f738b26e1fd098790c8c515b498b10f0ab494c37cdb6f7",
+    "release_id": 385330165
+  },
+  {
+    "destination": "downloads/CleanPause-Windows-0.1.0-preview.3-x64.zip",
+    "source": "launch/downloads/CleanPause-Windows-0.1.0-preview.3-x64.zip",
+    "size": 78155647,
+    "sha256": "5f6c216b06bead0182e9d880fb3e99d466ed7b69bf6c5758a0a0ccb9fbb242a1",
+    "release_id": 385318933
+  }
+]
