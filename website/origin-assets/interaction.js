@@ -15,7 +15,6 @@ hold.addEventListener('keyup',e=>{if([' ','Enter'].includes(e.key))cancelHold();
 const optionalDemo=demo.closest('details.optional-demo');
 optionalDemo?.addEventListener('toggle',()=>{if(!optionalDemo.open)reset();});
 window.addEventListener('blur',reset);document.addEventListener('visibilitychange',()=>{if(document.hidden)reset();});
-$('[data-action=cp-mistype]').addEventListener('click',e=>{if(reduced())return;$('.cp-mistype',e.currentTarget).animate([{transform:'translateX(0)'},{transform:'translateX(-5px)'},{transform:'translateX(5px)'},{transform:'translateX(-3px)'},{transform:'translateX(0)'}],{duration:480});});
 $('[data-action=try-current-question]')?.addEventListener('click',()=>{demo.scrollIntoView({block:'center',behavior:reduced()?'instant':'smooth'});setTimeout(()=>start.focus({preventScroll:true}),reduced()?0:450);});
 function saved(value){save.setAttribute('aria-pressed',String(value));save.textContent=value?'Saved in this browser ✓':'Save in this browser';}
 try{saved(localStorage.getItem('sidecourt-cleanpause-saved')==='true');}catch{}
