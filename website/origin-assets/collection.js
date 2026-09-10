@@ -2,14 +2,22 @@
 'use strict';
 const $=(selector,root=document)=>root.querySelector(selector);
 const results=$('#drop-results'),search=$('#drop-search'),template=$('#drop-card-template'),dialog=$('#submission-info');
-let filter='all',submissionTrigger;
+const works=JSON.parse($('#work-catalog').textContent);
+let filter='all',submissionTrigger,dateTimer;
 function render(){
  const term=search.value.trim().toLowerCase();
- const found=filter!=='needs'&&(!term||'cleanpause macos mac windows pc private preview x64 clean keyboard trackpad screen pause m1nga'.includes(term));
- if(found)results.replaceChildren(template.content.cloneNode(true));
- else results.innerHTML='<div class="empty"><h2>'+(filter==='needs'?'No open requests right now.':'No work found.')+'</h2><p>'+(filter==='needs'?'You can still try the work and save it for later.':'Try another word, or return to all works.')+'</p><button class="text-link" data-action="clear-filter">See all DROPS ↗</button></div>';
+ const platform={mac:'macOS',windows:'Windows',web:'Web',linux:'Linux',mobile:'iOS / Android'}[filter];
+ const found=works.filter(work=>(filter!=='needs'||work.hasNeed)&&(!platform||work.platforms.includes(platform))&&(!term||[work.name,work.author,work.summary,...work.platforms,'keyboard trackpad screen cleaning pc x64'].join(' ').toLowerCase().includes(term)));
+ if(found.some(work=>work.id===template.dataset.workId))results.replaceChildren(template.content.cloneNode(true));
+ else results.innerHTML='<div class="empty"><h2>'+(filter==='needs'?'No open requests right now.':'No work found.')+'</h2><p>'+(filter==='needs'?'You can still try the work and save it for later.':'Try another word or platform, or return to all works.')+'</p><button class="text-link" data-action="clear-filter">See all DROPS ↗</button></div>';
  document.querySelectorAll('[data-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.filter===filter)));
 }
+function updateRallyDate(){
+ clearTimeout(dateTimer);const now=new Date(),day=new Intl.DateTimeFormat('en-GB',{day:'2-digit',month:'short',timeZone:'UTC'}).format(now).toUpperCase();
+ const label=$('[data-rally-date]'),zone=document.createElement('small');zone.textContent='UTC';label.replaceChildren(document.createTextNode(day),zone);label.dateTime=now.toISOString().slice(0,10);
+ const next=Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate()+1);dateTimer=setTimeout(updateRallyDate,next-now.getTime()+50);
+}
+updateRallyDate();window.addEventListener('pageshow',updateRallyDate);window.addEventListener('focus',updateRallyDate);window.addEventListener('pagehide',()=>clearTimeout(dateTimer));document.addEventListener('visibilitychange',()=>{if(!document.hidden)updateRallyDate();});
 function flip(button,active){button.classList.toggle('is-flipped',active);button.setAttribute('aria-pressed',String(active));button.setAttribute('aria-label',(active?'Open the full introduction to ':'Read the introduction to ')+button.dataset.workName);}
 function closeSubmission(){dialog.close();(submissionTrigger?.isConnected?submissionTrigger:search).focus();}
 search.addEventListener('input',render);

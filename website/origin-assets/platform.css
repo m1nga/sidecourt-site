@@ -316,4 +316,44 @@ body{font-family:"DM Sans","Helvetica Neue",sans-serif;color:#f3eee0}
 .work-page .origin-product-demo .cp-scene-body{background:#080b09;padding:0}.work-page .origin-product-demo .demo-surface{margin:0;max-width:none;border:0}
 @media(max-width:560px){.collection-space .collection-rally{width:100%}.work-heading>.work-purpose{font-size:16px}.rally-score>div{padding:6px 9px}.create-work-label{font-size:16px}}
 
-button.create-work-link{width:100%;padding:0;text-align:left}
+.collection-hero.compact-collection{display:flex;flex-direction:row;align-items:flex-end;justify-content:space-between;gap:48px;padding-top:110px;padding-bottom:36px}
+#main .compact-collection h1{margin:0;line-height:.85;font-size:clamp(64px,8.4vw,124px)}
+.compact-collection .collection-rally{--rally-ink:#e6ded0;box-sizing:border-box;flex:0 1 470px;width:470px;max-width:50%;margin:0;padding:9px;display:block;border:1px solid #d6c9b278;background:rgba(31,43,42,.36);color:var(--rally-ink);box-shadow:inset 0 0 0 3px #182c2925;position:relative}
+.compact-collection .rally-wordmark{display:block;border:1px solid #d6c9b2a6;padding:5px 10px 3px;margin:0 0 7px;text-align:center;font-size:clamp(22px,2.5vw,35px);font-weight:600;letter-spacing:.22em;line-height:1}
+.compact-collection .rally-body{display:grid;grid-template-columns:1.15fr 1fr;gap:7px;align-items:stretch}
+.compact-collection .rally-today,.compact-collection .rally-history{border:1px solid #d6c9b2a6;padding:9px 10px}
+.compact-collection .rally-date{display:flex;justify-content:center;align-items:baseline;gap:7px;font:18px/1.1 ui-monospace,SFMono-Regular,monospace;letter-spacing:.06em;margin:0 auto 12px;width:fit-content;border:1px solid #d6c9b25c;background:#09191a36;padding:5px 8px}
+.rally-date small{font-size:10px;line-height:1;opacity:.65;letter-spacing:0}
+.rally-daily-scores{display:grid;grid-template-columns:1fr 1fr;gap:10px;text-align:center}.rally-daily-scores>div{min-width:0}.rally-daily-scores span,.rally-history span{font-size:11px;letter-spacing:.025em;display:block;line-height:1.25}
+.compact-collection .rally-led{font:36px/1.1 ui-monospace,SFMono-Regular,monospace;letter-spacing:.05em;display:block;color:#f2d7ba;text-shadow:0 0 5px #efb67838;margin-top:3px}
+.compact-collection .rally-history{display:flex;flex-direction:column;justify-content:center;gap:4px}
+.rally-history .rally-period{text-align:center;font-size:12px;letter-spacing:.16em;margin-bottom:4px}
+.rally-history>div{display:flex;align-items:center;gap:12px}.compact-collection .rally-history .rally-led{font-size:29px;min-width:36px;margin:0}.rally-history>div>span{font-size:11px}
+.compact-collection .rally-slogan{border:1px solid #d6c9b2a6;margin-top:7px;padding:7px 5px;text-align:center;white-space:nowrap;letter-spacing:.03em;font-size:clamp(10px,.92vw,12px);font-weight:600;line-height:1.15}
+.collection-tools{flex-direction:row;align-items:flex-end;gap:22px}.collection-tools .search-wrap{flex:1 1 290px;max-width:430px;width:auto;margin:0}.collection-tools .search-wrap>span{display:block;font-size:13px;margin-bottom:8px}.collection-tools .search-wrap input{box-sizing:border-box;height:46px;margin:0;padding:9px 0;font-size:16px}
+.add-work-control{box-sizing:border-box;display:flex;align-items:center;gap:12px;height:46px;padding:9px 18px;border:1px solid #f4efdf78;font-size:15px;line-height:1;text-decoration:none;white-space:nowrap;background:transparent;color:inherit}
+.add-work-control>span{font-size:22px}.add-work-control:hover,.add-work-control:focus-visible{background:#f4efdf12}
+.collection-tools .collection-filter{height:46px;display:flex;align-items:center;padding:0}
+.platform-filters{display:flex;align-items:center;gap:20px;min-height:46px}.platform-filters button{font-size:15px;padding:9px 0;white-space:nowrap}.platform-filters button[aria-pressed=true]{border-bottom:1px solid currentColor}
+.visually-hidden{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(max-width:1000px){.collection-hero.compact-collection{gap:28px}.compact-collection .collection-rally{max-width:57%}.collection-tools{flex-wrap:wrap}.collection-tools .search-wrap{max-width:none}.platform-filters{gap:16px}.compact-collection .rally-slogan{font-size:10px;letter-spacing:0}}
+@media(max-width:650px){.collection-hero.compact-collection{display:grid;grid-template-columns:1fr;gap:28px;padding-top:105px;padding-bottom:24px}.compact-collection .collection-rally{width:100%;max-width:470px;justify-self:end}.compact-collection .rally-wordmark{font-size:30px}.compact-collection .rally-slogan{font-size:clamp(9px,2.6vw,12px)}.collection-tools{gap:14px}.collection-tools .search-wrap{flex-basis:calc(100% - 170px);min-width:130px}.add-work-control{padding:9px 12px;font-size:14px;gap:8px}.platform-filters{margin-left:auto}.compact-collection .rally-history>div>span,.rally-daily-scores span{font-size:10px}}
+.compact-collection .rally-slogan{font-size:12px!important;white-space:normal}
+@media(max-width:420px){.rally-daily-scores{grid-template-columns:1fr;gap:4px}.rally-daily-scores>div{display:flex;align-items:center;justify-content:space-between;gap:6px}.compact-collection .rally-daily-scores .rally-led{font-size:29px}.rally-daily-scores span{font-size:10px!important}.compact-collection .rally-date{font-size:16px;margin-bottom:6px}.compact-collection .rally-history{justify-content:center}.compact-collection .rally-history>div{flex-direction:column;gap:1px;align-items:center}.compact-collection .rally-history .rally-led{min-width:0;font-size:26px}}
+
+.work-participation{scroll-margin-top:100px;border-top:1px solid #f4efdf50}
+.conversation-heading{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:20px;margin-bottom:26px}
+#main .conversation-heading h2{margin:0}.conversation-nav{display:flex;gap:24px;max-width:100%;flex-wrap:wrap}
+.conversation-nav button{font-size:15px;padding:10px 0;border-bottom:1px solid transparent;opacity:.68}
+.conversation-nav button[aria-pressed=true]{border-color:currentColor;opacity:1}
+.work-participation [data-work-panel][hidden]{display:none!important}
+.work-participation .compose-observation,.work-participation .observation-form{margin:0}
+.work-participation .observation-form textarea{min-height:100px;background:#f4efdf0b;border:1px solid #f4efdf78;color:inherit;resize:vertical;margin-top:12px}
+.work-participation .observation-form textarea::placeholder{color:#f4efdf88}
+.work-participation .actions{margin-top:18px;gap:22px;align-items:center}
+.work-participation .draft-status{margin-top:18px;max-width:72ch;line-height:1.6}
+.participation-invitation,.work-updates{min-height:190px}
+.work-page .current-question-text{font-size:22px!important;line-height:1.45!important;max-width:38ch;margin-bottom:18px}
+.participation-invitation>.small,.work-updates>.small{margin-top:18px}
+.local-author-control{margin-top:22px;font-size:12px;opacity:.7}.work-update+.work-update{border-top:1px solid #ffffff30;margin-top:28px;padding-top:28px}
+@media(max-width:650px){.conversation-heading{gap:18px}.conversation-nav{width:100%;gap:24px}.conversation-nav button{font-size:14px}.work-entry .actions{gap:20px}.work-page .current-question-text{font-size:20px!important}}
