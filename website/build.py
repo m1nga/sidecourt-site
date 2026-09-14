@@ -75,3 +75,6 @@ preview = root / 'platform-preview'
 if preview.is_dir():
  shutil.copytree(preview, out / 'platform-preview')
  print('SideCourt HTTPS acceptance entry included.')
+
+(out / 'admin').mkdir(exist_ok=True)
+shutil.copyfile(root / 'admin.html', out / 'admin/index.html')
