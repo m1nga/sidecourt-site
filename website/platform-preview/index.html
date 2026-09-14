@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=stacked1">
 <link rel="canonical" href="https://sidecourt.space/">
 <meta name="color-scheme" content="dark light">
-<link rel="stylesheet" href="court.css?v=22a69095968a">
+<link rel="stylesheet" href="court.css?v=10861e50a51f">
 </head>
 <body>
 <noscript><style>.scene[hidden]{display:none!important}</style><p>Enable JavaScript to use the workspace. <a href="https://sidecourt.space/cleanpause/">Visit CleanPause</a>.</p></noscript><a class="skip" href="#main-home">Skip to content</a><noscript><div class="no-script">SideCourt needs JavaScript for navigation and account access. Enable it and reload this page.</div></noscript>
@@ -268,10 +268,10 @@
 <label class="field">Title<input id="work-name" name="name" maxlength="48" required placeholder="Give it a title"></label>
 <label class="field">Description<textarea id="work-description" name="description" maxlength="8000" rows="6" required placeholder="Tell us what you made and what you’d like to share."></textarea></label>
 <p class="minor" id="submission-material-help">Add a link, image or file so people can explore what you made.</p>
-<label class="field">Link<input type="url" name="url" placeholder="https://"></label>
+<details id="submission-attachments" open><summary>Links &amp; attachments</summary><label class="field">Link<input type="url" name="url" placeholder="https://"></label>
 <label class="field">Image<input type="file" id="draft-cover" accept="image/png,image/jpeg,image/webp"></label><button type="button" id="remove-cover" class="text-link" hidden>Remove image</button><p class="status-line" id="cover-status" role="status">PNG, JPG or WebP · up to 1 MB.</p>
 <label class="field">Files<input type="file" name="files" id="draft-files" multiple></label><p class="status-line" id="files-status" role="status" aria-live="polite">Up to 50 MB per file.</p>
-<details class="form-subsection" id="help-options"><summary>Looking for help? <span class="minor">Optional</span></summary><label class="field">What would help?<textarea name="invitationBody" rows="3" maxlength="8000" placeholder="Ask one specific question, or describe the help you need."></textarea></label><input type="hidden" name="invitation" value="none"><p class="minor">People can reply on your page. Sharing a link does not give editing access.</p></details>
+</details><details class="form-subsection" id="help-options"><summary>Looking for help? <span class="minor">Optional</span></summary><label class="field">What would help?<textarea name="invitationBody" rows="3" maxlength="8000" placeholder="Ask one specific question, or describe the help you need."></textarea></label><input type="hidden" name="invitation" value="none"><p class="minor">People can reply on your page. Sharing a link does not give editing access.</p></details>
 <div id="invitation-detail" hidden></div>
 <div hidden aria-hidden="true"><textarea name="why"></textarea><textarea name="start"></textarea><textarea name="cardLine"></textarea><input name="repository"><textarea name="reuse"></textarea></div>
 </section><div class="form-actions">
@@ -405,7 +405,7 @@
 <a href="#court?tab=support">Contact</a> <a href="#court?tab=privacy">Privacy &amp; terms</a> <a href="#get-on">GET ON THE COURT ↗</a></footer>
 </div>
 <dialog id="preview-dialog"><button class="close" type="button" aria-label="Close dialog">×</button><h2 id="dialog-title">SideCourt</h2>
-<div id="dialog-body"></div></dialog><script src="config.js?v=6e4e2bb5ce07"></script><script src="scene.js?v=91f3509b29b6"></script>
-<script src="court.js?v=75473080ad50"></script>
+<div id="dialog-body"></div></dialog><script src="config.js?v=6e4e2bb5ce07"></script><script src="scene.js?v=e17e609bdf01"></script>
+<script src="court.js?v=2efec3062372"></script>
 </body>
 </html>
