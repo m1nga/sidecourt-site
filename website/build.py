@@ -78,3 +78,15 @@ if preview.is_dir():
 
 (out / 'admin').mkdir(exist_ok=True)
 shutil.copyfile(root / 'admin.html', out / 'admin/index.html')
+
+# Public proof of website ownership for Ming's Google brand verification.
+verification = json.loads((root / 'site-verification.json').read_text())['google_site_verification']
+assert all(c.isalnum() or c in '-_' for c in verification)
+tag = '<meta name="google-site-verification" content="' + verification + '">'
+for relative in ['index.html', 'drops/index.html', 'drops/cleanpause/index.html', 'cleanpause/index.html', 'platform-preview/index.html']:
+ target = out / relative
+ document = target.read_text()
+ if 'name="google-site-verification"' not in document:
+  assert '<title>' in document, relative
+  target.write_text(document.replace('<title>', tag + '<title>', 1))
+print('Google website ownership metadata included.')
