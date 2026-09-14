@@ -69,3 +69,9 @@ manifest = json.dumps(updates, indent=2) + '\n'
 (out/'drops/cleanpause/updates.json').write_text(manifest)
 (out/'cleanpause/updates.json').write_text(manifest)
 print('Verified packages and update manifest published together.')
+
+# Isolated SideCourt service acceptance entry. Preserve all existing product routes.
+preview = root / 'platform-preview'
+if preview.is_dir():
+ shutil.copytree(preview, out / 'platform-preview')
+ print('SideCourt HTTPS acceptance entry included.')
