@@ -70,14 +70,30 @@ manifest = json.dumps(updates, indent=2) + '\n'
 (out/'cleanpause/updates.json').write_text(manifest)
 print('Verified packages and update manifest published together.')
 
-# Isolated SideCourt service acceptance entry. Preserve all existing product routes.
-preview = root / 'platform-preview'
-if preview.is_dir():
- shutil.copytree(preview, out / 'platform-preview')
- print('SideCourt HTTPS acceptance entry included.')
-
+# One production application at the canonical domain root.
+platform = root / 'platform-preview'
+for asset in platform.iterdir():
+ if asset.name == 'admin.html': continue
+ target = out / asset.name
+ if asset.is_dir(): shutil.copytree(asset, target, dirs_exist_ok=True)
+ else: shutil.copy2(asset, target)
 (out / 'admin').mkdir(exist_ok=True)
 shutil.copyfile(root / 'admin.html', out / 'admin/index.html')
+
+def redirect_page(destination, preserve_hash=False):
+ import html
+ target = json.dumps(destination)
+ script = 'location.replace(' + target + ('+location.search+location.hash' if preserve_hash else '') + ')'
+ return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SideCourt</title><link rel="icon" href="/favicon.svg"><link rel="canonical" href="https://sidecourt.space/"><meta http-equiv="refresh" content="0;url='+html.escape(destination,quote=True)+'"></head><body><script>'+script+'</script><a href="'+html.escape(destination,quote=True)+'">Continue to SideCourt</a></body></html>'
+
+# Retire historic displays, while installed CleanPause clients retain update endpoints.
+(out / 'platform-preview').mkdir(exist_ok=True)
+(out / 'platform-preview/index.html').write_text(redirect_page('/', True))
+(out / 'drops/index.html').write_text(redirect_page('/#drops'))
+(out / 'drops/cleanpause/index.html').write_text(redirect_page('/#work'))
+(out / 'robots.txt').write_text('User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /platform-preview/\nDisallow: /downloads/\nSitemap: https://sidecourt.space/sitemap.xml\n')
+(out / 'sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://sidecourt.space/</loc></url><url><loc>https://sidecourt.space/cleanpause/</loc></url></urlset>')
+print('Canonical SideCourt application published; historic displays redirected.')
 
 # Public proof of website ownership for Ming's Google brand verification.
 verification = json.loads((root / 'site-verification.json').read_text())['google_site_verification']
