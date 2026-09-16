@@ -5,13 +5,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SideCourt · Independent work</title>
 <meta name="description" content="SideCourt — create something yours, show up for others.">
+<script>if(new URLSearchParams(location.search).get('measure')==='1'){const s=document.createElement('script');s.src='performance.js';s.defer=true;document.head.append(s)}</script>
 <script>(()=>{const p=(location.hash||'#home').slice(1).split('?')[0],art=({home:'home',drops:'drops',work:'drops',season:'season','get-on':'get-on',inside:'inside'})[p]||'utility';document.documentElement.dataset.entry=p==='home'?'home':'other';const link=document.createElement('link');link.rel='preload';link.as='image';link.href='assets/'+art+(matchMedia('(max-width:760px)').matches?'-mobile':'')+'.webp';link.fetchPriority='high';document.head.append(link)})();</script><style>html[data-entry="other"] [data-page="home"]{display:none}</style>
 <link rel="preload" href="assets/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="scene.css?v=b2fe51375a3b">
 <link rel="icon" type="image/svg+xml" href="favicon.svg?v=stacked1">
 <link rel="canonical" href="https://sidecourt.space/">
 <meta name="color-scheme" content="dark light">
-<link rel="stylesheet" href="court.css?v=9b4e40230e26">
+<link rel="stylesheet" href="court.css?v=25633acd40ef">
 </head>
 <body>
 <a class="skip" href="#main-home">Skip to content</a><noscript><div class="no-script">SideCourt needs JavaScript for navigation and account access. Enable it and reload this page.</div></noscript>
@@ -202,6 +203,6 @@
 </div>
 <dialog id="preview-dialog"><button class="close" type="button" aria-label="Close dialog">×</button><h2 id="dialog-title">SideCourt</h2>
 <div id="dialog-body"></div></dialog><script defer src="config.js?v=2aeaebe5de79"></script><script defer src="scene.js?v=e92a7065d533"></script>
-<script defer src="court.js?v=5f97bc3d375b"></script>
+<script defer src="court.js?v=f83aa84238d6"></script>
 </body>
 </html>

@@ -475,7 +475,7 @@ button:disabled{opacity:1;cursor:not-allowed;color:#5f5368;background:#e9e1ee;bo
 @media(prefers-reduced-motion:reduce){.imprint.playing .imprint-face,.imprint.playing .imprint-trace,.drops-slide{animation:none!important}.drops-slide.is-leaving{visibility:hidden}}
 /* Keep the entire animal garden in the Inside composition at every width. */
 [data-page=inside]{min-height:250vw;display:flex;flex-direction:column}
-[data-page=inside]:before{background-size:100% 100%;background-position:center top}
+[data-page=inside]:before{background-size:cover;background-position:center top}
 #main-inside{flex:1;display:flex;flex-direction:column}.inside-opening{flex:none}.inside-ending{margin-top:auto;padding-top:clamp(100px,16vw,220px)}
 #main-court.account-entry{max-width:var(--page-width)}#main-court.account-entry .workspace-shell{max-width:760px}.account-entry .court-content{padding-left:0;padding-right:0;background:transparent;border:0}
 
@@ -484,3 +484,8 @@ button:disabled{opacity:1;cursor:not-allowed;color:#5f5368;background:#e9e1ee;bo
 
 .scene .event-poster .season-title{font-size:var(--display-size)}
 #main-white .draft-save-bar #save-draft{background:var(--plum);color:var(--cream);padding:11px 18px;border-radius:4px}
+
+/* Preserve the garden's proportions; keep the reference's colour and readable text. */
+[data-page=inside]:after{background:linear-gradient(90deg,#1115 0%,#1111 55%,#1113)}
+.inside-page :is(h1,h2,p){text-shadow:0 1px 8px #0003}
+@media(max-width:760px){.inside-opening{width:78%}.inside-opening .inside-small{max-width:88%;font-size:15px}.inside-creatures{align-items:start}.inside-creatures .inside-small{font-size:15px}.inside-ring{margin-top:12px}.inside-ending{padding-top:100px}}
