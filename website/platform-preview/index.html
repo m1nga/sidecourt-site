@@ -5,15 +5,17 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SideCourt · Independent work</title>
 <meta name="description" content="SideCourt — create something yours, show up for others.">
+<script>(()=>{const p=(location.hash||'#home').slice(1).split('?')[0],art=({home:'home',drops:'drops',work:'drops',season:'season','get-on':'get-on',inside:'inside'})[p]||'utility';document.documentElement.dataset.entry=p==='home'?'home':'other';const link=document.createElement('link');link.rel='preload';link.as='image';link.href='assets/'+art+(matchMedia('(max-width:760px)').matches?'-mobile':'')+'.webp';link.fetchPriority='high';document.head.append(link)})();</script><style>html[data-entry="other"] [data-page="home"]{display:none}</style>
+<link rel="preload" href="assets/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="scene.css?v=b2fe51375a3b">
 <link rel="icon" type="image/svg+xml" href="favicon.svg?v=stacked1">
 <link rel="canonical" href="https://sidecourt.space/">
 <meta name="color-scheme" content="dark light">
-<link rel="stylesheet" href="court.css?v=ee28d0e6f79d">
+<link rel="stylesheet" href="court.css?v=7355d2120899">
 </head>
 <body>
 <a class="skip" href="#main-home">Skip to content</a><noscript><div class="no-script">SideCourt needs JavaScript for navigation and account access. Enable it and reload this page.</div></noscript>
-<div class="scene " data-page="home" style='--art:url("assets/home.png")'>
+<div class="scene " data-page="home" style='--art:url("assets/home.webp");--art-mobile:url("assets/home-mobile.webp")'>
 <header class="header container"><a class="brand" href="#home" aria-label="SideCourt home"><img src="assets/logo-cream.svg" alt="SideCourt" decoding="async"></a><nav class="nav" aria-label="Main navigation"><a href="#drops">DROPS</a><a href="#season">SEASON</a><a href="#get-on">GET ON THE COURT</a><a href="#court" data-account-link>YOUR COURT</a></nav><details class="mobile-nav"><summary>Menu</summary><nav aria-label="Mobile navigation"><a href="#drops">DROPS</a><a href="#season">SEASON</a><a href="#get-on">GET ON THE COURT</a><a href="#court" data-account-link>YOUR COURT</a></nav></details></header><main id="main-home" class="container" tabindex="-1"><section class="hero"><h1>
 <span>CREATE SOMETHING YOURS.</span><span>SHOW UP FOR OTHERS.</span>
 </h1>
@@ -22,7 +24,7 @@
 <div class="play-links">
 <a class="triangle" data-random href="#drops" aria-label="Explore published posts"><strong>?</strong><span>Explore DROPS</span></a><a class="season-ball" href="#season" aria-label="Explore GET ’EM, Season I"><small>SEASON I</small><strong>GET ’EM</strong></a>
 </div>
-</div></section><section class="section" id="home-drops"><div class="participation-layout"><div class="participation-copy"><h2>DROPS</h2><p class="lede">Share what you’ve made, ask for the help you need, or help someone take their next step. A useful lead, a small fix, a little encouragement—it all has a place here.</p><p>You don’t need a work of your own to take part.</p><a class="text-link" id="all-drops-link" href="#drops" hidden>All DROPS →</a></div><div class="participation-invite"><div class="invitation-square"><p>This space could be yours.</p></div><div class="actions"><a class="button" href="#white?kind=work">Share a work</a><a class="button secondary" href="#white?kind=request">Ask for a hand</a></div></div></div><details class="participation-explainer"><summary>What happens after you post?</summary><div class="participation-steps"><section><h3>Share it.</h3><p>Post a work or ask for a hand. Start with what you have.</p></section><section><h3>Talk it through.</h3><p>Replies stay with your post. You can find them in Your Court.</p></section><section><h3>See what follows.</h3><p>Let people know what helped, and follow what happens next.</p></section></div></details><div id="home-featured" class="drop-grid"></div><p id="home-post-status" role="status">Loading posts…</p><button class="text-link" data-retry-posts hidden>Retry</button></section><section class="section" id="home-season"><div class="season-intro">
+</div></section><section class="section" id="home-drops"><div class="drops-masthead"><div><h2>DROPS</h2><p class="drops-tagline">Made for the love of it.</p><div class="drops-carousel" aria-label="Ways to take part" aria-roledescription="carousel"><div class="drops-slides"><div class="drops-slide" ><h3>Share what you’ve made.</h3><p>Start with what you have.</p></div><div class="drops-slide" hidden><h3>Ask for a hand.</h3><p>Tell people what would help.</p></div><div class="drops-slide" hidden><h3>Help someone forward.</h3><p>You don’t need a work of your own to take part.</p></div></div><div class="carousel-controls"><button type="button" data-slide="0" aria-label="Show invitation 1" aria-pressed="true"></button><button type="button" data-slide="1" aria-label="Show invitation 2" aria-pressed="false"></button><button type="button" data-slide="2" aria-label="Show invitation 3" aria-pressed="false"></button><button type="button" class="carousel-pause" aria-label="Pause invitations" aria-pressed="false">Ⅱ</button></div></div></div><aside class="board" aria-label="Rally Board"><button type="button" class="board-title" data-board-info>RALLY BOARD</button><div class="periods"><div class="period"><strong class="period-title">TODAY</strong><div class="score-row"><span>DROPS</span><b>—</b></div><div class="score-row"><span>CONTRIBUTIONS</span><b>—</b></div></div><div class="period"><strong class="period-title">ALL TIME</strong><div class="score-row"><span>DROPS</span><b>—</b></div><div class="score-row"><span>CONTRIBUTIONS</span><b>—</b></div></div></div><p class="board-slogan"><span>CREATE SOMETHING YOURS.</span><span>SHOW UP FOR OTHERS.</span></p></aside></div><details class="participation-explainer" open><summary>What happens after you post?</summary><div class="participation-steps"><section><h3>Share it.</h3><p>Post a work or ask for a hand. Start with what you have.</p></section><section><h3>Talk it through.</h3><p>Replies stay with your post. You can find them in Your Court.</p></section><section><h3>See what follows.</h3><p>Let people know what helped, and follow what happens next.</p></section></div></details><div class="drops-work-heading"><h3>WORKS</h3><a class="text-link" id="all-drops-link" href="#drops">All drops ↗</a><p id="home-post-status" role="status">Loading posts…</p><button class="text-link" data-retry-posts hidden>Retry</button></div><div class="home-posts"><article class="participation-invite invitation-square"><span class="invitation-plus" aria-hidden="true">+</span><p>This space could be yours.</p><div class="actions"><a class="button" href="#white?kind=work">Share a work ↗</a><a class="text-link" href="#white?kind=request">Ask for a hand ↗</a></div></article><div id="home-featured" class="drop-grid"></div></div></section><section class="section" id="home-season"><div class="season-intro">
 <div>
 <p class="eyebrow">SEASON I · TAKING SHAPE</p>
 <h2><a class="season-title-link" href="#season" aria-label="Explore Season I"><span class="getem-word">GET ’EM</span><span aria-hidden="true">↗</span></a></h2>
@@ -34,11 +36,11 @@
 <a class="text-link" href="#season">Explore the gathering →</a>
 </div>
 </div>
-</section><section class="court-invite"><h2>GET ON THE COURT</h2><a class="text-link" href="#get-on">Find your way in →</a></section></main><footer class="site-footer container"><p>CREATE SOMETHING YOURS. SHOW UP FOR OTHERS.</p>
+</section><section class="court-invite"><h2><a class="imprint" href="#get-on"><span class="imprint-word"><span class="imprint-trace" aria-hidden="true">GET ON THE COURT</span><span class="imprint-face">GET ON THE COURT</span></span></a></h2><a class="text-link" href="#get-on">Find your way in →</a></section></main><footer class="site-footer container"><p>CREATE SOMETHING YOURS. SHOW UP FOR OTHERS.</p>
 <a href="#court?tab=support">Contact</a> <a href="#court?tab=privacy">Privacy</a> <a href="#court?tab=terms">Terms</a> <a href="#get-on">GET ON THE COURT ↗</a></footer><a class="inside-entry" href="#inside">The Inside ↗</a>
 </div>
-<div class="scene " data-page="drops" style='--art:url("assets/drops.png")' hidden>
-<header class="header container"><a class="brand" href="#home" aria-label="SideCourt home"><img src="assets/logo-cream.svg" alt="SideCourt" decoding="async"></a><nav class="nav" aria-label="Main navigation"><a href="#drops">DROPS</a><a href="#season">SEASON</a><a href="#get-on">GET ON THE COURT</a><a href="#court" data-account-link>YOUR COURT</a></nav><details class="mobile-nav"><summary>Menu</summary><nav aria-label="Mobile navigation"><a href="#drops">DROPS</a><a href="#season">SEASON</a><a href="#get-on">GET ON THE COURT</a><a href="#court" data-account-link>YOUR COURT</a></nav></details></header><main id="main-drops" class="container directory" tabindex="-1"><div class="participation-layout directory-intro"><div class="participation-copy"><h1>DROPS</h1><p class="lede">Works to explore. Requests you might help with.</p><details class="participation-explainer"><summary>How to take part</summary><p>Share what you’ve made, ask for the help you need, or help someone take their next step. A useful lead, a small fix, a little encouragement—it all has a place here.</p><p>You don’t need a work of your own to take part.</p><div class="participation-steps"><section><h3>Share it.</h3><p>Post a work or ask for a hand. Start with what you have.</p></section><section><h3>Talk it through.</h3><p>Replies stay with your post. You can find them in Your Court.</p></section><section><h3>See what follows.</h3><p>Let people know what helped, and follow what happens next.</p></section></div></details></div><div class="participation-invite"><div class="invitation-square"><p>This space could be yours.</p></div><div class="actions"><a class="button" href="#white?kind=work">Share a work</a><a class="button secondary" href="#white?kind=request">Ask for a hand</a></div></div></div><div class="discovery-tools">
+<div class="scene " data-page="drops" style='--art:url("assets/drops.webp");--art-mobile:url("assets/drops-mobile.webp")' hidden>
+<header class="header container"><a class="brand" href="#home" aria-label="SideCourt home"><img src="assets/logo-cream.svg" alt="SideCourt" decoding="async"></a><nav class="nav" aria-label="Main navigation"><a href="#drops">DROPS</a><a href="#season">SEASON</a><a href="#get-on">GET ON THE COURT</a><a href="#court" data-account-link>YOUR COURT</a></nav><details class="mobile-nav"><summary>Menu</summary><nav aria-label="Mobile navigation"><a href="#drops">DROPS</a><a href="#season">SEASON</a><a href="#get-on">GET ON THE COURT</a><a href="#court" data-account-link>YOUR COURT</a></nav></details></header><main id="main-drops" class="container directory" tabindex="-1"><div class="directory-intro"><h1>DROPS</h1><p class="lede">Works to explore. Requests you might help with.</p></div><div class="discovery-tools">
 <div class="directory-tabs" role="group" aria-label="Explore drops">
 <button type="button" data-discovery="all" aria-pressed="true">All drops</button><button type="button" data-discovery="help" aria-pressed="false">Lend a hand</button>
 </div>
@@ -49,7 +51,7 @@
 </div>
 <p id="discovery-context">Works and requests, shared by the people behind them.</p>
 </div>
-<div class="drop-grid" id="drop-results"></div>
+<div class="directory-posts"><article class="participation-invite invitation-square"><span class="invitation-plus" aria-hidden="true">+</span><p>This space could be yours.</p><div class="actions"><a class="button" href="#white?kind=work">Share a work ↗</a><a class="text-link" href="#white?kind=request">Ask for a hand ↗</a></div></article><div class="drop-grid" id="drop-results"></div></div>
 <div id="drop-empty" class="glass empty" hidden>
 <h2 id="empty-heading">No drops match this search.</h2>
 <p id="empty-description">Try another word, or clear your filters.</p>
@@ -58,7 +60,7 @@
 <p id="result-status" role="status" aria-live="polite">Loading posts…</p><button class="text-link" data-retry-posts hidden>Retry</button></main><footer class="site-footer container"><p>CREATE SOMETHING YOURS. SHOW UP FOR OTHERS.</p>
 <a href="#court?tab=support">Contact</a> <a href="#court?tab=privacy">Privacy</a> <a href="#court?tab=terms">Terms</a> <a href="#get-on">GET ON THE COURT ↗</a></footer>
 </div>
-<div class="scene " data-page="season" style='--art:url("assets/season.png")' hidden>
+<div class="scene " data-page="season" style='--art:url("assets/season.webp");--art-mobile:url("assets/season-mobile.webp")' hidden>
 <header class="header container"><a class="brand" href="#home" aria-label="SideCourt home"><img src="assets/logo-cream.svg" alt="SideCourt" decoding="async"></a><nav class="nav" aria-label="Main navigation"><a href="#drops">DROPS</a><a href="#season">SEASON</a><a href="#get-on">GET ON THE COURT</a><a href="#court" data-account-link>YOUR COURT</a></nav><details class="mobile-nav"><summary>Menu</summary><nav aria-label="Mobile navigation"><a href="#drops">DROPS</a><a href="#season">SEASON</a><a href="#get-on">GET ON THE COURT</a><a href="#court" data-account-link>YOUR COURT</a></nav></details></header><main id="main-season" class="container season-page" tabindex="-1"><div class="event-poster">
 <p class="eyebrow">SEASON I · PROPOSED FIRST GATHERING</p>
 <h1 class="season-title"><a class="season-title-link" href="#season?section=rules" aria-label="GET ’EM — how to take part"><span class="getem-word">GET ’EM</span></a></h1>
@@ -92,35 +94,16 @@
 </div></section></main><footer class="site-footer container"><p>CREATE SOMETHING YOURS. SHOW UP FOR OTHERS.</p>
 <a href="#court?tab=support">Contact</a> <a href="#court?tab=privacy">Privacy</a> <a href="#court?tab=terms">Terms</a> <a href="#get-on">GET ON THE COURT ↗</a></footer>
 </div>
-<div class="scene " data-page="get-on" style='--art:url("assets/get-on.png")' hidden>
-<header class="header container"><a class="brand" href="#home" aria-label="SideCourt home"><img src="assets/logo-cream.svg" alt="SideCourt" decoding="async"></a><nav class="nav" aria-label="Main navigation"><a href="#drops">DROPS</a><a href="#season">SEASON</a><a href="#get-on">GET ON THE COURT</a><a href="#court" data-account-link>YOUR COURT</a></nav><details class="mobile-nav"><summary>Menu</summary><nav aria-label="Mobile navigation"><a href="#drops">DROPS</a><a href="#season">SEASON</a><a href="#get-on">GET ON THE COURT</a><a href="#court" data-account-link>YOUR COURT</a></nav></details></header><main id="main-get-on" class="container get-on-page" tabindex="-1"><h1>GET ON THE COURT</h1>
+<div class="scene " data-page="get-on" style='--art:url("assets/get-on.webp");--art-mobile:url("assets/get-on-mobile.webp")' hidden>
+<header class="header container"><a class="brand" href="#home" aria-label="SideCourt home"><img src="assets/logo-cream.svg" alt="SideCourt" decoding="async"></a><nav class="nav" aria-label="Main navigation"><a href="#drops">DROPS</a><a href="#season">SEASON</a><a href="#get-on">GET ON THE COURT</a><a href="#court" data-account-link>YOUR COURT</a></nav><details class="mobile-nav"><summary>Menu</summary><nav aria-label="Mobile navigation"><a href="#drops">DROPS</a><a href="#season">SEASON</a><a href="#get-on">GET ON THE COURT</a><a href="#court" data-account-link>YOUR COURT</a></nav></details></header><main id="main-get-on" class="container get-on-page" tabindex="-1"><h1><a class="imprint" href="#white?kind=work"><span class="imprint-word"><span class="imprint-trace" aria-hidden="true">GET ON THE COURT</span><span class="imprint-face">GET ON THE COURT</span></span></a></h1>
 <p class="lede">Create something yours. Show up for others.</p>
 <div class="routes"><section class="route glass"><h2>Something you made.</h2><p>A tool, an experiment, or something still taking shape. Give it a page of its own.</p><a class="button" href="#white?kind=work">Share a work</a></section><section class="route glass"><h2>Something to work through.</h2><p>A question, a missing piece, or a next step you could use a hand with. No product required.</p><a class="button secondary" href="#white?kind=request">Ask for a hand</a></section></div><p class="local-note"><a class="text-link" href="#drops">Explore DROPS →</a></p></main><footer class="site-footer container"><p>CREATE SOMETHING YOURS. SHOW UP FOR OTHERS.</p>
 <a href="#court?tab=support">Contact</a> <a href="#court?tab=privacy">Privacy</a> <a href="#court?tab=terms">Terms</a> <a href="#get-on">GET ON THE COURT ↗</a></footer>
 </div>
-<div class="scene " data-page="inside" style='--art:url("assets/inside.png")' hidden>
-<header class="header container"><a class="brand" href="#home" aria-label="SideCourt home"><img src="assets/logo-cream.svg" alt="SideCourt" decoding="async"></a><nav class="nav" aria-label="Main navigation"><a href="#drops">DROPS</a><a href="#season">SEASON</a><a href="#get-on">GET ON THE COURT</a><a href="#court" data-account-link>YOUR COURT</a></nav><details class="mobile-nav"><summary>Menu</summary><nav aria-label="Mobile navigation"><a href="#drops">DROPS</a><a href="#season">SEASON</a><a href="#get-on">GET ON THE COURT</a><a href="#court" data-account-link>YOUR COURT</a></nav></details></header><div class="inside-top container"><a class="text-link" data-return href="#home">← Back</a></div>
-<main id="main-inside" class="container inside-page" tabindex="-1"><h1>THE INSIDE</h1>
-<div class="inside-story">
-<p><strong>What you keep hidden is what brought you here.</strong></p>
-<p>Most of what we show begins somewhere we don't.</p>
-<p>A feeling that something no longer fits.<br>An idea that refuses to leave.<br>The urge to step somewhere unfamiliar.<br>Something another person leaves with us.</p>
-<p>We rarely arrive with a clean explanation.</p>
-<p>Sometimes we make things simply because something inside us keeps moving.</p>
-<p>If you've noticed the creatures around SideCourt, you've already seen traces of it.</p>
-<p>A snake leaving what it has outgrown.</p>
-<p>A tiger staying with something it cannot yet explain.</p>
-<p>A leopard moving between land and water.</p>
-<p>A magpie carrying something that did not begin with it.</p>
-<p>They are not symbols to solve.</p>
-<p>They are reminders that not everything that moves us needs to be visible.</p>
-<p>Some things stay hidden for a while.</p>
-<p>And sometimes,</p>
-<p><strong>that's exactly what leads us here.</strong></p>
+<div class="scene " data-page="inside" style='--art:url("assets/inside.webp");--art-mobile:url("assets/inside-mobile.webp")' hidden>
+<header class="header container"><a class="brand" href="#home" aria-label="SideCourt home"><img src="assets/logo-cream.svg" alt="SideCourt" decoding="async"></a><nav class="nav" aria-label="Main navigation"><a href="#drops">DROPS</a><a href="#season">SEASON</a><a href="#get-on">GET ON THE COURT</a><a href="#court" data-account-link>YOUR COURT</a></nav><details class="mobile-nav"><summary>Menu</summary><nav aria-label="Mobile navigation"><a href="#drops">DROPS</a><a href="#season">SEASON</a><a href="#get-on">GET ON THE COURT</a><a href="#court" data-account-link>YOUR COURT</a></nav></details></header><main id="main-inside" class="container inside-page" tabindex="-1"><h1>THE<br>INSIDE</h1><div class="inside-opening"><h2>What you keep hidden is what brought you here.</h2><div class="inside-small"><p>Most of what we show begins somewhere we don’t.</p><p>A feeling that something no longer fits.</p><p>An idea that refuses to leave.</p><p>The urge to step somewhere unfamiliar.</p><p>Something another person leaves with us.</p><p>We rarely arrive with a clean explanation.</p></div></div><p class="inside-statement">Sometimes we make things simply because something inside us keeps moving.</p><div class="inside-creatures"><img src="assets/ring-cream.svg" alt="SideCourt" class="inside-ring" width="600" height="600" loading="lazy" decoding="async"><div class="inside-small"><p>If you’ve noticed the creatures around SideCourt, you’ve already seen traces of it.</p><p>A snake leaving what it has outgrown.</p><p>A tiger staying with something it cannot yet explain.</p><p>A leopard moving between land and water.</p><p>A magpie carrying something that did not begin with it.</p></div></div><div class="inside-ending"><p>They are not symbols to solve.</p><p>They are reminders that not everything that moves us needs to be visible.<br>Some things stay hidden for a while.</p><h2>And sometimes,<br>that’s exactly what leads us here.</h2><a class="text-link" data-return href="#home">← Back</a></div></main>
 </div>
-<img class="inside-signature" src="assets/logo-cream.svg" alt="SideCourt" decoding="async" loading="lazy"><a class="text-link" data-return href="#home">← Back</a></main>
-</div>
-<div class="scene white" data-page="white" style='--art:url("assets/utility.png")' hidden>
+<div class="scene white" data-page="white" style='--art:url("assets/utility.webp");--art-mobile:url("assets/utility-mobile.webp")' hidden>
 <header class="header container"><a class="brand" href="#home" aria-label="SideCourt home"><img src="assets/logo-plum.svg" alt="SideCourt" decoding="async"></a><nav class="nav" aria-label="Main navigation"><a href="#drops">DROPS</a><a href="#season">SEASON</a><a href="#get-on">GET ON THE COURT</a><a href="#court" data-account-link>YOUR COURT</a></nav><details class="mobile-nav"><summary>Menu</summary><nav aria-label="Mobile navigation"><a href="#drops">DROPS</a><a href="#season">SEASON</a><a href="#get-on">GET ON THE COURT</a><a href="#court" data-account-link>YOUR COURT</a></nav></details></header><main id="main-white" class="container submit-page" tabindex="-1"><div class="submit-heading">
 <a class="text-link" href="#get-on">← Get on the court</a><h1>Share something</h1>
 <p>Share a work, or ask for a hand.</p>
@@ -141,7 +124,7 @@
 </details><details class="form-subsection" id="help-options"><summary>Need a hand? <span class="minor">Optional</span></summary><label class="field">What would help?<textarea name="invitationBody" rows="3" maxlength="8000" placeholder="Ask one specific question, or describe the help you need."></textarea></label><input type="hidden" name="invitation" value="none"><p class="minor">People can reply on your page. Sharing a link does not give editing access.</p></details>
 <div id="invitation-detail" hidden></div>
 <details class="form-subsection" id="post-context"><summary>A little more context <span class="minor">Optional</span></summary><label class="field"><span id="post-why-label">Why it exists</span><textarea name="why" maxlength="8000" rows="3" placeholder="What made you start?"></textarea></label><label class="field"><span id="post-start-label">Use &amp; compatibility</span><textarea name="start" maxlength="8000" rows="3" placeholder="How to use it, supported devices, or anything worth knowing first."></textarea></label><label class="field">Use &amp; permissions<textarea name="reuse" maxlength="1000" rows="2" placeholder="Anything you want people to know before reusing your work or materials."></textarea></label></details><textarea name="cardLine" hidden></textarea>
-</section><div class="form-actions">
+</section><div class="form-actions draft-save-bar">
 <button type="button" class="text-link" id="save-draft">Save draft</button><button type="button" class="button secondary" id="preview-work">Preview →</button><button class="button" id="prepare-work" type="submit">Check before sharing →</button>
 </div>
 <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
@@ -158,22 +141,22 @@
 </div></main><footer class="site-footer container"><p>CREATE SOMETHING YOURS. SHOW UP FOR OTHERS.</p>
 <a href="#court?tab=support">Contact</a> <a href="#court?tab=privacy">Privacy</a> <a href="#court?tab=terms">Terms</a> <a href="#get-on">GET ON THE COURT ↗</a></footer>
 </div>
-<div class="scene " data-page="work" style='--art:url("assets/drops.png")' hidden>
+<div class="scene " data-page="work" style='--art:url("assets/drops.webp");--art-mobile:url("assets/drops-mobile.webp")' hidden>
 <header class="header container"><a class="brand" href="#home" aria-label="SideCourt home"><img src="assets/logo-cream.svg" alt="SideCourt" decoding="async"></a><nav class="nav" aria-label="Main navigation"><a href="#drops">DROPS</a><a href="#season">SEASON</a><a href="#get-on">GET ON THE COURT</a><a href="#court" data-account-link>YOUR COURT</a></nav><details class="mobile-nav"><summary>Menu</summary><nav aria-label="Mobile navigation"><a href="#drops">DROPS</a><a href="#season">SEASON</a><a href="#get-on">GET ON THE COURT</a><a href="#court" data-account-link>YOUR COURT</a></nav></details></header><main id="main-work" class="container work-page" tabindex="-1"><h1>Find something on the court.</h1><a class="text-link" href="#drops">Explore DROPS →</a></main><footer class="site-footer container"><p>CREATE SOMETHING YOURS. SHOW UP FOR OTHERS.</p>
 <a href="#court?tab=support">Contact</a> <a href="#court?tab=privacy">Privacy</a> <a href="#court?tab=terms">Terms</a> <a href="#get-on">GET ON THE COURT ↗</a></footer>
 </div>
-<div class="scene white" data-page="account" style='--art:url("assets/utility.png")' hidden>
+<div class="scene white" data-page="account" style='--art:url("assets/utility.webp");--art-mobile:url("assets/utility-mobile.webp")' hidden>
 <header class="header container"><a class="brand" href="#home" aria-label="SideCourt home"><img src="assets/logo-plum.svg" alt="SideCourt" decoding="async"></a><nav class="nav" aria-label="Main navigation"><a href="#drops">DROPS</a><a href="#season">SEASON</a><a href="#get-on">GET ON THE COURT</a><a href="#court" data-account-link>YOUR COURT</a></nav><details class="mobile-nav"><summary>Menu</summary><nav aria-label="Mobile navigation"><a href="#drops">DROPS</a><a href="#season">SEASON</a><a href="#get-on">GET ON THE COURT</a><a href="#court" data-account-link>YOUR COURT</a></nav></details></header><main id="main-account" class="container account-page" tabindex="-1"><section class="account-welcome"><p class="eyebrow">YOUR COURT</p>
 <h1>Make yourself<br>at home.</h1>
 <p>Your work, the things you save, and the exchanges you want to keep going.</p>
 <p class="minor">Browse without an account. Sign in when you want to save a work or join a conversation.</p></section><section class="identity-panel">Account options are loading…</section></main><footer class="site-footer container"><p>CREATE SOMETHING YOURS. SHOW UP FOR OTHERS.</p>
 <a href="#court?tab=support">Contact</a> <a href="#court?tab=privacy">Privacy</a> <a href="#court?tab=terms">Terms</a> <a href="#get-on">GET ON THE COURT ↗</a></footer>
 </div>
-<div class="scene " data-page="player" style='--art:url("assets/home.png")' hidden>
+<div class="scene " data-page="player" style='--art:url("assets/home.webp");--art-mobile:url("assets/home-mobile.webp")' hidden>
 <header class="header container"><a class="brand" href="#home" aria-label="SideCourt home"><img src="assets/logo-cream.svg" alt="SideCourt" decoding="async"></a><nav class="nav" aria-label="Main navigation"><a href="#drops">DROPS</a><a href="#season">SEASON</a><a href="#get-on">GET ON THE COURT</a><a href="#court" data-account-link>YOUR COURT</a></nav><details class="mobile-nav"><summary>Menu</summary><nav aria-label="Mobile navigation"><a href="#drops">DROPS</a><a href="#season">SEASON</a><a href="#get-on">GET ON THE COURT</a><a href="#court" data-account-link>YOUR COURT</a></nav></details></header><main id="main-player" class="container player-page" tabindex="-1"><h1>Meet the people behind the posts.</h1><a class="text-link" href="#drops">Explore DROPS →</a></main><footer class="site-footer container"><p>CREATE SOMETHING YOURS. SHOW UP FOR OTHERS.</p>
 <a href="#court?tab=support">Contact</a> <a href="#court?tab=privacy">Privacy</a> <a href="#court?tab=terms">Terms</a> <a href="#get-on">GET ON THE COURT ↗</a></footer>
 </div>
-<div class="scene white" data-page="court" style='--art:url("assets/utility.png")' hidden>
+<div class="scene white" data-page="court" style='--art:url("assets/utility.webp");--art-mobile:url("assets/utility-mobile.webp")' hidden>
 <header class="header container"><a class="brand" href="#home" aria-label="SideCourt home"><img src="assets/logo-plum.svg" alt="SideCourt" decoding="async"></a><nav class="nav" aria-label="Main navigation"><a href="#drops">DROPS</a><a href="#season">SEASON</a><a href="#get-on">GET ON THE COURT</a><a href="#court" data-account-link>YOUR COURT</a></nav><details class="mobile-nav"><summary>Menu</summary><nav aria-label="Mobile navigation"><a href="#drops">DROPS</a><a href="#season">SEASON</a><a href="#get-on">GET ON THE COURT</a><a href="#court" data-account-link>YOUR COURT</a></nav></details></header><main id="main-court" class="container court-page" tabindex="-1"><div class="account-session" role="status" aria-live="polite"><span id="court-session-state">Checking your session…</span><button type="button" class="text-link" id="court-signout" hidden>Sign out</button></div><div class="workspace-heading" hidden>
 <div>
 <p class="eyebrow">YOUR COURT</p>
@@ -183,7 +166,7 @@
 <button class="button" type="button" data-new-work>New post ↗</button>
 </div>
 <div class="workspace-shell">
-<nav class="workspace-nav" aria-label="Your Court sections" hidden><a href="#court?tab=overview">Overview</a><a href="#court?tab=posts">Your posts</a><a href="#court?tab=inbox">Inbox</a><a href="#court?tab=saved">Saved</a><a href="#court?tab=profile">Profile</a><a href="#court?tab=settings">Settings</a><a href="#court?tab=help">Need a hand?</a></nav><div>
+<nav class="workspace-nav" aria-label="Your Court sections" hidden><a href="#court?tab=overview">Overview</a><a href="#court?tab=drafts">Drafts</a><a href="#court?tab=posts">Your posts</a><a href="#court?tab=inbox">Inbox</a><a href="#court?tab=saved">Saved</a><a href="#court?tab=profile">Profile</a><a href="#court?tab=settings">Settings</a><a href="#court?tab=help">Need a hand?</a></nav><div>
 <p class="workspace-scope" hidden>Your private workspace. You choose when an approved work becomes public.</p>
 <p id="court-action-status" class="status-line" role="status" aria-live="polite"></p>
 <div id="court-content" class="court-content"></div>
@@ -191,34 +174,34 @@
 </div></main><footer class="site-footer container"><p>CREATE SOMETHING YOURS. SHOW UP FOR OTHERS.</p>
 <a href="#court?tab=support">Contact</a> <a href="#court?tab=privacy">Privacy</a> <a href="#court?tab=terms">Terms</a> <a href="#get-on">GET ON THE COURT ↗</a></footer>
 </div>
-<div class="scene white" data-page="settings" style='--art:url("assets/utility.png")' hidden>
+<div class="scene white" data-page="settings" style='--art:url("assets/utility.webp");--art-mobile:url("assets/utility-mobile.webp")' hidden>
 <header class="header container"><a class="brand" href="#home" aria-label="SideCourt home"><img src="assets/logo-plum.svg" alt="SideCourt" decoding="async"></a><nav class="nav" aria-label="Main navigation"><a href="#drops">DROPS</a><a href="#season">SEASON</a><a href="#get-on">GET ON THE COURT</a><a href="#court" data-account-link>YOUR COURT</a></nav><details class="mobile-nav"><summary>Menu</summary><nav aria-label="Mobile navigation"><a href="#drops">DROPS</a><a href="#season">SEASON</a><a href="#get-on">GET ON THE COURT</a><a href="#court" data-account-link>YOUR COURT</a></nav></details></header><main id="main-settings" class="container settings-page" tabindex="-1"><a class="text-link" href="#court">← Your Court</a><h1>Settings</h1>
 <p>Account settings are in Your Court.</p><a class="button" href="#court?tab=account">Open your account →</a></main><footer class="site-footer container"><p>CREATE SOMETHING YOURS. SHOW UP FOR OTHERS.</p>
 <a href="#court?tab=support">Contact</a> <a href="#court?tab=privacy">Privacy</a> <a href="#court?tab=terms">Terms</a> <a href="#get-on">GET ON THE COURT ↗</a></footer>
 </div>
-<div class="scene " data-page="preview" style='--art:url("assets/drops.png")' hidden>
+<div class="scene " data-page="preview" style='--art:url("assets/drops.webp");--art-mobile:url("assets/drops-mobile.webp")' hidden>
 <header class="header container"><a class="brand" href="#home" aria-label="SideCourt home"><img src="assets/logo-cream.svg" alt="SideCourt" decoding="async"></a><nav class="nav" aria-label="Main navigation"><a href="#drops">DROPS</a><a href="#season">SEASON</a><a href="#get-on">GET ON THE COURT</a><a href="#court" data-account-link>YOUR COURT</a></nav><details class="mobile-nav"><summary>Menu</summary><nav aria-label="Mobile navigation"><a href="#drops">DROPS</a><a href="#season">SEASON</a><a href="#get-on">GET ON THE COURT</a><a href="#court" data-account-link>YOUR COURT</a></nav></details></header><main id="main-preview" class="container work-page" tabindex="-1"><div class="preview-banner">
 <span>Private preview · not published</span><a class="text-link" href="#white">← Back to editing</a>
 </div>
 <div id="full-work-preview"></div></main><footer class="site-footer container"><p>CREATE SOMETHING YOURS. SHOW UP FOR OTHERS.</p>
 <a href="#court?tab=support">Contact</a> <a href="#court?tab=privacy">Privacy</a> <a href="#court?tab=terms">Terms</a> <a href="#get-on">GET ON THE COURT ↗</a></footer>
 </div>
-<div class="scene white" data-page="not-found" style='--art:url("assets/utility.png")' hidden>
+<div class="scene white" data-page="not-found" style='--art:url("assets/utility.webp");--art-mobile:url("assets/utility-mobile.webp")' hidden>
 <header class="header container"><a class="brand" href="#home" aria-label="SideCourt home"><img src="assets/logo-plum.svg" alt="SideCourt" decoding="async"></a><nav class="nav" aria-label="Main navigation"><a href="#drops">DROPS</a><a href="#season">SEASON</a><a href="#get-on">GET ON THE COURT</a><a href="#court" data-account-link>YOUR COURT</a></nav><details class="mobile-nav"><summary>Menu</summary><nav aria-label="Mobile navigation"><a href="#drops">DROPS</a><a href="#season">SEASON</a><a href="#get-on">GET ON THE COURT</a><a href="#court" data-account-link>YOUR COURT</a></nav></details></header><main id="main-not-found" class="container missing-page" tabindex="-1"><h1>This page isn’t here.</h1>
 <p>The link may be incomplete, or the page may no longer be available.</p>
 <a class="button" href="#home">Back home →</a><a class="text-link" href="#drops">Explore DROPS →</a></main><footer class="site-footer container"><p>CREATE SOMETHING YOURS. SHOW UP FOR OTHERS.</p>
 <a href="#court?tab=support">Contact</a> <a href="#court?tab=privacy">Privacy</a> <a href="#court?tab=terms">Terms</a> <a href="#get-on">GET ON THE COURT ↗</a></footer>
 </div>
-<div class="scene white" data-page="season-join" style='--art:url("assets/utility.png")' hidden="">
+<div class="scene white" data-page="season-join" style='--art:url("assets/utility.webp");--art-mobile:url("assets/utility-mobile.webp")' hidden="">
 <header class="header container"><a class="brand" href="#home" aria-label="SideCourt home"><img src="assets/logo-plum.svg" alt="SideCourt" decoding="async"></a><nav class="nav" aria-label="Main navigation"><a href="#drops">DROPS</a><a href="#season">SEASON</a><a href="#get-on">GET ON THE COURT</a><a href="#court" data-account-link>YOUR COURT</a></nav><details class="mobile-nav"><summary>Menu</summary><nav aria-label="Mobile navigation"><a href="#drops">DROPS</a><a href="#season">SEASON</a><a href="#get-on">GET ON THE COURT</a><a href="#court" data-account-link>YOUR COURT</a></nav></details></header><main id="main-season-join" class="container workspace-page" tabindex="-1">Season I · preparing to open.</main><footer class="site-footer container"><p>CREATE SOMETHING YOURS. SHOW UP FOR OTHERS.</p>
 <a href="#court?tab=support">Contact</a> <a href="#court?tab=privacy">Privacy</a> <a href="#court?tab=terms">Terms</a> <a href="#get-on">GET ON THE COURT ↗</a></footer>
 </div>
-<div class="scene white" data-page="season-entry" style='--art:url("assets/utility.png")' hidden="">
+<div class="scene white" data-page="season-entry" style='--art:url("assets/utility.webp");--art-mobile:url("assets/utility-mobile.webp")' hidden="">
 <header class="header container"><a class="brand" href="#home" aria-label="SideCourt home"><img src="assets/logo-plum.svg" alt="SideCourt" decoding="async"></a><nav class="nav" aria-label="Main navigation"><a href="#drops">DROPS</a><a href="#season">SEASON</a><a href="#get-on">GET ON THE COURT</a><a href="#court" data-account-link>YOUR COURT</a></nav><details class="mobile-nav"><summary>Menu</summary><nav aria-label="Mobile navigation"><a href="#drops">DROPS</a><a href="#season">SEASON</a><a href="#get-on">GET ON THE COURT</a><a href="#court" data-account-link>YOUR COURT</a></nav></details></header><main id="main-season-entry" class="container workspace-page" tabindex="-1">Season I · preparing to open.</main><footer class="site-footer container"><p>CREATE SOMETHING YOURS. SHOW UP FOR OTHERS.</p>
 <a href="#court?tab=support">Contact</a> <a href="#court?tab=privacy">Privacy</a> <a href="#court?tab=terms">Terms</a> <a href="#get-on">GET ON THE COURT ↗</a></footer>
 </div>
 <dialog id="preview-dialog"><button class="close" type="button" aria-label="Close dialog">×</button><h2 id="dialog-title">SideCourt</h2>
-<div id="dialog-body"></div></dialog><script src="config.js?v=2aeaebe5de79"></script><script src="scene.js?v=ff2bf320ea5b"></script>
-<script src="court.js?v=e7ff3d8bd263"></script>
+<div id="dialog-body"></div></dialog><script src="config.js?v=2aeaebe5de79"></script><script src="scene.js?v=8dd4b9e6c889"></script>
+<script src="court.js?v=0b3ecd1eb874"></script>
 </body>
 </html>
