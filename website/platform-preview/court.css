@@ -497,6 +497,6 @@ button:disabled{opacity:1;cursor:not-allowed;color:#5f5368;background:#e9e1ee;bo
 #main-court .workspace-heading>div{container-type:inline-size}
 #main-court .workspace-heading h1.court-greeting{font-size:min(var(--display-size),11cqw)}
 .court-greeting>span{display:block}.court-greeting .welcome-line{white-space:nowrap;overflow-wrap:normal}
-#main-season .season-title{border-inline-start:5px solid var(--coral);padding-inline-start:20px}
+#home-season .season-intro h2,#main-season .season-title{border-inline-start:5px solid var(--coral);padding-inline-start:20px}
 #home-drops .home-all-drops{display:flex;width:max-content;margin-top:24px}
 #home-post-status:empty{display:none}
