@@ -534,3 +534,26 @@ button:disabled{opacity:1;cursor:not-allowed;color:#5f5368;background:#e9e1ee;bo
 .season-message .event-line span{display:block}.season-message .event-line span+span{margin-top:.15em;color:var(--lilac)}
 .season-message-copy{padding-top:3px}.season-message-copy .event-intro{font-size:19px;line-height:1.55;margin:0;max-width:36ch}.season-message-copy .season-welcome{margin-top:22px;max-width:38ch;opacity:.8}.season-message-copy .actions{margin-top:30px;gap:16px 24px}.season-message-copy .minor{font-size:11px;opacity:.75}
 @media(max-width:760px){.directory-posts,.home-posts,.court-profile-page>.profile-works{grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:24px}.season-message{grid-template-columns:1fr;gap:30px;margin-top:30px}.season-teaser .season-message .event-line{font-size:clamp(42px,12vw,78px)}.season-message-copy .event-intro{font-size:17px}.season-message-copy .actions{margin-top:24px}.directory-posts .invitation-square.participation-invite{padding:24px}.directory-posts .invitation-square.participation-invite p{font-size:20px}}
+
+/* Fixed five-column desktop rhythm; all project surfaces share the same square. */
+.directory-posts,.home-posts,.court-profile-page>.profile-works{grid-template-columns:repeat(5,minmax(0,1fr));gap:20px}
+:is(#drop-results,#home-featured,#live-flip-preview,.profile-works,.preview-discovery-card) .flip-card{max-width:100%}
+:is(#live-flip-preview,.preview-discovery-card){width:min(100%,220px)}
+:is(#drop-results,#home-featured,#live-flip-preview,.profile-works,.preview-discovery-card) .flip-stage{bottom:88px}
+:is(#drop-results,#home-featured,#live-flip-preview,.profile-works,.preview-discovery-card) .flip-identity{height:88px;padding:12px;gap:8px}
+:is(#drop-results,#home-featured,#live-flip-preview,.profile-works,.preview-discovery-card) .flip-identity h3{font-size:18px!important;margin:4px 0!important}
+:is(#drop-results,#home-featured,#live-flip-preview,.profile-works,.preview-discovery-card) .flip-identity p{font-size:10px!important}
+:is(#drop-results,#home-featured,#live-flip-preview,.profile-works,.preview-discovery-card) .turn-control{flex-basis:36px;min-width:36px;width:36px;height:36px;font-size:20px}
+:is(#drop-results,#home-featured,#live-flip-preview,.profile-works,.preview-discovery-card) .flip-back{padding:12px;gap:6px}
+:is(#drop-results,#home-featured,#live-flip-preview,.profile-works,.preview-discovery-card) .flip-summary{font-size:12px;line-height:1.4;-webkit-line-clamp:3}
+:is(#drop-results,#home-featured,#live-flip-preview,.profile-works,.preview-discovery-card) .flip-back .text-link{font-size:12px;min-height:32px}
+.directory-posts .invitation-square.participation-invite{max-width:none;padding:14px;gap:10px;justify-content:center}
+.directory-posts .invitation-square.participation-invite p{font-size:16px;line-height:1.25;margin:0}
+.directory-posts .invitation-square .invitation-plus{font-size:30px;line-height:1}
+.directory-posts .invitation-square .button{font-size:12px;padding:10px 12px;min-height:36px}
+.directory-posts .invitation-square .actions{gap:6px}
+.directory-posts .invitation-square .text-link{font-size:11px;min-height:24px;margin:0}
+@media(max-width:1050px){.directory-posts,.home-posts,.court-profile-page>.profile-works{grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}}
+@media(max-width:850px){.directory-posts,.home-posts,.court-profile-page>.profile-works{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:650px){.directory-posts,.home-posts,.court-profile-page>.profile-works{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:460px){.directory-posts,.home-posts,.court-profile-page>.profile-works{grid-template-columns:minmax(0,1fr)}.directory-posts>.drop-entry,.profile-works>.drop-entry,.directory-posts .invitation-square{max-width:100%}}
