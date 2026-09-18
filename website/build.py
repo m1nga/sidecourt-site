@@ -16,6 +16,11 @@ drop_html = (root/'drop.html').read_text()
 assert 'https://sidecourt.space/drops/cleanpause/' in drop_html
 assert 'file:' not in drop_html
 (out/'drops/cleanpause/index.html').write_text(drop_html)
+(out/'drops/earbrief').mkdir(parents=True)
+earbrief_html = (root/'earbrief-drop.html').read_text()
+assert 'https://sidecourt.space/drops/earbrief/' in earbrief_html and 'earbrief' in earbrief_html
+assert 'file:' not in earbrief_html
+(out/'drops/earbrief/index.html').write_text(earbrief_html)
 drops_html = (root/'drops.html').read_text()
 assert 'https://sidecourt.space/drops/' in drops_html
 assert 'file:' not in drops_html
@@ -36,6 +41,7 @@ sitemap = '''<?xml version="1.0" encoding="UTF-8"?>
   <url><loc>https://sidecourt.space/cleanpause/</loc></url>
   <url><loc>https://sidecourt.space/drops/</loc></url>
   <url><loc>https://sidecourt.space/drops/cleanpause/</loc></url>
+  <url><loc>https://sidecourt.space/drops/earbrief/</loc></url>
 </urlset>
 '''
 (out/'sitemap.xml').write_text(sitemap)
