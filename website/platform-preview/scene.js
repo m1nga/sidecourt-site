@@ -3,7 +3,7 @@
 'use strict';
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const KEY=document.documentElement.dataset.storageKey==='sidecourt-visitor-v1'?'sidecourt-visitor-v1':'sidecourt-marketing-candidate-v1';
-const names={home:'Home',drops:'DROPS',season:'Season I','get-on':'Get on the court',inside:'The Inside',white:'Your draft',work:'Post',account:'Account connections',player:'Profile',court:'Your Court',settings:'Settings',preview:'Private work preview','not-found':'Page not found','season-join':'Prepare your Season entry','season-entry':'Your Season entry'};
+const names={home:'Home',drops:'DROPS',season:'Season I','get-on':'Get on the court',inside:'The Inside',white:'Your draft',work:'Post',account:'Account connections',player:'Profile',court:'Your Court',settings:'Settings',preview:'Private work preview','not-found':'Page not found',guide:'How it works','season-join':'Prepare your Season entry','season-entry':'Your Season entry'};
 const blank=()=>({version:1,saved:false,note:'',intent:'',name:'',draft:null,workspace:{},updated:''});
 const str=(v,n=8000)=>typeof v==='string'?v.slice(0,n):'';
 const draftText=v=>typeof v==='string'?v:'';
