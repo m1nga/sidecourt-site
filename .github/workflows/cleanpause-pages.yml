@@ -21,9 +21,19 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.CLEANPAUSE_ASSETS_TOKEN }}
         run: python3 website/build.py
-      - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
+      # upload-pages-artifact v4+ excludes every hidden path, which would drop the
+      # OAuth discovery documents under /.well-known. Archive the same way but keep them.
+      - name: Archive site including .well-known
+        shell: sh
+        run: |
+          tar --dereference --hard-dereference --directory _site -cvf "$RUNNER_TEMP/artifact.tar" --exclude=.git --exclude=.github --exclude=.nojekyll .
+          tar -tf "$RUNNER_TEMP/artifact.tar" | grep -F './.well-known/' 
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2 (same pin as upload-pages-artifact)
         with:
-          path: _site
+          name: github-pages
+          path: ${{ runner.temp }}/artifact.tar
+          retention-days: 1
+          if-no-files-found: error
   deploy:
     needs: build
     runs-on: ubuntu-latest
