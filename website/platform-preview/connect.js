@@ -9,6 +9,10 @@
  let ctx=null,request=null,works=[],currentBearer='',currentUser='',busy=false,checking=false;
  function session(){try{return JSON.parse(localStorage.getItem(storageKey)||'null')}catch{return null}}
  function bearer(){const token=session()?.access_token;return typeof token==='string'?'Bearer '+token:'';}
+ // The main app refreshes its session in the background; a user arriving from an AI host
+ // after an hour may only hold an expired access token here. Refresh it once, in place,
+ // with the stored refresh token before deciding they must sign in again.
+ async function freshBearer(){const s=session();if(!s?.access_token)return '';const now=Math.floor(Date.now()/1000);if(!(typeof s.expires_at==='number'&&s.expires_at-now<60)||typeof s.refresh_token!=='string')return 'Bearer '+s.access_token;try{const r=await fetch(cfg.supabaseUrl+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:cfg.publishableKey,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:s.refresh_token}),cache:'no-store',redirect:'error',signal:AbortSignal.timeout(15000)});if(!r.ok)return '';const n=await r.json();if(typeof n.access_token!=='string')return '';localStorage.setItem(storageKey,JSON.stringify({...s,...n,expires_at:n.expires_at||(now+(n.expires_in||3600))}));return 'Bearer '+n.access_token;}catch{return '';}}
  async function post(path,data,auth=''){
   const r=await fetch(base+path,{method:'POST',redirect:'error',headers:{'Content-Type':'application/json',...(auth?{Authorization:auth}:{})},body:JSON.stringify(data),cache:'no-store',signal:AbortSignal.timeout(25000)});
   const d=await r.json();if(!r.ok)throw Error(d.error||'REQUEST_FAILED');return d;
@@ -17,7 +21,7 @@
  function refreshPermissions(){const w=works.find(w=>w.id===$('work').value);for(const scope of ['edit','upload','submit']){$(scope).disabled=!ctx.scopes.includes(scope)||(scope==='submit'&&!w?.is_owner);if($(scope).disabled)$(scope).checked=false;}$('approve').disabled=!w||busy;}
  async function check(){
   if(!ctx||busy||checking)return;checking=true;$('form').hidden=true;currentBearer='';
-  const auth=bearer();
+  const auth=await freshBearer();
   if(!auth){$('login').hidden=false;$('identity').textContent='';status('Sign in to choose a work.');checking=false;return;}
   try{
    const me=await fetch(cfg.supabaseUrl+'/auth/v1/user',{headers:{apikey:cfg.publishableKey,Authorization:auth},cache:'no-store',redirect:'error',signal:AbortSignal.timeout(15000)});
