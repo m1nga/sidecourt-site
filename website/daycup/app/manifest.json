@@ -1,0 +1,33 @@
+{
+  "id": "./",
+  "name": "Daycup — A daily ritual / 每日一杯",
+  "short_name": "Daycup",
+  "description": "Offline coffee companion: your setup, your beans, a starting recipe and a timer. 离线咖啡助手：你的设备、你的豆子、起始配方和计时器。",
+  "lang": "en",
+  "start_url": "./#brew",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f4f0e7",
+  "theme_color": "#f4f0e7",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "app_files": [
+    "app.js",
+    "bean-options.js",
+    "bean-options.json",
+    "brew-knowledge.js",
+    "catalog-extension.js",
+    "curation.js",
+    "equipment-directory.json",
+    "equipment.js",
+    "i18n.js",
+    "icon-180.png",
+    "icon-192.png",
+    "icon-512.png",
+    "icon-maskable-512.png",
+    "icon.svg",
+    "index.html",
+    "manifest.json",
+    "privacy.html",
+    "rules.js",
+    "style.css",
+    "sw.js"
+  ],
+  "sha256": {
+    "Daycup.html": "09185d71ccc1ddec63e0c07da911e9b5ccfda722f573ccf17fc6e98fb2d02c5b",
+    "Daycup-local-first.zip": "31d53132e6a1e4462a1d5d2660f276849fd3222f7ba68dea533fdbccf42d5e4e"
+  },
+  "source_commit": "6e2251abe4c54817ca34076e31d843a9ace9abaa"
+}

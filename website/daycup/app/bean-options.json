@@ -1,0 +1,487 @@
+{
+  "version": "2026-09-12",
+  "origins": [
+    {
+      "country": "Ethiopia",
+      "regions": [
+        "Yirgacheffe",
+        "Guji",
+        "Sidama (Sidamo)",
+        "Harrar",
+        "Limu",
+        "Jimma (Djimma)",
+        "Kaffa",
+        "West Arsi"
+      ]
+    },
+    {
+      "country": "Colombia",
+      "regions": [
+        "Huila",
+        "Nariño",
+        "Cauca",
+        "Tolima",
+        "Antioquia",
+        "Santander",
+        "Sierra Nevada",
+        "Caldas",
+        "Risaralda",
+        "Quindío"
+      ]
+    },
+    {
+      "country": "Brazil",
+      "regions": [
+        "Sul de Minas",
+        "Cerrado Mineiro",
+        "Carmo de Minas",
+        "Mogiana",
+        "Bahia",
+        "Espírito Santo",
+        "Paraná"
+      ]
+    },
+    {
+      "country": "China",
+      "regions": [
+        "Yunnan",
+        "Yunnan · Pu'er",
+        "Yunnan · Menglian",
+        "Yunnan · Baoshan"
+      ]
+    },
+    {
+      "country": "Kenya",
+      "regions": [
+        "Nyeri",
+        "Kirinyaga",
+        "Kiambu",
+        "Murang'a",
+        "Embu",
+        "Meru"
+      ]
+    },
+    {
+      "country": "Panama",
+      "regions": [
+        "Boquete",
+        "Volcán",
+        "Renacimiento"
+      ]
+    },
+    {
+      "country": "Guatemala",
+      "regions": [
+        "Antigua",
+        "Huehuetenango",
+        "Atitlán",
+        "Acatenango",
+        "Cobán",
+        "Fraijanes",
+        "San Marcos",
+        "Nuevo Oriente"
+      ]
+    },
+    {
+      "country": "Costa Rica",
+      "regions": [
+        "Tarrazú",
+        "West Valley",
+        "Central Valley",
+        "Brunca",
+        "Turrialba",
+        "Tres Ríos",
+        "Orosi",
+        "Guanacaste"
+      ]
+    },
+    {
+      "country": "El Salvador",
+      "regions": [
+        "Apaneca-Ilamatepec",
+        "Alotepec-Metapán",
+        "El Bálsamo-Quezaltepec",
+        "Chichontepec",
+        "Tecapa-Chinameca",
+        "Cacahuatique"
+      ]
+    },
+    {
+      "country": "Honduras",
+      "regions": [
+        "Copán",
+        "Montecillos",
+        "Opalaca",
+        "Comayagua",
+        "Agalta",
+        "El Paraíso"
+      ]
+    },
+    {
+      "country": "Nicaragua",
+      "regions": [
+        "Jinotega",
+        "Matagalpa",
+        "Nueva Segovia"
+      ]
+    },
+    {
+      "country": "Mexico",
+      "regions": [
+        "Chiapas",
+        "Oaxaca",
+        "Veracruz",
+        "Puebla"
+      ]
+    },
+    {
+      "country": "Peru",
+      "regions": [
+        "Cajamarca",
+        "Cusco",
+        "Junín",
+        "Puno",
+        "San Martín",
+        "Amazonas"
+      ]
+    },
+    {
+      "country": "Ecuador",
+      "regions": [
+        "Loja",
+        "Pichincha",
+        "Zamora Chinchipe",
+        "Galápagos"
+      ]
+    },
+    {
+      "country": "Bolivia",
+      "regions": [
+        "Caranavi",
+        "Yungas"
+      ]
+    },
+    {
+      "country": "Rwanda",
+      "regions": [
+        "Nyamasheke",
+        "Gakenke",
+        "Huye",
+        "Rulindo",
+        "Rubavu"
+      ]
+    },
+    {
+      "country": "Burundi",
+      "regions": [
+        "Kayanza",
+        "Ngozi",
+        "Muyinga",
+        "Kirundo"
+      ]
+    },
+    {
+      "country": "Tanzania",
+      "regions": [
+        "Kilimanjaro",
+        "Arusha",
+        "Mbeya",
+        "Mbinga",
+        "Kagera"
+      ]
+    },
+    {
+      "country": "Uganda",
+      "regions": [
+        "Mount Elgon",
+        "Rwenzori",
+        "West Nile"
+      ]
+    },
+    {
+      "country": "Democratic Republic of the Congo",
+      "regions": [
+        "North Kivu",
+        "South Kivu",
+        "Ituri"
+      ]
+    },
+    {
+      "country": "Indonesia",
+      "regions": [
+        "Sumatra · Aceh Gayo",
+        "Sumatra · Mandheling",
+        "Sumatra · Lintong",
+        "Java",
+        "Bali · Kintamani",
+        "Sulawesi · Toraja",
+        "Flores"
+      ]
+    },
+    {
+      "country": "India",
+      "regions": [
+        "Karnataka · Chikmagalur",
+        "Karnataka · Coorg",
+        "Karnataka · Bababudangiri",
+        "Kerala · Wayanad",
+        "Tamil Nadu · Nilgiris"
+      ]
+    },
+    {
+      "country": "Vietnam",
+      "regions": [
+        "Lam Dong · Da Lat",
+        "Dak Lak",
+        "Son La"
+      ]
+    },
+    {
+      "country": "Thailand",
+      "regions": [
+        "Chiang Rai",
+        "Chiang Mai",
+        "Nan"
+      ]
+    },
+    {
+      "country": "Laos",
+      "regions": [
+        "Bolaven Plateau"
+      ]
+    },
+    {
+      "country": "Myanmar",
+      "regions": [
+        "Shan State",
+        "Mandalay"
+      ]
+    },
+    {
+      "country": "Papua New Guinea",
+      "regions": [
+        "Eastern Highlands",
+        "Western Highlands",
+        "Jiwaka",
+        "Simbu"
+      ]
+    },
+    {
+      "country": "Timor-Leste",
+      "regions": [
+        "Ermera",
+        "Aileu",
+        "Ainaro",
+        "Liquiçá"
+      ]
+    },
+    {
+      "country": "Yemen",
+      "regions": [
+        "Haraz",
+        "Bani Matar",
+        "Hayma",
+        "Ibb"
+      ]
+    },
+    {
+      "country": "Jamaica",
+      "regions": [
+        "Blue Mountains",
+        "High Mountain"
+      ]
+    },
+    {
+      "country": "United States",
+      "regions": [
+        "Hawaii · Kona",
+        "Hawaii · Ka'u",
+        "Hawaii · Maui",
+        "Hawaii · Kauai",
+        "Puerto Rico"
+      ]
+    },
+    {
+      "country": "Dominican Republic",
+      "regions": [
+        "Barahona",
+        "Cibao",
+        "Ocoa"
+      ]
+    },
+    {
+      "country": "Cuba",
+      "regions": [
+        "Sierra Maestra",
+        "Escambray"
+      ]
+    },
+    {
+      "country": "Philippines",
+      "regions": [
+        "Benguet",
+        "Bukidnon",
+        "Davao",
+        "Cavite",
+        "Batangas"
+      ]
+    },
+    {
+      "country": "Nepal",
+      "regions": []
+    },
+    {
+      "country": "Malawi",
+      "regions": []
+    },
+    {
+      "country": "Zambia",
+      "regions": []
+    },
+    {
+      "country": "Zimbabwe",
+      "regions": []
+    },
+    {
+      "country": "Côte d'Ivoire",
+      "regions": []
+    },
+    {
+      "country": "Cameroon",
+      "regions": []
+    },
+    {
+      "country": "Australia",
+      "regions": []
+    },
+    {
+      "country": "Taiwan",
+      "regions": [
+        "Alishan",
+        "Nantou",
+        "Pingtung"
+      ]
+    }
+  ],
+  "processes": [
+    {
+      "label": "Washed",
+      "detail": "Also called fully washed or wet processed."
+    },
+    {
+      "label": "Natural",
+      "detail": "Also called dry processed; dried in the whole cherry."
+    },
+    {
+      "label": "Honey / Pulped natural",
+      "detail": "Some fruit mucilage remains during drying."
+    },
+    {
+      "label": "White honey",
+      "detail": "Use the honey color stated on your bag."
+    },
+    {
+      "label": "Yellow honey",
+      "detail": "Use the honey color stated on your bag."
+    },
+    {
+      "label": "Red honey",
+      "detail": "Use the honey color stated on your bag."
+    },
+    {
+      "label": "Black honey",
+      "detail": "Use the honey color stated on your bag."
+    },
+    {
+      "label": "Wet-hulled / Giling basah",
+      "detail": "Common on Indonesian labels; distinct from washed."
+    },
+    {
+      "label": "Semi-washed",
+      "detail": "A variable label term; use the wording on your bag."
+    },
+    {
+      "label": "Anaerobic washed",
+      "detail": "Anaerobic fermentation followed by washed processing."
+    },
+    {
+      "label": "Anaerobic natural",
+      "detail": "Anaerobic fermentation with natural processing."
+    },
+    {
+      "label": "Anaerobic honey",
+      "detail": "Anaerobic fermentation with honey processing."
+    },
+    {
+      "label": "Anaerobic fermentation",
+      "detail": "When the bag does not specify washed, natural or honey."
+    },
+    {
+      "label": "Carbonic maceration",
+      "detail": "A fermentation label; add the final process if known."
+    },
+    {
+      "label": "Extended fermentation",
+      "detail": "Use the producer's wording; times vary."
+    },
+    {
+      "label": "Double fermentation",
+      "detail": "Use the producer's wording; methods vary."
+    },
+    {
+      "label": "Thermal shock",
+      "detail": "A temperature-treatment label; methods vary."
+    },
+    {
+      "label": "Yeast-inoculated fermentation",
+      "detail": "Fermentation with a selected yeast culture."
+    },
+    {
+      "label": "Co-fermented / Infused",
+      "detail": "For bags that declare added ingredients during processing."
+    },
+    {
+      "label": "Monsooned",
+      "detail": "For coffees labeled as monsoon-conditioned."
+    },
+    {
+      "label": "Decaf · Swiss Water",
+      "detail": "A decaffeination label; the original process may differ."
+    },
+    {
+      "label": "Decaf · Mountain Water",
+      "detail": "A decaffeination label; the original process may differ."
+    },
+    {
+      "label": "Decaf · EA / Sugarcane",
+      "detail": "Ethyl acetate decaffeination, often labeled sugarcane."
+    },
+    {
+      "label": "Decaf · CO2",
+      "detail": "Carbon dioxide decaffeination."
+    },
+    {
+      "label": "Decaf · Method unspecified",
+      "detail": "The bag says decaf but does not name a method."
+    }
+  ],
+  "sources": [
+    "https://www.aboutcoffee.org/origins/coffee-regions-of-the-world/",
+    "https://www.cafeimports.com/north-america/blog/origins/",
+    "https://www.cafeimports.com/north-america/brazil",
+    "https://www.cafeimports.com/australia/ethiopia",
+    "https://sucafina.com/apac/offerings/yunnan-gr-1-high-grown",
+    "https://www.globalcoffeeplatform.org/wp-content/uploads/2023/09/GCP_Snapshot_22_final.pdf",
+    "https://library.sweetmarias.com/glossary-catalog/processing/",
+    "https://www.cafeimports.com/north-america/colombia",
+    "https://www.cafeimports.com/north-america/guatemala",
+    "https://www.cafeimports.com/north-america/el-salvador",
+    "https://www.cafeimports.com/north-america/kenya",
+    "https://www.cafeimports.com/north-america/honduras",
+    "https://www.coffeeinstitute.org/education/processing/courses",
+    "https://www.cafeimports.com/north-america/origin-select-decaf",
+    "https://www.swisswater.com/pages/coffee-decaffeination-process",
+    "https://eng.taiwan.net.tw/m1.aspx?sno=0042420",
+    "https://eng.taiwan.net.tw/m1.aspx?sno=0002122"
+  ]
+}

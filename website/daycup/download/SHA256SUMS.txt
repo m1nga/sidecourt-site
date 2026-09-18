@@ -1,0 +1,2 @@
+09185d71ccc1ddec63e0c07da911e9b5ccfda722f573ccf17fc6e98fb2d02c5b  Daycup.html
+31d53132e6a1e4462a1d5d2660f276849fd3222f7ba68dea533fdbccf42d5e4e  Daycup-local-first.zip

@@ -16,6 +16,11 @@ drop_html = (root/'drop.html').read_text()
 assert 'https://sidecourt.space/drops/cleanpause/' in drop_html
 assert 'file:' not in drop_html
 (out/'drops/cleanpause/index.html').write_text(drop_html)
+(out/'drops/earbrief').mkdir(parents=True)
+earbrief_html = (root/'earbrief-drop.html').read_text()
+assert 'https://sidecourt.space/drops/earbrief/' in earbrief_html and 'https://earbrief.sidecourt.space/' in earbrief_html
+assert 'file:' not in earbrief_html
+(out/'drops/earbrief/index.html').write_text(earbrief_html)
 drops_html = (root/'drops.html').read_text()
 assert 'https://sidecourt.space/drops/' in drops_html
 assert 'file:' not in drops_html
@@ -36,6 +41,7 @@ sitemap = '''<?xml version="1.0" encoding="UTF-8"?>
   <url><loc>https://sidecourt.space/cleanpause/</loc></url>
   <url><loc>https://sidecourt.space/drops/</loc></url>
   <url><loc>https://sidecourt.space/drops/cleanpause/</loc></url>
+  <url><loc>https://sidecourt.space/drops/earbrief/</loc></url>
 </urlset>
 '''
 (out/'sitemap.xml').write_text(sitemap)
@@ -92,8 +98,15 @@ def redirect_page(destination, preserve_hash=False):
 (out / 'drops/index.html').write_text(redirect_page('/#drops'))
 (out / 'drops/cleanpause/index.html').write_text(redirect_page('/#work?id=6e3d989a-1d92-4f96-9df1-abac78ea5fc0'))
 (out / 'robots.txt').write_text('User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /platform-preview/\nDisallow: /downloads/\nSitemap: https://sidecourt.space/sitemap.xml\n')
-(out / 'sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://sidecourt.space/</loc></url><url><loc>https://sidecourt.space/cleanpause/</loc></url></urlset>')
+(out / 'sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://sidecourt.space/</loc></url><url><loc>https://sidecourt.space/cleanpause/</loc></url><url><loc>https://sidecourt.space/drops/daycup/</loc></url></urlset>')
 print('Canonical SideCourt application published; historic displays redirected.')
+
+# Daycup: a static, offline coffee companion published under /drops/daycup/ (landing page, app, downloads).
+daycup = root / 'daycup'
+assert (daycup / 'index.html').is_file() and (daycup / 'app' / 'index.html').is_file() and (daycup / 'app' / 'sw.js').is_file()
+shutil.copytree(daycup, out / 'drops' / 'daycup', dirs_exist_ok=True)
+assert 'file:' not in (out / 'drops/daycup/index.html').read_text()
+print('Daycup published at /drops/daycup/ with', sum(1 for _ in (out / 'drops/daycup/app').iterdir()), 'app files.')
 
 # Public proof of website ownership for Ming's Google brand verification.
 verification = json.loads((root / 'site-verification.json').read_text())['google_site_verification']
