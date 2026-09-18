@@ -1,21 +1,21 @@
 [
   {
     "platform": "mac",
-    "version": "0.1.9",
-    "destination": "downloads/CleanPause-0.1.9.zip",
-    "source": "launch/downloads/CleanPause-0.1.9.zip",
-    "size": 4136953,
-    "sha256": "b47f1fb8fe8d71e96bfd759ee276d0f425fee09fec230affa662e26b01ed6328",
-    "release_id": 385506635
+    "version": "0.1.10",
+    "destination": "downloads/CleanPause-0.1.10.zip",
+    "source": "launch/downloads/CleanPause-0.1.10.zip",
+    "size": 4132858,
+    "sha256": "af10b623acc87303e55f97060337ab4b437ad3c6943e010e63909693fb1395f8",
+    "release_id": 391282277
   },
   {
     "platform": "windows",
-    "version": "0.1.0-preview.4",
-    "destination": "downloads/CleanPause-Windows-0.1.0-preview.4-x64.zip",
-    "source": "launch/downloads/CleanPause-Windows-0.1.0-preview.4-x64.zip",
-    "size": 78161279,
-    "sha256": "8f2a0d1cf41bdf7103b081e59457dd2866783ebbd030beec1de4c590897b5458",
-    "release_id": 385506648
+    "version": "0.1.0-preview.5",
+    "destination": "downloads/CleanPause-Windows-0.1.0-preview.5-x64.zip",
+    "source": "launch/downloads/CleanPause-Windows-0.1.0-preview.5-x64.zip",
+    "size": 78158817,
+    "sha256": "ebccd0634fdfe3a430c891a9d7b7accebe6c0f1bc6a16cda0b3f8348af4dbaec",
+    "release_id": 391280101
   },
   {
     "destination": "downloads/CleanPause-0.1.6.zip",
@@ -52,5 +52,19 @@
     "size": 78155647,
     "sha256": "5f6c216b06bead0182e9d880fb3e99d466ed7b69bf6c5758a0a0ccb9fbb242a1",
     "release_id": 385318933
+  },
+  {
+    "destination": "downloads/CleanPause-0.1.9.zip",
+    "source": "launch/downloads/CleanPause-0.1.9.zip",
+    "size": 4136953,
+    "sha256": "b47f1fb8fe8d71e96bfd759ee276d0f425fee09fec230affa662e26b01ed6328",
+    "release_id": 385506635
+  },
+  {
+    "destination": "downloads/CleanPause-Windows-0.1.0-preview.4-x64.zip",
+    "source": "launch/downloads/CleanPause-Windows-0.1.0-preview.4-x64.zip",
+    "size": 78161279,
+    "sha256": "8f2a0d1cf41bdf7103b081e59457dd2866783ebbd030beec1de4c590897b5458",
+    "release_id": 385506648
   }
 ]
