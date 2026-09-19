@@ -97,6 +97,8 @@ def redirect_page(destination, preserve_hash=False):
 (out / 'platform-preview/index.html').write_text(redirect_page('/', True))
 (out / 'drops/index.html').write_text(redirect_page('/#drops'))
 (out / 'drops/cleanpause/index.html').write_text(redirect_page('/#work?id=6e3d989a-1d92-4f96-9df1-abac78ea5fc0'))
+(out / 'guide').mkdir(exist_ok=True)
+(out / 'guide/index.html').write_text(redirect_page('/#guide'))
 (out / 'robots.txt').write_text('User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /platform-preview/\nDisallow: /downloads/\nSitemap: https://sidecourt.space/sitemap.xml\n')
 (out / 'sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://sidecourt.space/</loc></url><url><loc>https://sidecourt.space/cleanpause/</loc></url><url><loc>https://sidecourt.space/drops/daycup/</loc></url></urlset>')
 print('Canonical SideCourt application published; historic displays redirected.')
