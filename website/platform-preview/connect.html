@@ -5,43 +5,50 @@
 <meta name="referrer" content="no-referrer"><meta name="robots" content="noindex">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; connect-src https://rwbwfokdipabwjparcwy.supabase.co https://enoidjoytplapekhyxye.supabase.co; base-uri 'none'; form-action 'none'; object-src 'none'">
 <title>Connect your AI · SideCourt</title>
-<link rel="icon" href="favicon.svg"><link rel="stylesheet" href="court.css?v=f960c1bb794a">
+<link rel="icon" href="favicon.svg"><link rel="stylesheet" href="court.css?v=5fdd17533cf3">
 <style>
-body.sc-connect-page{margin:0;background:#F6F1E8;color:#1A1A1A;font-family:Inter,system-ui,sans-serif;min-height:100vh;display:block}.sc-connect-page main{width:min(640px,calc(100% - 40px));margin:48px auto;padding-bottom:48px}.sc-connect-page h1{font-size:clamp(28px,5vw,42px);line-height:1.12;margin:24px 0 16px;color:#3F2E6B}.sc-connect-page p{line-height:1.65}.sc-connect-page .panel{border:1px solid #3F2E6B;border-radius:18px;padding:24px;margin:24px 0;background:transparent}.sc-connect-page button,.sc-connect-page select,.sc-connect-page input[type=text]{font:inherit;min-height:44px;border:1px solid #3F2E6B;border-radius:8px;padding:10px;max-width:100%}.sc-connect-page button{background:#3F2E6B;color:#F6F1E8;cursor:pointer;margin:8px 8px 8px 0}.sc-connect-page button:disabled{opacity:.45;cursor:not-allowed}.sc-connect-page a{color:#3F2E6B;text-decoration:underline}.sc-connect-page label{display:block;margin:12px 0;line-height:1.6}.sc-connect-page input[type=checkbox]{width:20px;height:20px;vertical-align:middle;margin-right:8px;accent-color:#3F2E6B}.sc-connect-page select,.sc-connect-page input[type=text]{width:100%;box-sizing:border-box;background:#F6F1E8;color:#1A1A1A}.sc-connect-page fieldset{border:0;margin:0;padding:0}.sc-connect-page .small{font-size:14px}.sc-connect-page [hidden]{display:none!important}.sc-connect-page :focus-visible{outline:3px solid #3F2E6B;outline-offset:3px}
+body.sc-connect-page{margin:0;background:#F6F1E8;color:#1A1A1A;font-family:Inter,system-ui,sans-serif;min-height:100vh;display:block}.sc-connect-page main{width:min(640px,calc(100% - 40px));margin:48px auto;padding-bottom:48px}.sc-connect-page h1{font-size:clamp(28px,5vw,42px);line-height:1.12;margin:24px 0 16px;color:#3F2E6B}.sc-connect-page h2{font-size:22px;margin:0 0 8px}.sc-connect-page p{line-height:1.65}.sc-connect-page .panel{border:1px solid #3F2E6B;border-radius:18px;padding:24px;margin:24px 0;background:transparent}.sc-connect-page button,.sc-connect-page select,.sc-connect-page input[type=text]{font:inherit;min-height:44px;border:1px solid #3F2E6B;border-radius:8px;padding:10px;max-width:100%}.sc-connect-page button{background:#3F2E6B;color:#F6F1E8;cursor:pointer;margin:8px 8px 8px 0}.sc-connect-page button:disabled{opacity:.45;cursor:not-allowed}.sc-connect-page a{color:#3F2E6B;text-decoration:underline}.sc-connect-page label{display:block;margin:12px 0;line-height:1.6}.sc-connect-page input[type=checkbox],.sc-connect-page input[type=radio]{width:20px;height:20px;vertical-align:middle;margin-right:8px;accent-color:#3F2E6B}.sc-connect-page select,.sc-connect-page input[type=text]{width:100%;box-sizing:border-box;background:#F6F1E8;color:#1A1A1A}.sc-connect-page select.inline{width:auto;min-height:36px;padding:4px 8px;margin-left:4px}.sc-connect-page fieldset{border:0;margin:20px 0 0;padding:0}.sc-connect-page legend{font-weight:600;padding:0;margin-bottom:4px}.sc-connect-page .small{font-size:14px}.sc-connect-page .hint{display:block;font-size:14px;color:#4a4458;margin-left:28px}.sc-connect-page .site-label{font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:#3F2E6B;margin:8px 0 0}.sc-connect-page .site-label.review{text-transform:none;letter-spacing:0;background:#3F2E6B;color:#F6F1E8;padding:10px 14px;border-radius:8px;font-size:15px}.sc-connect-page .identity{font-size:15px;margin:0 0 16px}.sc-connect-page .notice{background:#efe8dc;border-radius:10px;padding:12px 14px;font-size:15px}.sc-connect-page [hidden]{display:none!important}.sc-connect-page :focus-visible{outline:3px solid #3F2E6B;outline-offset:3px}
 </style>
-<script src="config.js?v=06c78c2c993b" defer></script><script src="connect.js?v=0d7ad9dacb9e" defer></script>
+<script src="config.js?v=e8bf552816fb" defer></script><script src="connect.js?v=08ffd841919a" defer></script>
 </head>
 <body class="sc-connect-page"><main>
 <a href="./" aria-label="SideCourt home"><img src="favicon.svg" width="64" height="64" alt="SideCourt"></a>
+<p id="site-label" class="site-label">SideCourt · Official</p>
 <h1 id="heading">Connect your AI.</h1>
-<p id="intro">Bring one SideCourt work into ChatGPT, Claude, Claude Code or Codex. You choose the permissions and when access ends.</p>
-<p id="environment" class="small"></p>
+<p id="intro">Let ChatGPT, Claude, Claude Code or Codex work on your SideCourt posts. You choose what it may do, and you can disconnect at any time.</p>
 <section id="setup" class="panel" hidden>
 <h2>Your connection address</h2>
-<label for="endpoint">Remote MCP server URL</label><input id="endpoint" type="text" readonly spellcheck="false"><button id="copy" type="button">Copy address</button>
-<p>ChatGPT: Settings → Connectors → Create, paste this address and choose OAuth. Claude: Customize → Connectors → Add custom connector. Claude Code: <code id="cmd-claude"></code> then <code>/mcp</code> → Authenticate. Codex: <code id="cmd-codex"></code> then <code>codex mcp login sidecourt</code>.</p>
-<p>You will return here to sign in and approve one work. No API key, client secret or new account is needed. Availability depends on your AI account and workspace settings.</p>
-<p class="small">This is a private custom connection, not a claim of public marketplace approval.</p>
+<label for="endpoint">Address for your AI app</label><input id="endpoint" type="text" readonly spellcheck="false"><button id="copy" type="button">Copy address</button>
+<p class="small">This is the address your AI app needs. It belongs to SideCourt.</p>
+<p>ChatGPT: Settings → Connectors → Create, paste this address and choose OAuth. Claude: Customize → Connectors → Add custom connector. Claude Code: <code id="cmd-claude"></code> then <code>/mcp</code> and choose Authenticate. Codex: <code id="cmd-codex"></code> then <code>codex mcp login sidecourt</code>.</p>
+<p>Your AI app will bring you back here to sign in and approve. No key, secret or new account is needed. Availability depends on your AI account and workspace settings.</p>
 </section>
 <section id="consent" class="panel" hidden>
 <h2 id="client-title">Approve a connection</h2>
-<p id="identity" class="small"></p>
-<div id="login" hidden><p>Sign in to SideCourt in the other tab. Your existing account, email confirmation, and security settings stay unchanged.</p><a id="signin" href="./" target="_blank" rel="noopener noreferrer">Open SideCourt to sign in</a><br><button id="check" type="button">Check sign-in</button></div>
+<p id="identity" class="identity"></p>
+<div id="login" hidden><p>Sign in to SideCourt in the other tab, then come back here. Your account and settings stay unchanged.</p><a id="signin" href="./" target="_blank" rel="noopener noreferrer">Open SideCourt to sign in</a><br><button id="check" type="button">Check sign-in</button></div>
 <form id="form" hidden>
-<label for="work">One work</label><select id="work" required></select>
-<fieldset><legend>Allow this AI to:</legend>
-<label><input id="read" type="checkbox" checked disabled>Read this work’s draft and current status</label>
-<label><input id="edit" type="checkbox">Edit this private draft</label>
-<label><input id="upload" type="checkbox">Upload explicitly provided small files for review</label>
-<label><input id="submit" type="checkbox">Submit a revision only after my separate, exact-version confirmation</label>
+<p id="existing" class="notice" hidden></p>
+<fieldset><legend>Which works</legend>
+<label><input id="scope-all" type="radio" name="scope" value="all" checked>All my works (recommended)<span class="hint">Drafts and published posts, including the ones you create later.</span></label>
+<label><input id="scope-one" type="radio" name="scope" value="one">Only one work: <select id="work" class="inline"></select></label>
 </fieldset>
-<label for="duration">Access expires after</label><select id="duration"><option value="1">1 hour</option><option value="24" selected>24 hours</option><option value="72">3 days</option><option value="168">7 days</option></select>
-<p class="small">Your selected AI provider will receive the draft content you authorize. No other works, private conversations, account management, or publishing access are included. Files remain quarantined until human review. Revoke this grant any time in SideCourt → Connected tools. Expired access requires fresh approval and is never silently extended.</p>
-<button id="approve" type="submit">Approve this connection</button>
+<fieldset><legend>Allow this AI to</legend>
+<label><input id="read" type="checkbox" checked disabled>Read my posts, drafts and their status</label>
+<label><input id="edit" type="checkbox">Edit my private drafts</label>
+<label><input id="upload" type="checkbox">Add small files<span class="hint">Files stay private until a person reviews them.</span></label>
+<label><input id="submit" type="checkbox">Submit a draft for review<span class="hint">Only after I confirm that exact version in Your AI, each time.</span></label>
+</fieldset>
+<fieldset><legend>How long</legend>
+<label><input id="keep" type="radio" name="connection" value="keep" checked>Keep this AI connected<span class="hint">Stays connected until you disconnect it in Your AI.</span></label>
+<label><input id="timed" type="radio" name="connection" value="timed">Just for a while: <select id="duration" class="inline"><option value="1">1 hour</option><option value="24" selected>24 hours</option><option value="168">7 days</option></select><span class="hint">For a shared or borrowed device. When it ends, approve again.</span></label>
+</fieldset>
+<p class="small">Your AI can only do what you tick here. It can never publish, reply as you, accept help for you, or change your account. Disconnect any time in SideCourt → Your AI.</p>
+<button id="approve" type="submit">Connect</button>
 </form>
 <button id="cancel" type="button">Cancel</button>
 </section>
-<p><a href="./" target="_blank" rel="noopener noreferrer">Open SideCourt</a> <button id="recheck" type="button" hidden>Check sign-in and works</button></p>
+<p><a href="./" target="_blank" rel="noopener noreferrer">Open SideCourt</a> <button id="recheck" type="button" hidden>Check sign-in again</button></p>
 <p id="status" role="status" aria-live="polite">Checking connection settings…</p>
-<p class="small">Saving does not publish. Uploading does not make a file public. Submitting does not publish.</p>
+<p class="small">Saving does not publish. Adding a file does not make it public. Submitting does not publish.</p>
 </main></body></html>
