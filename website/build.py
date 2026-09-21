@@ -1,5 +1,6 @@
 import argparse, hashlib, json, pathlib, shutil, urllib.request, zipfile, plistlib
 from release_assets import fetch_asset
+from public_pages import fetch_public_works, publish_public_pages, read_config, sitemap_xml
 parser=argparse.ArgumentParser()
 parser.add_argument('--source-root',type=pathlib.Path)
 args=parser.parse_args()
@@ -98,8 +99,23 @@ def redirect_page(destination, preserve_hash=False):
 # /drops and /guide are real pages of the application now; only the CleanPause slug still redirects.
 (out / 'drops/cleanpause/index.html').write_text(redirect_page('/work/6e3d989a-1d92-4f96-9df1-abac78ea5fc0'))
 (out / 'robots.txt').write_text('User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /platform-preview/\nDisallow: /downloads/\nSitemap: https://sidecourt.space/sitemap.xml\n')
-(out / 'sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://sidecourt.space/</loc></url><url><loc>https://sidecourt.space/cleanpause/</loc></url><url><loc>https://sidecourt.space/drops/daycup/</loc></url></urlset>')
 print('Canonical SideCourt application published; historic displays redirected.')
+
+# Every published post and public author gets its own folder with the post's title, description,
+# canonical address and Open Graph tags, so a link opens with 200 and previews correctly even when
+# it was published after the previous deploy (the site's own publish hook triggers this build).
+# The list is the public read the website itself performs, with the publishable key it ships.
+# If that read fails the deploy still goes out: those pages then open via 404.html until the next build.
+application = (platform / 'index.html').read_text()
+try:
+ public_works = fetch_public_works(read_config(platform / 'config.js'))
+except Exception as error:
+ print('WARNING: public posts were not read (' + type(error).__name__ + ': ' + str(error)[:120] + '); their pages open via 404.html until the next build.', flush=True)
+ public_works = []
+public = publish_public_pages(out, application, public_works)
+post_urls = [canonical for folder, _t, _d, canonical, _k, _i in public if folder.startswith('work/')]
+(out / 'sitemap.xml').write_text(sitemap_xml(['https://sidecourt.space/', 'https://sidecourt.space/cleanpause/', 'https://sidecourt.space/drops/daycup/'] + post_urls))
+print('Public pages written for', len(post_urls), 'posts and', len(public) - len(post_urls), 'authors; sitemap lists', 3 + len(post_urls), 'addresses.')
 
 # Daycup: a static, offline coffee companion published under /drops/daycup/ (landing page, app, downloads).
 daycup = root / 'daycup'
