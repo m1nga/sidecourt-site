@@ -4,6 +4,10 @@ on:
     branches: [main]
     paths: ['website/**', '.github/workflows/cleanpause-pages.yml']
   workflow_dispatch:
+  # The SideCourt publish hook (Edge function sidecourt-pages) sends this after a post is
+  # published, withdrawn, archived or restored, so its public page exists without a manual deploy.
+  repository_dispatch:
+    types: [sidecourt-publish]
 permissions:
   contents: read
 concurrency:
