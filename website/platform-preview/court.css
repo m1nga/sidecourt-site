@@ -600,3 +600,26 @@ button:disabled{opacity:1;cursor:not-allowed;color:#5f5368;background:#e9e1ee;bo
 #main-court .new-need{display:grid;gap:10px;margin-top:12px}
 #main-court .more-actions{margin-top:8px}#main-court .more-actions>summary{font-size:14px;min-height:40px;padding:8px 0}
 .post-ways{margin-block:28px;padding-top:8px}.post-ways .eyebrow{margin-bottom:12px}.post-way{padding:14px 0;border-top:1px solid rgba(26,26,26,.14)}.post-way h3{font-size:18px;margin:0 0 4px}.post-way p{margin:0 0 10px}.post-way .post-way-state{font-weight:600;margin:0}.post-way .button{margin-top:2px}
+
+/* Public AI setup uses the existing SideCourt typography, palette and page shell. */
+.connect-ai-page{padding-top:clamp(36px,6vw,88px);padding-bottom:80px;max-width:1240px}
+.ai-intro{max-width:840px;margin-bottom:clamp(40px,6vw,72px)}
+.connect-ai-page .ai-intro h1{font-size:clamp(48px,7vw,92px);line-height:.99;letter-spacing:-.055em;margin:18px 0 26px;color:var(--plum,#3f2e6b)}
+.ai-intro .lede{font-size:clamp(19px,2.2vw,26px);line-height:1.4;max-width:710px}
+.ai-intro>p:not(.eyebrow):not(.lede){max-width:640px;line-height:1.6}
+.ai-choose{font-size:19px;margin-bottom:24px}
+.ai-channels{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-top:1px solid #3f2e6b38;border-left:1px solid #3f2e6b38}
+.ai-channel{padding:clamp(24px,3vw,40px);border-right:1px solid #3f2e6b38;border-bottom:1px solid #3f2e6b38;min-width:0}
+.ai-channel h3{font-size:32px;margin:12px 0 14px;color:#3f2e6b;letter-spacing:-.035em}
+.ai-channel>p:not(.eyebrow){line-height:1.5}.ai-channel .eyebrow{font-size:11px;letter-spacing:.1em}
+.ai-channel details{margin-top:20px}.ai-channel summary{cursor:pointer;max-width:100%}.ai-channel summary.button{display:list-item;width:fit-content;list-style-position:inside}
+.ai-channel ol{padding-left:22px;line-height:1.6}.ai-channel li+li{margin-top:8px}
+.ai-copy-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:18px 0}
+.ai-address{display:block;overflow-wrap:anywhere;font-size:12px;line-height:1.65;margin:16px 0}
+.ai-guide .ai-prompt{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;max-height:360px;overflow:auto;padding:18px;border:1px solid #3f2e6b38;background:#fff5;color:#1a1a1a}
+.ai-copy-fallback{width:100%;min-height:160px}
+.ai-optional{padding:22px 0;border-bottom:1px solid #3f2e6b38}.ai-optional>summary{font-weight:600;cursor:pointer}.ai-optional li{margin:12px 0;line-height:1.6}
+.ai-first{display:grid;grid-template-columns:1fr 1fr;gap:48px;padding:48px 0 0}.ai-first h3{font-size:26px;color:#3f2e6b;letter-spacing:-.025em}.ai-first p{line-height:1.6}
+.connection-access{margin-bottom:8px}.ai-connection form[data-authorize-submit]{margin:28px 0;padding-top:20px;border-top:1px solid #3f2e6b30}
+@media(max-width:650px){.ai-channels,.ai-first{grid-template-columns:1fr}.ai-first{gap:24px}.connect-ai-page{padding-top:32px}.ai-channel{padding:24px}.ai-guide-compact .ai-channel{padding:20px}.ai-guide .button{max-width:100%;white-space:normal}}
+.draft-sidecourt-id{padding:16px 0;margin:0 0 22px;border-bottom:1px solid #3f2e6b30}.draft-sidecourt-id>.text-link{margin-left:16px}.post-identity{gap:16px;margin-bottom:20px}
