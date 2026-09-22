@@ -48,6 +48,19 @@ class PermanentIDPages(unittest.TestCase):
                 self.assertIn('href="https://m1nga.github.io/sidecourt-review/work/SC4M9Q2"', html)
                 self.assertIn('name="robots" content="noindex,nofollow"', html)
 
+    def test_connection_guide_has_its_own_metadata_even_with_no_public_posts(self):
+        for config in [{}, {'siteUrl': 'https://m1nga.github.io/sidecourt-review/', 'reviewSite': True}]:
+            with tempfile.TemporaryDirectory() as tmp:
+                publish_public_pages(tmp, APP, [], config)
+                page = (pathlib.Path(tmp) / 'connect-ai' / 'index.html').read_text()
+                canonical = (config.get('siteUrl') or 'https://sidecourt.space').rstrip('/') + '/connect-ai'
+                self.assertIn('<title>Connect your AI · SideCourt</title>', page)
+                self.assertIn('ChatGPT, Claude, Claude Code or Codex', page)
+                self.assertIn('href="' + canonical + '"', page)
+                self.assertIn('property="og:url" content="' + canonical + '"', page)
+                if config.get('reviewSite'):
+                    self.assertIn('name="robots" content="noindex,nofollow"', page)
+
     def test_invalid_short_id_does_not_make_a_folder_and_public_text_is_escaped(self):
         row = dict(ROW, sidecourt_id='SC4L9Q2', data={'name': '</title><script>bad()</script>', 'author': 'Ming <script>', 'cardLine': ' ', 'description': 'Old description'})
         pages = public_pages([row])

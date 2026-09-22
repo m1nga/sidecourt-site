@@ -135,6 +135,7 @@ def publish_public_pages(out, application, works, config=None):
     if config is None:
         config_file = pathlib.Path(out) / 'config.js'
         config = read_config(config_file) if config_file.is_file() else {}
+    publish_connection_page(out, application, config)
     pages = public_pages(works, config.get('siteUrl') or SITE)
     authors = {}
     for work in works if isinstance(works, list) else []:
@@ -152,3 +153,15 @@ def publish_public_pages(out, application, works, config=None):
 def sitemap_xml(urls):
     body = ''.join('<url><loc>' + html.escape(url, quote=True) + '</loc></url>' for url in dict.fromkeys(urls))
     return '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + body + '</urlset>'
+
+
+def publish_connection_page(out, application, config=None):
+    """Give the public setup guide its own head even when the public-work read is empty."""
+    config = config or {}
+    canonical = (config.get('siteUrl') or SITE).rstrip('/') + '/connect-ai'
+    target = pathlib.Path(out) / 'connect-ai'
+    target.mkdir(parents=True, exist_ok=True)
+    target.joinpath('index.html').write_text(inject_head(
+        application, 'Connect your AI · SideCourt',
+        'Connect ChatGPT, Claude, Claude Code or Codex to SideCourt. Save private drafts, edit your posts and choose what your AI can access. You decide what gets published.',
+        canonical, review_site=bool(config.get('reviewSite'))))
