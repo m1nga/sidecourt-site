@@ -1,0 +1,15 @@
+# SideCourt
+
+> SideCourt (sidecourt.space) is a home for independent work: small products people make for themselves and then share. Each work has a page where others can reply, offer help and follow what changes. Made by M1NGA. English and Chinese.
+
+## Products (all free)
+
+- [CleanPause](https://sidecourt.space/cleanpause/): Mac app that pauses keyboard and trackpad input so you can wipe your Mac clean; Windows preview available.
+- [Daycup 每日一杯](https://sidecourt.space/drops/daycup/): offline coffee companion; save your setup and beans, start from a recipe, time the brew, record the taste, change one thing next time. No account.
+- [EarBrief](https://earbrief.sidecourt.space/): turns work notes and PDF reports into Chinese or English audio episodes. Bring your own free AI key; sign in with a SideCourt account. Product page: https://sidecourt.space/drops/earbrief/
+
+## Platform
+
+- [Drops](https://sidecourt.space/drops/): all public works.
+- [Connect an AI](https://sidecourt.space/connect-ai): use SideCourt from ChatGPT, Claude, Claude Code or Codex to save drafts and read replies.
+- [Sitemap](https://sidecourt.space/sitemap.xml)

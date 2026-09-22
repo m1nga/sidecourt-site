@@ -114,8 +114,9 @@ except Exception as error:
  public_works = []
 public = publish_public_pages(out, application, public_works)
 post_urls = [canonical for folder, _t, _d, canonical, _k, _i in public if folder.startswith('work/')]
-(out / 'sitemap.xml').write_text(sitemap_xml(['https://sidecourt.space/', 'https://sidecourt.space/cleanpause/', 'https://sidecourt.space/drops/daycup/'] + post_urls))
-print('Public pages written for', len(post_urls), 'posts and', len(public) - len(post_urls), 'authors; sitemap lists', 3 + len(post_urls), 'addresses.')
+static_urls = ['https://sidecourt.space/', 'https://sidecourt.space/drops/', 'https://sidecourt.space/cleanpause/', 'https://sidecourt.space/drops/daycup/', 'https://sidecourt.space/drops/earbrief/', 'https://sidecourt.space/connect-ai']
+(out / 'sitemap.xml').write_text(sitemap_xml(static_urls + post_urls))
+print('Public pages written for', len(post_urls), 'posts and', len(public) - len(post_urls), 'authors; sitemap lists', len(static_urls) + len(post_urls), 'addresses.')
 
 # Daycup: a static, offline coffee companion published under /drops/daycup/ (landing page, app, downloads).
 daycup = root / 'daycup'
@@ -135,3 +136,12 @@ for relative in ['index.html', 'drops/index.html', 'drops/cleanpause/index.html'
   assert '<title>' in document, relative
   target.write_text(document.replace('<title>', tag + '<title>', 1))
 print('Google website ownership metadata included.')
+
+# Structured data (schema.org JSON-LD) and a plain-text site guide for search engines and AI answer engines.
+# Head-only additions: no visible markup, styles or scripts of any page change.
+from seo import inject_json_ld, ORGANIZATION, SOFTWARE
+for relative, data in [('index.html', ORGANIZATION), ('cleanpause/index.html', SOFTWARE['cleanpause']), ('drops/daycup/index.html', SOFTWARE['daycup']), ('drops/earbrief/index.html', SOFTWARE['earbrief'])]:
+ target = out / relative
+ target.write_text(inject_json_ld(target.read_text(), data))
+shutil.copyfile(root / 'llms.txt', out / 'llms.txt')
+print('Structured data added to', 4, 'pages; llms.txt published.')
