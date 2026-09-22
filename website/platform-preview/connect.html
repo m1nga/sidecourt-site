@@ -9,7 +9,7 @@
 <style>
 body.sc-connect-page{margin:0;background:#F6F1E8;color:#1A1A1A;font-family:Inter,system-ui,sans-serif;min-height:100vh;display:block}.sc-connect-page main{width:min(640px,calc(100% - 40px));margin:48px auto;padding-bottom:48px}.sc-connect-page h1{font-size:clamp(28px,5vw,42px);line-height:1.12;margin:24px 0 16px;color:#3F2E6B}.sc-connect-page h2{font-size:22px;margin:0 0 8px}.sc-connect-page p{line-height:1.65}.sc-connect-page .panel{border:1px solid #3F2E6B;border-radius:18px;padding:24px;margin:24px 0;background:transparent}.sc-connect-page button,.sc-connect-page select,.sc-connect-page input[type=text]{font:inherit;min-height:44px;border:1px solid #3F2E6B;border-radius:8px;padding:10px;max-width:100%}.sc-connect-page button{background:#3F2E6B;color:#F6F1E8;cursor:pointer;margin:8px 8px 8px 0}.sc-connect-page button:disabled{opacity:.45;cursor:not-allowed}.sc-connect-page a{color:#3F2E6B;text-decoration:underline}.sc-connect-page label{display:block;margin:12px 0;line-height:1.6}.sc-connect-page input[type=checkbox],.sc-connect-page input[type=radio]{width:20px;height:20px;vertical-align:middle;margin-right:8px;accent-color:#3F2E6B}.sc-connect-page select,.sc-connect-page input[type=text]{width:100%;box-sizing:border-box;background:#F6F1E8;color:#1A1A1A}.sc-connect-page select.inline{width:auto;min-height:36px;padding:4px 8px;margin-left:4px}.sc-connect-page fieldset{border:0;margin:20px 0 0;padding:0}.sc-connect-page legend{font-weight:600;padding:0;margin-bottom:4px}.sc-connect-page .small{font-size:14px}.sc-connect-page .hint{display:block;font-size:14px;color:#4a4458;margin-left:28px}.sc-connect-page .site-label{font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:#3F2E6B;margin:8px 0 0}.sc-connect-page .site-label.review{text-transform:none;letter-spacing:0;background:#3F2E6B;color:#F6F1E8;padding:10px 14px;border-radius:8px;font-size:15px}.sc-connect-page .identity{font-size:15px;margin:0 0 16px}.sc-connect-page .notice{background:#efe8dc;border-radius:10px;padding:12px 14px;font-size:15px}.sc-connect-page [hidden]{display:none!important}.sc-connect-page :focus-visible{outline:3px solid #3F2E6B;outline-offset:3px}
 </style>
-<script src="config.js?v=d017a53b97d9" defer></script><script src="connect.js?v=f82eace1377b" defer></script>
+<script src="config.js?v=d017a53b97d9" defer></script><script src="connect.js?v=ae90990e2f66" defer></script>
 </head>
 <body class="sc-connect-page"><main>
 <a href="./" aria-label="SideCourt home"><img src="favicon.svg" width="64" height="64" alt="SideCourt"></a>
@@ -33,7 +33,8 @@ body.sc-connect-page{margin:0;background:#F6F1E8;color:#1A1A1A;font-family:Inter
 <label><input id="scope-all" type="radio" name="scope" value="all" checked>All my works (recommended)<span class="hint">Drafts and published posts, including the ones you create later.</span></label>
 <label><input id="scope-one" type="radio" name="scope" value="one">Only one work: <select id="work" class="inline"></select></label>
 </fieldset>
-<fieldset><legend>Allow this AI to</legend>
+<fieldset aria-describedby="permission-note"><legend>Allow this AI to</legend>
+<p id="permission-note" class="notice" role="status" hidden></p>
 <label><input id="read" type="checkbox" checked disabled>Read my posts, drafts and their status</label>
 <label><input id="edit" type="checkbox">Edit my private drafts</label>
 <label><input id="create" type="checkbox">Create new drafts<span class="hint">Start a new work or request as a private draft in my account. Only with “All my works”.</span></label>
