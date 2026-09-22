@@ -22,7 +22,7 @@ SOFTWARE = {
     'cleanpause': app('CleanPause', SITE + '/cleanpause/',
         'A small Mac app that pauses keyboard and trackpad input so you can wipe your Mac clean, then brings everything back when you are ready. Windows preview available.',
         'UtilitiesApplication', ['macOS', 'Windows'],
-        {'inLanguage': 'en', 'downloadUrl': SITE + '/cleanpause/'}),
+        {'inLanguage': ['en', 'zh'], 'downloadUrl': SITE + '/cleanpause/'}),
     'daycup': app('Daycup', SITE + '/drops/daycup/',
         'An offline coffee companion: save your machine, grinder and beans, start from a recipe, time the brew, record how it tasted, and change one thing next time. Chinese and English; no account needed.',
         'LifestyleApplication', 'Any (web browser, add to home screen)',
