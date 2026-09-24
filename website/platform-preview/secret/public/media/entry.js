@@ -9,5 +9,6 @@
     // Do not persist credentials in browser storage, public code or telemetry.
   }
   document.querySelector('#access').addEventListener('submit',e=>{e.preventDefault();open(document.querySelector('#key').value.trim());});
-  if(location.hash.length>1) {const key=location.hash.slice(1);history.replaceState(null,'',location.pathname);open(key);}
+  function consumeLink(){if(location.hash.length>1) {const key=location.hash.slice(1);history.replaceState(null,'',location.pathname);open(key);}}
+  window.addEventListener('hashchange',consumeLink);consumeLink();
 })();
