@@ -1,0 +1,30 @@
+{
+ "version": 1,
+ "site": "https://sidecourt.space/",
+ "complete": true,
+ "works": [
+  {
+   "id": "e03dae0d-06e2-41dc-8a5c-25c192be3d2c",
+   "sidecourt_id": "SCUNYC2",
+   "state": "listed",
+   "url": "https://sidecourt.space/work/SCUNYC2/",
+   "name": "DayCup",
+   "labels": []
+  },
+  {
+   "id": "6e3d989a-1d92-4f96-9df1-abac78ea5fc0",
+   "sidecourt_id": "SC2GM4W",
+   "state": "listed",
+   "url": "https://sidecourt.space/work/SC2GM4W/",
+   "name": "Cleanpause",
+   "labels": []
+  }
+ ],
+ "people": [
+  {
+   "handle": "m1nga",
+   "state": "listed",
+   "url": "https://sidecourt.space/people/m1nga/"
+  }
+ ]
+}

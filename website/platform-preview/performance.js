@@ -15,6 +15,7 @@
   const stamp=(key,ready)=>{if(ready&&report.ready[key]===undefined)report.ready[key]=Math.round(performance.now())};
   stamp('fonts',document.fonts.status==='loaded');
   stamp('app',!!window.CourtApp);
+  stamp('background',!!document.querySelector('.scene:not([hidden]).bg-loaded'));
   const scene=document.querySelector('.scene:not([hidden])');
   stamp('title',!!scene?.querySelector('h1')&&!!window.SC);
   const status=document.querySelector('#home-post-status')?.textContent||'';

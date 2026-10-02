@@ -1,6 +1,6 @@
 import argparse, hashlib, json, pathlib, shutil, urllib.request, zipfile, plistlib
 from release_assets import fetch_asset
-from public_pages import fetch_public_works, publish_public_pages, read_config, sitemap_xml
+from public_pages import llms_text, publish_site_pages, read_config, sitemap_xml
 parser=argparse.ArgumentParser()
 parser.add_argument('--source-root',type=pathlib.Path)
 args=parser.parse_args()
@@ -97,26 +97,28 @@ def redirect_page(destination, preserve_hash=False):
 (out / 'platform-preview').mkdir(exist_ok=True)
 (out / 'platform-preview/index.html').write_text(redirect_page('/', True))
 # /drops and /guide are real pages of the application now; only the CleanPause slug still redirects.
-(out / 'drops/cleanpause/index.html').write_text(redirect_page('/work/6e3d989a-1d92-4f96-9df1-abac78ea5fc0'))
+(out / 'drops/cleanpause/index.html').write_text(redirect_page('/work/6e3d989a-1d92-4f96-9df1-abac78ea5fc0/'))
 (out / 'robots.txt').write_text('User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /platform-preview/\nDisallow: /downloads/\nSitemap: https://sidecourt.space/sitemap.xml\n')
 print('Canonical SideCourt application published; historic displays redirected.')
 
-# Every published post and public author gets its own folder with the post's title, description,
-# canonical address and Open Graph tags, so a link opens with 200 and previews correctly even when
-# it was published after the previous deploy (the site's own publish hook triggers this build).
-# The list is the public read the website itself performs, with the publishable key it ships.
-# If that read fails the deploy still goes out: those pages then open via 404.html until the next build.
-application = (platform / 'index.html').read_text()
+# Every published work and public author gets its own folder with the work's title, description, canonical address
+# (with the trailing slash Pages serves) and Open Graph tags, so a link opens with 200 and previews correctly even when
+# it was published after the previous deploy (publishing, take-downs and discovery changes trigger this build).
+# Pages the committed overlay or an earlier build had for works that are no longer listed are checked one by one:
+# still public by link -> noindex page; gone -> neutral placeholder. The list is the public read the website itself
+# performs, with the publishable key it ships. If that read fails the deploy still goes out with the committed pages.
+# Twin of the source repository's scripts/public-page-html.mjs (same output for the same data).
+application = (platform / 'index.html').read_text(encoding='utf-8')
 try:
- public_works = fetch_public_works(read_config(platform / 'config.js'))
+ config = read_config(platform / 'config.js')
 except Exception as error:
- print('WARNING: public posts were not read (' + type(error).__name__ + ': ' + str(error)[:120] + '); their pages open via 404.html until the next build.', flush=True)
- public_works = []
-public = publish_public_pages(out, application, public_works)
-post_urls = [canonical for folder, _t, _d, canonical, _k, _i in public if folder.startswith('work/')]
-static_urls = ['https://sidecourt.space/', 'https://sidecourt.space/drops/', 'https://sidecourt.space/cleanpause/', 'https://sidecourt.space/drops/daycup/', 'https://sidecourt.space/drops/earbrief/', 'https://sidecourt.space/connect-ai']
-(out / 'sitemap.xml').write_text(sitemap_xml(static_urls + post_urls))
-print('Public pages written for', len(post_urls), 'posts and', len(public) - len(post_urls), 'authors; sitemap lists', len(static_urls) + len(post_urls), 'addresses.')
+ print('WARNING: config.js was not read (' + type(error).__name__ + '); public pages keep the committed copies.', flush=True)
+ config = {}
+public = publish_site_pages(out, application, config, warn=lambda message: print('WARNING: ' + message, flush=True))
+static_urls = ['https://sidecourt.space/', 'https://sidecourt.space/drops/', 'https://sidecourt.space/cleanpause/', 'https://sidecourt.space/drops/daycup/', 'https://sidecourt.space/drops/earbrief/', 'https://sidecourt.space/connect-ai/']
+(out / 'sitemap.xml').write_text(sitemap_xml(static_urls + public['sitemap']))
+states = [entry['state'] for entry in public['manifest']['works']]
+print('Public pages:', states.count('listed'), 'listed,', states.count('unlisted'), 'link-only,', states.count('limited'), 'limited,', states.count('withdrawn'), 'withdrawn works;', len(public['manifest']['people']), 'people; sitemap lists', len(dict.fromkeys(static_urls + public['sitemap'])), 'addresses.' + ('' if public['manifest']['complete'] else ' (public list NOT read; committed pages kept)'))
 
 # Daycup: a static, offline coffee companion published under /drops/daycup/ (landing page, app, downloads).
 daycup = root / 'daycup'
@@ -143,5 +145,6 @@ from seo import inject_json_ld, ORGANIZATION, SOFTWARE
 for relative, data in [('index.html', ORGANIZATION), ('cleanpause/index.html', SOFTWARE['cleanpause']), ('drops/daycup/index.html', SOFTWARE['daycup']), ('drops/earbrief/index.html', SOFTWARE['earbrief'])]:
  target = out / relative
  target.write_text(inject_json_ld(target.read_text(), data))
-shutil.copyfile(root / 'llms.txt', out / 'llms.txt')
+# Listed works are added by name and address only (the makers' descriptions stay on their pages).
+(out / 'llms.txt').write_text(llms_text((root / 'llms.txt').read_text(encoding='utf-8'), public['llms']), encoding='utf-8')
 print('Structured data added to', 4, 'pages; llms.txt published.')

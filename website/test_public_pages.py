@@ -6,7 +6,13 @@ import unittest
 from public_pages import inject_head, public_pages, publish_public_pages, read_config, sitemap_xml, summary
 
 HERE = pathlib.Path(__file__).resolve().parent
-APP = (HERE / 'platform-preview' / 'index.html').read_text()
+SHIPPED = HERE / 'platform-preview' / 'index.html'
+# In the hosting checkout this is the committed application; in the source repository's mirror a stand-in with the
+# same head structure is used.
+APP = SHIPPED.read_text(encoding='utf-8') if SHIPPED.is_file() else (
+    '<!DOCTYPE html>\n<html lang="en" data-base="/">\n<head>\n<meta charset="utf-8">\n<title>SideCourt · Independent work</title>\n'
+    '<meta name="description" content="SideCourt — create something yours, show up for others.">\n<link rel="stylesheet" href="/scene.css">\n'
+    '<link rel="canonical" href="https://sidecourt.space/">\n</head>\n<body><main id="main-court"></main><svg><title>ring</title></svg><script src="/court.js"></script></body>\n</html>\n')
 UUID = '6e3d989a-1d92-4f96-9df1-abac78ea5fc0'
 
 
@@ -30,7 +36,7 @@ class InjectHead(unittest.TestCase):
         self.assertIn('<meta property="og:url" content="https://sidecourt.space/work/' + UUID + '/">', h)
         self.assertIn('<meta property="og:type" content="article">', h)
         self.assertNotIn('og:image', h)
-        # The body, scripts and styles of the application are untouched.
+        # The body, scripts and styles of the application are untouched (an SVG <title> in the body included).
         self.assertEqual(page[page.index('</head>'):], APP[APP.index('</head>'):])
 
     def test_data_url_cover_is_never_an_image_but_https_is(self):
@@ -55,6 +61,7 @@ class InjectHead(unittest.TestCase):
         self.assertEqual(h.count('og:title'), 1)
         self.assertIn('<title>B · SideCourt</title>', h)
         self.assertNotIn('one', h.split('<meta name="description"')[1].split('>')[0])
+        self.assertEqual(twice, inject_head(APP, 'B · SideCourt', 'two', 'https://sidecourt.space/work/' + UUID + '/', 'article'))
 
 
 class Summary(unittest.TestCase):
@@ -75,20 +82,23 @@ class PublicPages(unittest.TestCase):
             {'id': '../evil', 'data': {'name': 'x'}, 'player': 'bad handle!'},
             {'id': UUID.upper(), 'data': {'name': 'upper'}, 'player': None},
             {'id': 'ffffffff-ffff-4fff-8fff-ffffffffffff', 'data': None, 'player': 'ab'},
+            {'id': 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'data': {}, 'player': 'ab'},
             'not a row', None,
         ]
         pages = public_pages(rows)
         folders = [p[0] for p in pages]
-        self.assertEqual(folders, ['work/' + UUID, 'work/e03dae0d-06e2-41dc-8a5c-25c192be3d2c', 'work/ffffffff-ffff-4fff-8fff-ffffffffffff', 'people/m1nga'])
+        self.assertEqual(folders, ['work/' + UUID, 'work/e03dae0d-06e2-41dc-8a5c-25c192be3d2c', 'work/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'people/m1nga'])
         first = pages[0]
         self.assertEqual(first[1], 'Quiet Tools · SideCourt')
         self.assertEqual(first[2], 'Hand tools for slow work.')
         self.assertEqual(first[3], 'https://sidecourt.space/work/' + UUID + '/')
         self.assertEqual(first[4], 'article')
-        self.assertEqual(pages[1][2], 'A public post on SideCourt.')
-        self.assertEqual(pages[2][1], 'A post · SideCourt')
+        self.assertEqual(first[5], '')
+        self.assertEqual(pages[1][2], 'A work shared on SideCourt.')
+        self.assertEqual(pages[2][1], 'Untitled work · SideCourt')
         author = pages[3]
         self.assertEqual(author[1], '@m1nga · SideCourt')
+        self.assertEqual(author[2], 'Work by @m1nga on SideCourt.')
         self.assertEqual(author[3], 'https://sidecourt.space/people/m1nga/')
         self.assertEqual(author[4], 'profile')
 
@@ -110,6 +120,7 @@ class PublicPages(unittest.TestCase):
             self.assertIn('<title>@m1nga · SideCourt</title>', person)
             self.assertIn('href="https://sidecourt.space/people/m1nga/"', person)
 
+    @unittest.skipUnless((HERE / 'platform-preview' / 'config.js').is_file(), 'only in the hosting checkout')
     def test_config_is_read_from_the_shipped_config_js(self):
         config = read_config(HERE / 'platform-preview' / 'config.js')
         self.assertTrue(config['supabaseUrl'].startswith('https://'))
