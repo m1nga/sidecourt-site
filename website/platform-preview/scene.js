@@ -64,7 +64,7 @@ function filterWorks(params,write=false){if(window.CourtApp)return window.CourtA
 // The site routes on the path. Unknown query strings are dropped; page, tab, post id,
 // profile handle and draft kind all live in the path, so nothing is left to carry them.
 const KEEP_QUERY=new Set(['code','state','error','error_description','error_code','type','token_hash','measure','actor',
- 'section','status','filter','needs','help','q','page','id','entry','question','compose','receipt','before','case','report','path','stop-email']);
+ 'section','status','filter','needs','help','q','page','id','entry','question','compose','intent','receipt','before','case','report','path','stop-email']);
 // An address that still carries '#court?tab=…' is rewritten to its path before the first render,
 // so every link already sent out opens the same page it always did.
 function tidyAddress(){try{

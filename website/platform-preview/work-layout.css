@@ -1,4 +1,35 @@
 /* Work / private preview: the original scene stays visible between local text areas. */
+/* These pages use the dark scene, including the reply form. Reset the light
+   writing-surface tokens as well as its background so nested controls cannot
+   inherit dark text intended for the utility page. */
+:is(#main-work,#main-preview),
+:is(#main-work,#main-preview) :is(.court-public-post,.writing-surface){
+ --court-primary:var(--cream);--court-on-primary:var(--plum);
+ --court-muted:var(--cream);--court-rule:rgba(246,241,232,.35);
+ --court-control-border:rgba(246,241,232,.75);color:var(--cream);
+}
+:is(#main-work,#main-preview) .work-reading .writing-surface{background:rgba(26,26,26,.32);color:var(--cream)}
+:is(#main-work,#main-preview) :is(.work-heading,.work-reading,.work-author) :is(h2,h3,h4,.field,summary){color:var(--cream)}
+:is(#main-work,#main-preview) .work-reading .button{background:var(--cream);color:var(--plum);border-color:var(--cream)}
+:is(#main-work,#main-preview) :is(.work-heading,.work-reading) .button.secondary{background:transparent;color:var(--cream);border-color:var(--cream)}
+:is(#main-work,#main-preview) :is(.work-heading,.work-reading) .button:hover:not(:disabled):not([aria-disabled=true]){background:var(--lilac);color:var(--plum);border-color:var(--lilac)}
+:is(#main-work,#main-preview) .reply-intents .intent-pill{min-height:44px;color:var(--cream);border-color:var(--court-control-border);background:transparent}
+:is(#main-work,#main-preview) .reply-intents .intent-pill:hover:not(:disabled){border-color:var(--cream);background:rgba(246,241,232,.12)}
+/* court.css sets this state with !important on a light writing surface. */
+:is(#main-work,#main-preview) .writing-surface [aria-pressed=true]{background:var(--cream)!important;color:var(--plum)!important;border-color:var(--cream)}
+:is(#main-work,#main-preview) :is(.work-heading,.work-reading) :is(.button,.intent-pill):is(:disabled,[aria-disabled=true]){background:#39343f;color:#d8cfdc;border-color:#a298ab;border-style:dashed;opacity:1;cursor:not-allowed}
+:is(#main-work,#main-preview) .writing-surface [aria-pressed=true]:disabled{background:#39343f!important;color:#d8cfdc!important}
+:is(#main-work,#main-preview) .text-link:disabled{background:transparent;color:#d8cfdc;opacity:1;cursor:not-allowed}
+:is(#main-work,#main-preview) .field :is(input:not([type=checkbox]):not([type=radio]),textarea,select){color-scheme:light;background:var(--cream);color:var(--ink);border-color:var(--court-control-border);caret-color:var(--plum)}
+:is(#main-work,#main-preview) .field :is(input,textarea)::placeholder{color:#665d70;opacity:1}
+:is(#main-work,#main-preview) .field :is(input,textarea,select):disabled{background:#d7d1ca;color:#544b5d;-webkit-text-fill-color:#544b5d;opacity:1;cursor:not-allowed}
+:is(#main-work,#main-preview) .field :is(input,textarea,select)[aria-invalid=true]{border:2px solid #8a2437}
+:is(#main-work,#main-preview) .field-error{color:var(--cream);background:#3b2929;border-inline-start:3px solid var(--coral);padding:8px 12px}
+:is(#main-work,#main-preview) :is(a,button,summary,input,textarea,select):focus-visible{outline:2px solid var(--cream);outline-offset:4px;box-shadow:0 0 0 2px var(--ink)}
+:is(#main-work,#main-preview) .follow-work input{color-scheme:dark;accent-color:var(--lilac)}
+:is(#main-work,#main-preview) .timeline-item{border-color:var(--court-rule)}
+:is(#main-work,#main-preview) .managed-work .record-label{color:var(--court-muted)}
+:is(#main-work,#main-preview) :is(.entry-placeholder,[data-resolved=true]>.preserve-text){opacity:1}
 :is(#main-work,#main-preview) .work-heading{grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);align-items:start;gap:clamp(24px,4vw,56px);margin-top:28px}
 :is(#main-work,#main-preview) .work-heading-no-cover{grid-template-columns:minmax(0,760px)}
 :is(#main-work,#main-preview) .work-heading-copy{min-width:0;padding:24px;background:rgba(26,26,26,.36);border-radius:5px;color:var(--cream)}
@@ -34,7 +65,6 @@
 :is(#main-work,#main-preview) .post-way .button{margin-top:8px}
 :is(#main-work,#main-preview) .work-disclosure{padding:24px;max-width:940px;background:rgba(26,26,26,.28);border-color:var(--line)}
 :is(#main-work,#main-preview) .work-reading :is(.text-link,.minor,summary){color:inherit}
-:is(#main-work,#main-preview) .work-reading .button.secondary{color:var(--cream);border-color:var(--cream);background:transparent}
 :is(#main-work,#main-preview) .work-reading .local-note{color:inherit;background:rgba(26,26,26,.3)}
 /* Without JavaScript the complete original text remains visible. */
 .reading-block{--reading-lines:8;min-width:0;max-width:72ch}
@@ -53,3 +83,14 @@
  :is(#main-work,#main-preview) .post-way{padding:20px}
  .reading-block{--reading-lines:6}
 }
+
+/* Keep the active Need beside the work, without another participation card. */
+:is(#main-work,#main-preview) .work-help-callout{margin:24px 0 0;padding:4px 0 4px 18px;background:none}
+:is(#main-work,#main-preview) .work-help-callout>.eyebrow{font-size:.75rem;line-height:1.5;margin:0 0 10px}
+:is(#main-work,#main-preview) .work-help-callout .minor{font-size:.875rem;line-height:1.5;margin:12px 0 0}
+:is(#main-work,#main-preview) .work-help-callout .reading-block{--reading-lines:3}
+:is(#main-work,#main-preview) .work-secondary-actions{margin:24px 0 0;gap:12px 24px}
+:is(#main-work,#main-preview) .work-heading [role=status]:empty{display:none}
+:is(#main-work,#main-preview) .work-extensions:empty{display:none}
+:is(#main-work,#main-preview) .work-extensions{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:20px}
+.offer-need{max-height:12em;overflow:auto;overflow-wrap:anywhere;padding:12px;border-inline-start:3px solid var(--plum)}
