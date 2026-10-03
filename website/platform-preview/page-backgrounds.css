@@ -1,0 +1,17 @@
+/* Keep each scene's assigned artwork; only the Your posts lists use plain paper. */
+.scene.white:not(.posts-surface){background-color:var(--cream);background-image:var(--art-placeholder)}
+.scene.white:not(.posts-surface)::after{background:rgba(246,241,232,.28)}
+.scene.posts-surface{background:var(--cream)}
+.scene.posts-surface::before,.scene.posts-surface::after{display:none}
+.field-count{margin:-10px 0 22px;text-align:right;font-variant-numeric:tabular-nums}
+#work-form #post-body-help{max-width:65ch;line-height:1.55}
+#editor-management{max-width:760px;margin-top:48px;padding-top:28px;border-top:1px solid var(--court-rule,rgba(63,46,107,.25))}
+#editor-management .actions{gap:12px;flex-wrap:wrap}
+#editor-management .work-management{margin:0}
+#editor-management .work-management>summary{font-weight:650}
+@media(max-width:700px){
+ .submit-preview{order:0}
+ #work-form :is(input,textarea,select){font-size:16px}
+ #editor-management{margin-top:32px}
+ #editor-management .button{white-space:normal}
+}
