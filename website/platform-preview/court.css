@@ -957,3 +957,15 @@ button:disabled{opacity:1;cursor:not-allowed;color:#5f5368;background:#e9e1ee;bo
 .season-welcome em{font-style:italic;font-weight:750;color:var(--lilac)}
 .season-message-copy>.eyebrow{margin-top:26px;font-size:11px;letter-spacing:.16em}
 @media(max-width:760px){.season-message-copy .event-intro{font-size:21px;gap:16px;max-width:29ch}.season-message-copy .season-welcome{font-size:14px;margin-top:26px}.season-welcome>span+span{font-size:21px}}
+
+/* ONE LESS THING copy uses the existing poster type, colors and open page rhythm. */
+.season-ball strong{font-size:clamp(17px,2vw,25px);line-height:1.04;letter-spacing:-.04em}
+#home-season .season-intro>div{min-width:0}#home-season .season-title-link{max-width:100%;white-space:normal}#home-season .getem-word{min-width:0;max-width:9ch;line-height:.98}.season-home-description{max-width:34ch;margin-top:20px;font-size:18px;line-height:1.5}
+#main-season .season-title .getem-word{max-width:100%;text-wrap:balance}
+.season-start{margin-top:64px;padding-top:40px;border-top:1px solid var(--line)}
+.season-start>h2{font-size:clamp(30px,3.8vw,48px);line-height:1.1;letter-spacing:-.04em;max-width:24ch;margin:14px 0 32px}
+.season-paths{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:36px}
+.season-paths h3,.season-next h3{font-size:23px;line-height:1.2;letter-spacing:-.025em;color:var(--lilac);margin:0 0 16px}
+.season-paths p,.season-next p{font-size:16px;line-height:1.65;max-width:62ch}.season-paths .text-link{display:inline-block;margin-top:20px}
+.season-next{margin-top:44px;padding-top:32px;border-top:1px solid var(--line)}.season-next .text-link{display:inline-block;margin-top:18px}
+@media(max-width:760px){#main-season .season-title{font-size:clamp(44px,14vw,74px)}.season-start{margin-top:40px;padding-top:28px}.season-paths{grid-template-columns:1fr;gap:32px}.season-paths h3,.season-next h3{font-size:22px}.season-home-description{font-size:16px}.season-next{margin-top:32px}}
