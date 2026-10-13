@@ -946,3 +946,14 @@ button:disabled{opacity:1;cursor:not-allowed;color:#5f5368;background:#e9e1ee;bo
 .court-profile-page>h2{margin-top:28px}
 .post-ways-grid .post-way>p:not([class]){font-size:15px;line-height:1.5;opacity:.9}
 #main-court .court-content .help-editors-row .cloud-invite>.button{margin-top:0}
+
+/* Season invitation: a quiet editorial rhythm beside the poster headline. */
+.season-message-copy .event-intro{display:grid;gap:18px;font-size:clamp(20px,1.8vw,25px);font-weight:450;line-height:1.38;letter-spacing:-.025em;max-width:30ch}
+.season-message-copy .event-intro p{margin:0;padding-left:18px;border-left:1px solid rgba(246,241,232,.25);text-wrap:pretty}
+.season-message-copy .event-intro strong{font-weight:750;color:var(--lilac)}
+.season-message-copy .season-welcome{margin:30px 0 0;max-width:36ch;opacity:1;font-size:15px;line-height:1.65;letter-spacing:-.01em}
+.season-welcome>span{display:block}.season-welcome>span:first-child{color:rgba(246,241,232,.76)}
+.season-welcome>span+span{margin-top:16px;font-size:clamp(19px,1.65vw,23px);line-height:1.4;font-weight:550;letter-spacing:-.025em}
+.season-welcome em{font-style:italic;font-weight:750;color:var(--lilac)}
+.season-message-copy>.eyebrow{margin-top:26px;font-size:11px;letter-spacing:.16em}
+@media(max-width:760px){.season-message-copy .event-intro{font-size:21px;gap:16px;max-width:29ch}.season-message-copy .season-welcome{font-size:14px;margin-top:26px}.season-welcome>span+span{font-size:21px}}
