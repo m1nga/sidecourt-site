@@ -969,3 +969,14 @@ button:disabled{opacity:1;cursor:not-allowed;color:#5f5368;background:#e9e1ee;bo
 .season-paths p,.season-next p{font-size:16px;line-height:1.65;max-width:62ch}.season-paths .text-link{display:inline-block;margin-top:20px}
 .season-next{margin-top:44px;padding-top:32px;border-top:1px solid var(--line)}.season-next .text-link{display:inline-block;margin-top:18px}
 @media(max-width:760px){#main-season .season-title{font-size:clamp(44px,14vw,74px)}.season-start{margin-top:40px;padding-top:28px}.season-paths{grid-template-columns:1fr;gap:32px}.season-paths h3,.season-next h3{font-size:22px}.season-home-description{font-size:16px}.season-next{margin-top:32px}}
+
+/* Work attention stays secondary; existing work and conversation actions lead. */
+.work-attention{display:flex;align-items:center;flex-wrap:wrap;gap:.35rem 1.6rem;margin:1.2rem 0 .25rem}
+.work-attention-counts{display:flex;flex-wrap:wrap;gap:.4rem 1.2rem;font-size:.875rem;opacity:.8}
+.work-attention .actions{margin:0;gap:1.4rem}.work-attention [data-attention-status]:empty{display:none}.work-attention .minor{flex-basis:100%;margin:.35rem 0}.work-attention [aria-pressed=true]{font-weight:700;text-decoration:underline;text-underline-offset:4px}
+.court-work-activity,.court-following{margin:1.6rem 0;padding:1.25rem;border:1px solid var(--line, #d8d5cd)}
+.work-activity-row{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;padding:1rem 0;border-top:1px solid var(--line, #d8d5cd)}
+.work-activity-row h4{margin:.2rem 0}.work-activity-row p{margin:.45rem 0}.work-activity-row>div{min-width:0}.work-activity-row .preserve-text{overflow-wrap:anywhere}
+@media(max-width:600px){.work-activity-row{display:block}.court-work-activity,.court-following{padding:1rem}.work-activity-row>a{display:inline-block;margin-top:.5rem}}
+
+.discussion-share-dialog{max-width:900px}.discussion-share-art{display:block;width:100%;height:auto;border-radius:8px}.discussion-share-dialog [data-discussion-card]{margin:1.25rem 0}.discussion-share-dialog details{margin:1rem 0}.discussion-share-dialog .actions{flex-wrap:wrap}.discussion-share-dialog textarea{width:100%}
