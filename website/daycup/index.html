@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#f4f0e7"><title>Daycup — 每日一杯 · A daily ritual, a little better</title><meta name="description" content="Daycup：离线咖啡冲煮助手，记下你的器材和豆子，拿到起始配方，计时，记录味道。An offline coffee companion on SideCourt."><link rel="icon" href="app/icon.svg"><link rel="apple-touch-icon" href="app/icon-180.png"><link rel="canonical" href="https://sidecourt.space/drops/daycup/">
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#f4f0e7"><title>DayCup — Espresso &amp; V60 Starting Recipes and Brew Notes</title><meta name="description" content="Add your equipment and beans, get an espresso or V60 starting recipe, and keep brew notes in your browser. No account or API key needed."><link rel="icon" href="app/icon.svg"><link rel="apple-touch-icon" href="app/icon-180.png"><link rel="canonical" href="https://sidecourt.space/drops/daycup/"><meta property="og:title" content="DayCup — Espresso &amp; V60 Starting Recipes and Brew Notes"><meta property="og:description" content="Add your equipment and beans, get an espresso or V60 starting recipe, and keep brew notes in your browser. No account or API key needed."><meta property="og:url" content="https://sidecourt.space/drops/daycup/"><meta property="og:type" content="website">
 <style>
 :root{--paper:#f4f0e7;--ink:#302a23;--muted:#777369;--line:#ddd8cc;--rust:#a84f36;--olive:#626448;--card:#fcfaf5}
 *{box-sizing:border-box}html{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Noto Sans CJK SC',sans-serif;color:var(--ink);background:var(--paper);font-size:16px}
@@ -19,36 +19,16 @@ footer{max-width:760px;margin:0 auto;padding:0 22px 40px;font-size:12px;color:va
 </style></head>
 <body>
 <main>
-<header><a class="wordmark" href="./" aria-label="Daycup">daycup<span> / </span></a><button class="lang" type="button" id="lang" aria-label="Switch language / 切换语言">English</button></header>
-
-<section lang="zh-CN" data-lang="zh">
+<header><a class="wordmark" href="./" aria-label="DayCup">daycup<span> / </span></a></header>
+<section lang="en">
 <p class="eyebrow">SIDECOURT · DROPS</p>
-<h1>每日一杯，<br>好一点点。</h1>
-<p class="lead">Daycup 是一个离线的咖啡冲煮助手：记下你的咖啡机、磨豆机和这一包豆子，拿到一份有依据的起始配方，计时，记录这一杯的味道，下次只改一个变量。不登录，无 AI，记录只留在你自己的手机或电脑里。</p>
-<div class="actions"><a class="button primary" href="app/">打开 Daycup</a><a class="button" href="#install-zh">加到手机主屏幕</a><a class="button" href="download/Daycup.html" download>下载离线单文件版</a></div>
-<div class="panel"><div class="steps"><div><small>01</small><h3>设置</h3><p>分别选咖啡机和磨豆机，确认粉碗类型和实际粉量。128 个型号，或自己填。</p></div><div><small>02</small><h3>豆子</h3><p>记下这一包：烘焙度、产地、处理法，可以搜中文。包装上有配方就照抄。</p></div><div><small>03</small><h3>冲煮</h3><p>浓缩、热美式、冰美式或 V60 的起始配方，计时，记味道，看下次该试什么。</p></div></div></div>
-<div class="panel" id="install-zh"><h2>加到手机主屏幕，像 App 一样用</h2><ol><li><strong>iPhone / iPad：</strong>用 Safari 打开 <a href="app/">Daycup</a>，点底部「分享」按钮，选「添加到主屏幕」。</li><li><strong>Android：</strong>用 Chrome 打开，点右上角菜单，选「安装应用」或「添加到主屏幕」。</li><li><strong>电脑：</strong>Chrome 或 Edge 地址栏右侧会出现「安装」图标。</li></ol><p class="muted">首次打开后离线也能用。中英文可以在应用右上角随时切换。</p></div>
-<div class="panel"><h2>记录在哪里</h2><p>所有器材、豆子和冲煮记录都保存在你打开它的那个浏览器里，不上传、不同步。换手机、换浏览器或换电脑之前，先到「我的数据」导出备份，再在新设备导入。</p><p class="muted">离线单文件版 <code>Daycup.html</code> 用电脑浏览器打开即可使用，无需安装任何东西；<a href="download/Daycup-local-first.zip">完整离线包</a> 另含本机启动脚本。<a href="download/SHA256SUMS.txt">校验值</a> · <a href="app/privacy.html">隐私与数据</a></p></div>
-</section>
-
-<section lang="en" data-lang="en" hidden>
-<p class="eyebrow">SIDECOURT · DROPS</p>
-<h1>A daily ritual,<br>a little better.</h1>
-<p class="lead">Daycup is an offline coffee companion: save your machine, grinder and the bag you are opening, get a source-backed starting recipe, time the brew, log how it tasted, and change one thing next time. No login, no AI. Records stay on your own phone or computer.</p>
-<div class="actions"><a class="button primary" href="app/">Open Daycup</a><a class="button" href="#install-en">Add to Home Screen</a><a class="button" href="download/Daycup.html" download>Download the offline file</a></div>
-<div class="panel"><div class="steps"><div><small>01</small><h3>Setup</h3><p>Choose your machine and grinder separately; confirm the basket and the real dose. 128 models, or type your own.</p></div><div><small>02</small><h3>Beans</h3><p>Note this bag: roast, origin, process. Copy the recipe on the bag if there is one.</p></div><div><small>03</small><h3>Brew</h3><p>A starting recipe for espresso, Americano, iced Americano or V60. Time it, taste it, see what to try next.</p></div></div></div>
-<div class="panel" id="install-en"><h2>Keep it on your home screen</h2><ol><li><strong>iPhone / iPad:</strong> open <a href="app/">Daycup</a> in Safari, tap Share, then Add to Home Screen.</li><li><strong>Android:</strong> open it in Chrome, tap the menu, then Install app or Add to Home screen.</li><li><strong>Desktop:</strong> Chrome and Edge show an Install icon at the right end of the address bar.</li></ol><p class="muted">It works offline after the first visit. Switch between English and Chinese any time from the app header.</p></div>
-<div class="panel"><h2>Where your records live</h2><p>Every setup, bag and brew is stored in the browser you opened Daycup in. Nothing is uploaded or synced. Before changing phone, browser or computer, export a backup from My data and import it on the new device.</p><p class="muted">The offline single file <code>Daycup.html</code> opens in any desktop browser with nothing to install; the <a href="download/Daycup-local-first.zip">full offline package</a> adds a local launcher. <a href="download/SHA256SUMS.txt">Checksums</a> · <a href="app/privacy.html">Privacy &amp; data</a></p></div>
+<h1>A starting coffee recipe for your beans and setup.</h1>
+<p class="lead">Add your brewer, grinder and beans to get an espresso or V60 starting recipe. Brew it, record what you actually tasted, and decide what to try next. No account or API key needed.</p>
+<div class="actions"><a class="button primary" href="app/">Open DayCup</a><a class="button" href="#install-en">Home screen</a><a class="button" href="download/Daycup.html" download>Download file</a></div>
+<div class="panel"><div class="steps"><div><small>01</small><h3>Setup</h3><p>Choose your brewer and grinder separately. Confirm your basket and actual dose; add your own equipment if needed.</p></div><div><small>02</small><h3>Beans</h3><p>Note this bag: roast, origin, process. Copy the recipe on the bag if there is one.</p></div><div><small>03</small><h3>Brew</h3><p>A starting recipe for espresso, Americano, iced Americano or V60. Time it, taste it, see what to try next.</p></div></div></div>
+<div class="panel" id="install-en"><h2>Keep it on your home screen</h2><ol><li><strong>iPhone / iPad:</strong> open <a href="app/">DayCup</a> in Safari, tap Share, then Add to Home Screen.</li><li><strong>Android:</strong> open it in Chrome, tap the menu, then Install app or Add to Home screen.</li><li><strong>Desktop:</strong> Use the Install option in Chrome or Edge if it is available.</li></ol><p class="muted">Installation options depend on your browser. You can also download a separate offline copy below.</p></div>
+<div class="panel"><h2>Where your records live</h2><p>Setups, beans and brew records stay in this browser. They are not automatically copied to another device. Export a backup from My data before changing browser or device, then import it where you want to continue.</p><p class="muted">The <code>Daycup.html</code> download is a single-file version; the <a href="download/Daycup-local-first.zip">full offline package</a> also includes a local launcher. <a href="download/SHA256SUMS.txt">Checksums</a> · <a href="app/privacy.html">Privacy &amp; data</a></p></div>
 </section>
 </main>
-<footer><span data-lang="zh">安家在 <a href="https://sidecourt.space/">SideCourt</a>。</span><span data-lang="en" hidden>A small home on <a href="https://sidecourt.space/">SideCourt</a>.</span><span data-lang="zh">离线规则。不登录。无 AI。</span><span data-lang="en" hidden>Offline rules. No login. No AI.</span></footer>
-<script>
-(function(){
- var languages={zh:'中文',en:'English'},current='zh';
- try{var saved=localStorage.getItem('daycup-language');if(languages[saved])current=saved;else if(!/^zh/i.test(navigator.language||''))current='en';}catch(e){if(!/^zh/i.test(navigator.language||''))current='en';}
- function apply(){document.documentElement.lang=current==='zh'?'zh-CN':'en';document.title=current==='zh'?'Daycup — 每日一杯，好一点点。':'Daycup — A daily ritual, a little better.';document.querySelectorAll('[data-lang]').forEach(function(node){node.hidden=node.getAttribute('data-lang')!==current;});document.getElementById('lang').textContent=languages[current==='zh'?'en':'zh'];}
- document.getElementById('lang').onclick=function(){current=current==='zh'?'en':'zh';try{localStorage.setItem('daycup-language',current);}catch(e){}apply();};
- apply();
-})();
-</script>
+<footer><span>An independent work by Ming on <a href="https://sidecourt.space/work/SCUNYC2/">SideCourt</a>.</span><span>No account. No API key. Browser-local records.</span></footer>
 </body></html>
