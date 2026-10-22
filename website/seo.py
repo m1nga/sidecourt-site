@@ -20,13 +20,13 @@ def app(name, url, description, category, os, extra=None):
 
 SOFTWARE = {
     'cleanpause': app('CleanPause', SITE + '/cleanpause/',
-        'A small Mac app that pauses keyboard and trackpad input so you can wipe your Mac clean, then brings everything back when you are ready. Windows preview available.',
+        'Pause keyboard and trackpad input, wipe your Mac, and return when you are ready. Free for macOS 13+. Windows is a preview.',
         'UtilitiesApplication', ['macOS', 'Windows'],
         {'inLanguage': ['en', 'zh'], 'downloadUrl': SITE + '/cleanpause/'}),
-    'daycup': app('Daycup', SITE + '/drops/daycup/',
-        'An offline coffee companion: save your machine, grinder and beans, start from a recipe, time the brew, record how it tasted, and change one thing next time. Chinese and English; no account needed.',
+    'daycup': app('DayCup', SITE + '/drops/daycup/',
+        'Add your equipment and beans, get an espresso or V60 starting recipe, and keep brew notes in your browser. No account or API key needed.',
         'LifestyleApplication', 'Any (web browser, add to home screen)',
-        {'inLanguage': ['zh-CN', 'en'], 'alternateName': '每日一杯'}),
+        {'inLanguage': ['zh-CN', 'en']}),
     'earbrief': app('EarBrief', 'https://earbrief.sidecourt.space/',
         'Turn work notes and PDF reports into Chinese or English audio episodes you can listen to while walking, cooking or driving. Bring your own free AI key; sign in with a SideCourt account.',
         'MultimediaApplication', 'Any (web browser, add to home screen)',
