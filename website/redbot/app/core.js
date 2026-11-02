@@ -54,10 +54,10 @@ const INTENTS=[
  {id:'video-editable',label:'Make editable video variations',pattern:/hypit|editable video|视频变体|批量视频|多语言.*视频|可编辑.*视频/i,reason:'You want repeatable script or language variations. Verify one editable result before multiplying it.',next:'Select one script change and one available asset set, then inspect a single variation.'}
 
 ];
-const GOAL_STOP=new Set(['want','need','help','please','how','my','i','to','do','make','improve','use','now','a','the','can','with','is','it','me','and','for','some','this','that','look','better']);
+const GOAL_STOP=new Set(['want','need','help','please','how','my','i','to','do','make','improve','use','now','a','the','can','with','is','it','me','and','for','some','this','that','look','better','find','saved','save','note','notes','post','posts','collection','collections','remember','something','read','show','where','was','from','about']);
 function goalTerms(goal){
  const out=new Set();for(const t of goal.toLowerCase().match(/[a-z0-9-]{2,}/g)||[])if(!GOAL_STOP.has(t))out.add(t);
- const stripped=goal.replace(/我想要?|想要|帮我|一下|怎么|如何|这个|那个|现在|可以|一些|一个|没有|什么|我要|希望|做得/g,' ');
+ const stripped=goal.replace(/我想要?|想要|帮我|一下|怎么|如何|这个|那个|现在|可以|一些|一个|没有|什么|我要|希望|做得|收藏|笔记|保存|找回|找到/g,' ');
  for(const run of stripped.match(/[\u3400-\u9fff]{2,}/g)||[])for(let i=0;i<run.length-1;i++)out.add(run.slice(i,i+2));
  for(const t of ['髋','肩','腰','咖啡','健身','设计','视频','记忆'])if(goal.includes(t))out.add(t);
  return [...out].slice(0,80);
@@ -97,7 +97,7 @@ function chooseStart(items,guides,state,goal,choice=''){
  if(skips.size&&INTENTS.some(i=>i.pattern.test(goal)))return {status:'no_match',message:'That prepared route was not a fit. I do not have another reviewed route for this goal yet. Describe what was wrong or add the missing constraint.'};
  const terms=goalTerms(goal);let candidates=live.filter(x=>!skips.has(x.id)).map(x=>{
   const title=x.title.toLowerCase(),body=[x.description,x.summary,x.transcript,x.readingNotes,JSON.stringify(x.research||''),ann[x.id]?.note].join(' ').toLowerCase();
-  let titleHits=terms.filter(t=>title.includes(t)),bodyHits=terms.filter(t=>body.includes(t));return {source:x,rank:titleHits.length*4+bodyHits.length*2,hits:[...new Set([...titleHits,...bodyHits])].slice(0,5)};
+  const contains=(text,term)=>/^[a-z0-9-]+$/.test(term)?new RegExp('(^|[^a-z0-9-])'+term+'(?=$|[^a-z0-9-])').test(text):text.includes(term);let titleHits=terms.filter(t=>contains(title,t)),bodyHits=terms.filter(t=>contains(body,t));return {source:x,rank:titleHits.length*4+bodyHits.length*2,hits:[...new Set([...titleHits,...bodyHits])].slice(0,5)};
  }).filter(x=>x.rank>0).sort((a,b)=>b.rank-a.rank||Number(!!b.source.research)-Number(!!a.source.research));
  if(!candidates.length)return {status:'no_match',message:skips.size?'There is no other supported starting point for this goal in your current library. Describe the missing requirement or add a relevant source.':'I cannot support a useful choice from your current library for this goal. Try a concrete outcome, or add a relevant save.'};
  const {source,hits}=candidates[0],readable=hasResearch(source)||hasText(source);
