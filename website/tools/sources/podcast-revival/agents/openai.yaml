@@ -1,0 +1,4 @@
+interface:
+  display_name: "Podcast Video Maker"
+  short_description: "Turn source material into voiced podcast videos"
+  default_prompt: "Use $podcast-revival to turn these materials into a three-minute podcast video with the tone and position I describe."

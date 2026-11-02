@@ -1,0 +1,4 @@
+interface:
+  display_name: "Saved Research Assistant"
+  short_description: "Turn saved links and notes into a useful next action"
+  default_prompt: "Use $redbot to choose a supported starting point from my saved research for my current goal."

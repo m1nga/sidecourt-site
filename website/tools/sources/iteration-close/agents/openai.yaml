@@ -1,0 +1,4 @@
+interface:
+  display_name: "Iteration Cleanup & Handoff"
+  short_description: "Close a milestone without losing decisions or leaving dead files"
+  default_prompt: "Use $iteration-close to close out the current iteration: bank this iteration's decisions into the repo's own record, build the deletion inventory and show it to me in full — wait for my explicit yes before removing anything, and quarantine untracked files instead of deleting them — then verify upload and a zero-context takeover probe as separate channels (use a fresh codex exec session as the cold reader), rehearse the bootstrap on a fresh clone, and tag and seed the next iteration. If I only asked to clear old files, run the shed phase alone with its Phase 1 spot-check."

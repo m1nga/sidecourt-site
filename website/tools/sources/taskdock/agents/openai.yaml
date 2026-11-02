@@ -1,0 +1,4 @@
+interface:
+  display_name: "TaskDock Work Continuity"
+  short_description: "Resume work, find current files, and organize with undo"
+  default_prompt: "Use $taskdock to continue this task from its existing files, check the current outcome against recorded decisions, and keep its evidence and next steps ready for the next session. If organization is needed, plan and verify reversible changes within this task."

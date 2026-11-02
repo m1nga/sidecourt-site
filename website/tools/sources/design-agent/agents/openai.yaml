@@ -1,0 +1,5 @@
+interface:
+  display_name: "Reference Led Design"
+  short_description: "Turn visual references into designs and verified interfaces"
+  default_prompt: "Use $design-agent to turn these references and my feedback into a concrete design result within the current task scope."
+

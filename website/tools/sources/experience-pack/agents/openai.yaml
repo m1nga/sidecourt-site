@@ -1,0 +1,4 @@
+interface:
+  display_name: "Project Lessons Log"
+  short_description: "Record reusable lessons without carrying expired decisions"
+  default_prompt: "Use $experience-pack to record what just happened in this project's EXPERIENCE.md ledger, or distill the ledger's entries into portable lessons via the experience-vs-decision boundary test."

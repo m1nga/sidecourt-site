@@ -1,0 +1,4 @@
+interface:
+  display_name: "First-Time User Tester"
+  short_description: "Test your product as a new user and rank what to fix"
+  default_prompt: "Use $product-experience-officer to experience the product as a zero-context first-time user (screenshots or live run), then report a verdict, a first-person experience log, severity-ranked findings with one recommended fix each, and a to-verify checklist. Keep the two phases separated: raw experience first, expert diagnosis second."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Stock Portfolio Brief"
+  short_description: "Turn holdings and fresh evidence into a clear stock decision"
+  default_prompt: "Use $daily-brief to review my stock holdings against fresh evidence and explain what action is justified now."

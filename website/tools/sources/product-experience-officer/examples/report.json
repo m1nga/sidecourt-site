@@ -1,0 +1,23 @@
+{
+  "product": "Fictional Reading List",
+  "persona": "A nontechnical first-time visitor",
+  "mode": "simulation",
+  "review_type": "context_aware",
+  "limits": "An illustrative fixture. No real browser session or human participant was observed.",
+  "verdict": "Test whether the first save can succeed before asking for organization.",
+  "experience_log": [
+    "Illustrative: I see an empty library and look for a way to add one link."
+  ],
+  "tasks": [
+    {
+      "goal": "Save one link",
+      "result": "not_tested",
+      "evidence": "Illustrative fixture; requires a live product test."
+    }
+  ],
+  "findings": [],
+  "strengths": [],
+  "to_verify": [
+    "Run the first-save task and an invalid-link recovery path in the real product."
+  ]
+}

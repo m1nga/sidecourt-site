@@ -1,0 +1,4 @@
+interface:
+  display_name: "Publish Skills on GitHub"
+  short_description: "Review, improve, and publish usable skills to GitHub"
+  default_prompt: "Use $publish-skill-product to review this skill from a new user’s perspective, learn from similar skills, refine it, and publish a verified GitHub product."

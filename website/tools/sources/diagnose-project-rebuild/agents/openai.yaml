@@ -1,0 +1,4 @@
+interface:
+  display_name: "Project Rebuild Advisor"
+  short_description: "Decide whether to recover, repair, rebuild, continue, or stop"
+  default_prompt: "Use $diagnose-project-rebuild to inspect this project, identify its actual failure mode, and recommend the safest next foundation with confidence and a flip condition."

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="550" viewBox="0 0 1200 550" role="img" aria-labelledby="title desc">
+<title id="title">TaskDock: keep agent work ready to continue</title><desc id="desc">A workflow diagram showing a current result linked to decisions and history, with preview, apply and undo for file organization.</desc>
+<rect width="1200" height="550" rx="24" fill="#f4f2e9"/>
+<g font-family="Arial,Helvetica,sans-serif" fill="#173c30">
+<text x="56" y="66" font-size="24" font-weight="700">TASKDOCK</text>
+<text x="56" y="134" font-size="44" font-weight="700">Keep the work ready to continue.</text>
+<text x="56" y="177" font-size="22" fill="#50645b">One task. A current result. The reasons behind it.</text>
+<rect x="56" y="222" width="328" height="212" rx="15" fill="#ffffff"/>
+<text x="80" y="264" font-size="18" fill="#687970">RESUME</text>
+<text x="80" y="303" font-size="26" font-weight="700">Find the current work</text>
+<text x="80" y="344" font-size="20">Same task, even after a move.</text>
+<text x="80" y="380" font-size="20">Read the next step and evidence.</text>
+<rect x="412" y="222" width="328" height="212" rx="15" fill="#173c30"/>
+<text x="436" y="264" font-size="18" fill="#bddece">ORGANIZE</text>
+<text x="436" y="303" font-size="26" font-weight="700" fill="#ffffff">Keep history intact</text>
+<text x="436" y="344" font-size="20" fill="#e0ece5">Preview moves and link repairs.</text>
+<text x="436" y="380" font-size="20" fill="#e0ece5">Apply, check, or undo.</text>
+<rect x="768" y="222" width="376" height="212" rx="15" fill="#ffffff"/>
+<text x="792" y="264" font-size="18" fill="#687970">CONTINUE</text>
+<text x="792" y="303" font-size="26" font-weight="700">Leave a usable handoff</text>
+<text x="792" y="344" font-size="20">Current result + decisions + history.</text>
+<text x="792" y="380" font-size="20">A clear place to start next time.</text>
+<text x="56" y="492" font-size="21" font-weight="700">npx skills add m1nga/taskdock</text>
+<text x="1144" y="492" text-anchor="end" font-size="18" fill="#50645b">Local files · Python · No account</text>
+</g></svg>

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Map Product Journeys"
+  short_description: "Connect user journeys, missing paths, and delivery slices"
+  default_prompt: "Use $map-product-system to turn this product idea, document set, or codebase into an evidence-labeled end-to-end system map with gaps, decisions, and delivery slices."

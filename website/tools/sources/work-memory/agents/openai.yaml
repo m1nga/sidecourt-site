@@ -1,0 +1,6 @@
+interface:
+  display_name: "Work Memory"
+  short_description: "Retain useful work and test lessons against outcomes"
+  default_prompt: "Use $work-memory to recall relevant work, capture meaningful changes, and check what the evidence says we should retain or revise."
+policy:
+  allow_implicit_invocation: true

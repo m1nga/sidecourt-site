@@ -1,0 +1,33 @@
+{
+  "project": "Reading list",
+  "goal": "Make a new visitor able to save and recover one link",
+  "scope": "One capture dialog and one result card; preserve existing data and navigation",
+  "content": "Use an original example link and a title the visitor recognizes. All interface copy is English.",
+  "references": [
+    {
+      "id": "capture",
+      "status": "unseen",
+      "url": "https://karakeep.com",
+      "transfer": "Evaluate the value of fast capture; inspect before making visual claims."
+    }
+  ],
+  "tasks": [
+    {
+      "goal": "Save share text without requiring technical knowledge",
+      "method": "Forgiving paste with an optional title and inline recovery",
+      "source_refs": [
+        "capture"
+      ],
+      "steps": [
+        "Accept a full link surrounded by ordinary share text.",
+        "Show a useful result with a remembered title.",
+        "Keep advanced import options secondary."
+      ],
+      "checks": [
+        "Paste a title plus a valid link and find one saved result.",
+        "Paste invalid text and see a specific, recoverable error.",
+        "Save the same link twice without duplicating it."
+      ]
+    }
+  ]
+}

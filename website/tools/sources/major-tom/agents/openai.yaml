@@ -1,0 +1,4 @@
+interface:
+  display_name: "Task Execution Coordinator"
+  short_description: "Turn intent into traced execution and grounded learning"
+  default_prompt: "Use $major-tom to turn my instruction into scoped work for existing owners, verify the result, and retain the useful learning."

@@ -108,7 +108,9 @@ print('Canonical SideCourt application published; historic displays redirected.'
 # still public by link -> noindex page; gone -> neutral placeholder. The list is the public read the website itself
 # performs, with the publishable key it ships. If that read fails the deploy still goes out with the committed pages.
 # Twin of the source repository's scripts/public-page-html.mjs (same output for the same data).
-application = (platform / 'index.html').read_text(encoding='utf-8')
+from tools_pages import inject_home_tools, publish_tools
+application = inject_home_tools((platform / 'index.html').read_text(encoding='utf-8'))
+(out/'index.html').write_text(application)
 try:
  config = read_config(platform / 'config.js')
 except Exception as error:
@@ -148,3 +150,10 @@ for relative, data in [('index.html', ORGANIZATION), ('cleanpause/index.html', S
 # Listed works are added by name and address only (the makers' descriptions stay on their pages).
 (out / 'llms.txt').write_text(llms_text((root / 'llms.txt').read_text(encoding='utf-8'), public['llms']), encoding='utf-8')
 print('Structured data added to', 4, 'pages; llms.txt published.')
+
+# Owned product and skill entry points share the canonical SideCourt domain.
+tool_urls=publish_tools(root,out)
+from xml.etree import ElementTree as ET
+existing=[node.text for node in ET.fromstring((out/'sitemap.xml').read_text()).iter('{http://www.sitemaps.org/schemas/sitemap/0.9}loc')]
+(out/'sitemap.xml').write_text(sitemap_xml(existing+tool_urls))
+(out/'llms.txt').write_text((out/'llms.txt').read_text()+'\n## Tools and skills by Ming\n'+''.join('- '+x['name']+': https://sidecourt.space'+x['url']+' — '+x['description']+'\n' for x in __import__('json').loads((root/'tools/catalog.json').read_text())['items']))

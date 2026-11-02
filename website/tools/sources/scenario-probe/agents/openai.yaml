@@ -1,0 +1,4 @@
+interface:
+  display_name: "AI Instruction Stress Test"
+  short_description: "Find trigger, collision, and behavior failures before release"
+  default_prompt: "Use $scenario-probe to wind-tunnel this instruction text: cast personas from the owner's real contexts, audit the trigger surface alone, walk the body line-by-line per scenario, and report false-fires, collisions, and silent failures with line-anchored fixes."

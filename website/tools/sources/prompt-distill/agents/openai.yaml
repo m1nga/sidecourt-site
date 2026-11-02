@@ -1,0 +1,4 @@
+interface:
+  display_name: "Clean Up Prompts"
+  short_description: "Turn dictated notes into a clear reusable prompt"
+  default_prompt: "Use $prompt-distill to turn this rough input into a clear, reusable prompt while preserving my meaning and voice."
