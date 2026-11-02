@@ -1,6 +1,6 @@
 // Daycup interface languages. English strings are the source keys; zhStrings maps them to Simplified Chinese.
 // No network, no external library. Works in the browser, the standalone bundle and Node tests.
-export const appVersion='2.2.0';
+export const appVersion='2.3.0';
 export const languages={en:'English',zh:'中文'};
 const zhStrings={};
 let activeLanguage='en';

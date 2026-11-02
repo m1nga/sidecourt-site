@@ -1,8 +1,8 @@
 {
   "id": "./",
-  "name": "Daycup — A daily ritual / 每日一杯",
+  "name": "Daycup \u2014 A daily ritual",
   "short_name": "Daycup",
-  "description": "Offline coffee companion: your setup, your beans, a starting recipe and a timer. 离线咖啡助手：你的设备、你的豆子、起始配方和计时器。",
+  "description": "Your beans, your setup, a recipe and a place to remember each cup. Works offline.",
   "lang": "en",
   "start_url": "./#brew",
   "scope": "./",

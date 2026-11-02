@@ -1,2 +1,2 @@
-09185d71ccc1ddec63e0c07da911e9b5ccfda722f573ccf17fc6e98fb2d02c5b  Daycup.html
-31d53132e6a1e4462a1d5d2660f276849fd3222f7ba68dea533fdbccf42d5e4e  Daycup-local-first.zip
+b1b4071ae17442fbfbc55d16be413fe4adb7b204b58a402cec04dd4cd46ec333  Daycup.html
+af575571ca006813b7ae323ac9a935e207ed029dea4c217d774f09e9410578c0  Daycup-local-first.zip

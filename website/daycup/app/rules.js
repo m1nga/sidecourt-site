@@ -61,7 +61,7 @@ if(e.waterNote)r.contextNotes.push(t('Your saved water: {note}',{note:e.waterNot
  }
  return r;
 }
-function sameBrewContext(x,e,b,preference,dose,request){return x?.recipe&&same(x.recipe.equipment,e)&&same(x.recipe.bean,b)&&x.recipe.preference===preference&&Math.abs(x.recipe.dose-dose)<.01&&same(x.recipe.request||{drink:x.recipe.equipment.method,strength:'standard'},request);}
+export function sameBrewContext(x,e,b,preference,dose,request){return x?.recipe&&same(x.recipe.equipment,e)&&same(x.recipe.bean,b)&&x.recipe.preference===preference&&Math.abs(x.recipe.dose-dose)<.01&&same(x.recipe.request||{drink:x.recipe.equipment.method,strength:'standard'},request);}
 export function captureBrewRecipe(r,f){
  const copy=structuredClone(r),value=f.grindSetting?.trim();
  if(value){parseGrind(r.equipment,value);if(copy.version===knowledgeVersion){copy.grindData={...(copy.grindData||{}),value,kind:'measured'};copy.confidence=t('Measured setting · confirm the next cup by taste');}copy.grind=t('Your measured grind setting: {value}',{value});}
@@ -138,8 +138,9 @@ function validBean(p){
  return p&&text(p.name)&&p.name.trim()&&['light','medium','dark','unknown'].includes(p.roast)&&typeof p.blend==='boolean'&&text(p.batch)&&['origin','process','roastedOn'].every(k=>p[k]===undefined||p[k]===null||text(p[k]));
 }
 export function validateEntry(e){
- if(!e||typeof e.id!=='string'||!/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.test(e.id)||!['bean','equipment','brew'].includes(e.kind)||typeof e.created!=='string'||Number.isNaN(Date.parse(e.created))||typeof e.payload!=='string'||new TextEncoder().encode(e.payload).length>=64000)throw Error(t('This backup contains an invalid record.'));
+ if(!e||typeof e.id!=='string'||!/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.test(e.id)||!['bean','equipment','brew','photo'].includes(e.kind)||typeof e.created!=='string'||Number.isNaN(Date.parse(e.created))||typeof e.payload!=='string'||new TextEncoder().encode(e.payload).length>=(e.kind==='photo'?260000:64000))throw Error(t('This backup contains an invalid record.'));
  const p=JSON.parse(e.payload);if(!p||p.id!==e.id)throw Error(t('The record IDs do not match.'));
+ if(e.kind==='photo'){if(typeof p.beanId!=='string'||!/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.test(p.beanId)||p.created!==e.created||typeof p.image!=='string'||(p.image!==''&&!/^data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/.test(p.image)))throw Error('Invalid local bag photo.');}
  if(e.kind==='equipment')validateEquipment(p,false);
  if(e.kind==='bean'){if(!validBean(p))throw Error(t('A bean record is incomplete.'));validateLabel(p.labelRecipe);}
  if(e.kind==='brew'){

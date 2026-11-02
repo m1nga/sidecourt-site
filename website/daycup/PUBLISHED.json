@@ -22,8 +22,8 @@
     "sw.js"
   ],
   "sha256": {
-    "Daycup.html": "09185d71ccc1ddec63e0c07da911e9b5ccfda722f573ccf17fc6e98fb2d02c5b",
-    "Daycup-local-first.zip": "31d53132e6a1e4462a1d5d2660f276849fd3222f7ba68dea533fdbccf42d5e4e"
+    "Daycup.html": "b1b4071ae17442fbfbc55d16be413fe4adb7b204b58a402cec04dd4cd46ec333",
+    "Daycup-local-first.zip": "af575571ca006813b7ae323ac9a935e207ed029dea4c217d774f09e9410578c0"
   },
-  "source_commit": "6e2251abe4c54817ca34076e31d843a9ace9abaa"
+  "source_commit": "39b29c64bef4ea338cb3882f93fabb9fbdd99928"
 }
