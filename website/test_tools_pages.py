@@ -22,7 +22,7 @@ class ToolsTest(unittest.TestCase):
     self.assertTrue((out/('skills/'+item['slug']+'/index.html')).is_file())
     with zipfile.ZipFile(out/item['package'].lstrip('/')) as z:
      self.assertIn(item['slug']+'/SKILL.md',z.namelist());self.assertIsNone(z.testzip());self.assertEqual(len(z.namelist()),len(set(z.namelist())))
-   red=(out/'drops/redbot/app/index.html').read_text();self.assertIn('REDBOT_SEED',red);self.assertNotIn('6ae4be29000000002501b621',red)
+   red=(out/'drops/redbot/app/index.html').read_text();self.assertIn('demo.js',red);seed=(out/'drops/redbot/app/demo.js').read_text();self.assertIn('REDBOT_SEED',seed);self.assertNotIn('6ae4be29000000002501b621',red+seed)
    self.assertIn('https://sidecourt.space/drops/redbot/app/',red)
    self.assertFalse((out/'tools/library.json').exists())
 if __name__=='__main__':unittest.main()

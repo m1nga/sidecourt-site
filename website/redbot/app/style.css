@@ -11,5 +11,3 @@
 .goal-edit{margin:0}.goal-edit>summary{border:1px solid #d7e0d0;border-radius:10px;background:#f0f4ed;padding:14px 18px;line-height:1.6;overflow-wrap:anywhere;color:#465a3b}.goal-edit>summary span{font-size:11px;text-transform:uppercase;margin-left:15px;color:#7a8a6f}.goal-edit[open]>summary{margin-bottom:16px}#start-title:focus{outline:none}
 
 .ai-controls{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:12px 0}.ai-controls small{color:#6b756b;font-size:12px;max-width:540px}.ai-controls button{white-space:nowrap}
-
-.sample-notice{display:flex;justify-content:space-between;gap:16px;align-items:center;font-size:12px;color:#78886d;margin:0 0 24px;padding:10px 0;border-bottom:1px solid #e1e6da}.sample-notice div{display:flex;gap:16px;flex-wrap:wrap}.sample-notice a{color:#4c6c3c}@media(max-width:650px){.sample-notice{align-items:flex-start;flex-direction:column}}
