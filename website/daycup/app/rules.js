@@ -36,7 +36,7 @@ function brewServing(r,waterRatio){
  const ratio=waterRatio??({strong:2,standard:3,light:4}[r.request.strength]);
  const waterG=Math.round(r.output*ratio*10)/10,iceG=r.drink==='iced-americano'?Math.round(r.output*3*10)/10:0;
  return {waterG,iceG,waterRatio:ratio,totalMassG:Math.round((r.output+waterG+iceG)*10)/10,
-  note:t(r.drink==='americano'?'Daycup editorial dilution starting point. Add separately weighed hot water to the extracted espresso; never run all dilution water through the coffee puck. This is ingredient mass, not measured drink volume.':'Daycup editorial dilution starting point, not a manufacturer optimum. Total mass includes unmelted ice; it is not liquid volume or a predicted melt amount. Weigh espresso separately before adding cold water and ice.')};
+  note:t(r.drink==='americano'?'DayCup editorial dilution starting point. Add separately weighed hot water to the extracted espresso; never run all dilution water through the coffee puck. This is ingredient mass, not measured drink volume.':'DayCup editorial dilution starting point, not a manufacturer optimum. Total mass includes unmelted ice; it is not liquid volume or a predicted melt amount. Weigh espresso separately before adding cold water and ice.')};
 }
 function completeRecipe(r,request){
  const e=r.equipment,b=r.bean,label=b.labelRecipe?.method===e.method&&Math.abs(b.labelRecipe.dose-r.dose)<.01?b.labelRecipe:null;
@@ -57,7 +57,7 @@ if(e.waterNote)r.contextNotes.push(t('Your saved water: {note}',{note:e.waterNot
  if(e.method==='v60'&&!label?.timeMin){
   const bloom=Math.round(r.dose*2*10)/10,first=Math.round(r.output*.6*10)/10;
   r.pours=[{at:0,until:45,totalG:bloom,label:t('Bloom: saturate the bed and swirl gently')},{at:45,until:75,totalG:first,label:t('Pour evenly to this cumulative scale reading')},{at:75,until:105,totalG:r.output,label:t('Finish pouring to this cumulative scale reading')}];
-  r.contextNotes.push(t('The pour schedule is a scaled Daycup adaptation of the Hario-hosted technique. Do not overfill the dripper; let it drain before continuing. Total water is not beverage yield.'));
+  r.contextNotes.push(t('The pour schedule is a scaled DayCup adaptation of the Hario-hosted technique. Do not overfill the dripper; let it drain before continuing. Total water is not beverage yield.'));
  }
  return r;
 }
@@ -106,7 +106,7 @@ export function recommend(e,b,preference,dose,brews=[],options={}){
  if(e.method==='espresso'){if(preference==='clarity')ratio+=.25;if(preference==='body'&&b.roast!=='light')ratio=1.75;}
  else {if(preference==='body')ratio=15;if(preference==='clarity')ratio=17;}
  const label=b.labelRecipe?.method===e.method&&Math.abs(b.labelRecipe.dose-dose)<.01?b.labelRecipe:null;
- const r={id:crypto.randomUUID(),equipment:structuredClone(e),bean:structuredClone(b),preference,dose,output:label?label.output:Math.round(dose*ratio*10)/10,timeMin:label?.timeMin??(e.method==='espresso'?25:180),timeMax:label?.timeMax??(e.method==='espresso'?32:240),origin:t(label?'Uses the recipe you entered from this bag, ahead of taste preferences. Other numbers remain clearly labeled starting guidance.':'A source-backed recipe framework with editable Daycup starting choices, ready to refine through measured tasting'),sources:e.method==='espresso'?[brewSources.espresso,brewSources.ratios]:[brewSources.v60]};
+ const r={id:crypto.randomUUID(),equipment:structuredClone(e),bean:structuredClone(b),preference,dose,output:label?label.output:Math.round(dose*ratio*10)/10,timeMin:label?.timeMin??(e.method==='espresso'?25:180),timeMax:label?.timeMax??(e.method==='espresso'?32:240),origin:t(label?'Uses the recipe you entered from this bag, ahead of taste preferences. Other numbers remain clearly labeled starting guidance.':'A source-backed recipe framework with editable DayCup starting choices, ready to refine through measured tasting'),sources:e.method==='espresso'?[brewSources.espresso,brewSources.ratios]:[brewSources.v60]};
  return completeRecipe(r,request);
 }
 export function adjust(r,f){
@@ -157,7 +157,7 @@ export function validateEntry(e){
 function validateRecipeExtras(r,f,d){
  if(f.grindSetting!==undefined&&(typeof f.grindSetting!=='string'||f.grindSetting.length>100))throw Error(t('Invalid recorded grind setting.'));
  if(f.grindSetting)parseGrind(r.equipment,f.grindSetting);
- if(![knowledgeVersion,'daycup-brewing-2.0.0'].includes(r.version)){if(['temperature','pours','serving','grindData','request'].some(k=>r[k]!=null))throw Error(t('This recipe has unsupported versioned fields. Keep the original backup and update Daycup.'));return;}
+ if(![knowledgeVersion,'daycup-brewing-2.0.0'].includes(r.version)){if(['temperature','pours','serving','grindData','request'].some(k=>r[k]!=null))throw Error(t('This recipe has unsupported versioned fields. Keep the original backup and update DayCup.'));return;}
  if(r.version===knowledgeVersion&&r.timeDiagnostic!==(basketMode(r.equipment)!=='pressurized'))throw Error(t('Invalid basket timing mode.'));
  if(r.version==='daycup-brewing-2.0.0'&&(r.drink==='americano'||r.timeDiagnostic===false))throw Error(t('Fields do not match the historical recipe version.'));
  if(!drinks[r.drink]||!r.request||!drinkStrengths[r.request.strength]||r.request.drink!==r.drink||r.drink==='v60'&&r.equipment.method!=='v60'||r.drink!=='v60'&&r.equipment.method!=='espresso')throw Error(t('Invalid drink or setup in this recipe.'));
@@ -180,7 +180,7 @@ function validateRecipeExtras(r,f,d){
 export function explainRecipe(r){
  const e=r.equipment,b=r.bean,notes=[t('Confirmed working dose D = {dose} g, within this setup’s {min}–{max} g capacity.',{dose:r.dose,min:e.minDose,max:e.maxDose}),t('{quantity} = D × R = {dose} × {ratio} ≈ {output} g.',{quantity:t(e.method==='espresso'?'Espresso yield E':'Total brew water W'),dose:r.dose,ratio:Math.round(r.output/r.dose*1000)/1000,output:r.output})];
  const label=b.labelRecipe;
- notes.push(label?.method===e.method&&Math.abs(label.dose-r.dose)<.01?t('R comes from your bag recipe at the same method and dose; this overrides the taste-preference table.'):t('R is a Daycup starting choice for {roast} roast and {preference} preference. It is not a claim that a specific bean variety extracts to a known percentage.',{roast:t(roasts[b.roast]||b.roast),preference:t(preferences[r.preference]||r.preference)}));
+ notes.push(label?.method===e.method&&Math.abs(label.dose-r.dose)<.01?t('R comes from your bag recipe at the same method and dose; this overrides the taste-preference table.'):t('R is a DayCup starting choice for {roast} roast and {preference} preference. It is not a claim that a specific bean variety extracts to a known percentage.',{roast:t(roasts[b.roast]||b.roast),preference:t(preferences[r.preference]||r.preference)}));
  if(r.serving){notes.push(t('Dilution water = E × k = {output} × {ratio} = {water} g. It is added after extraction, not run through the puck.',{output:r.output,ratio:r.serving.waterRatio,water:r.serving.waterG}));notes.push(t('Total ingredient mass = espresso + water + ice = {output} + {water} + {ice} = {total} g. This is not a cup-volume or ice-melt prediction.',{output:r.output,water:r.serving.waterG,ice:r.serving.iceG,total:r.serving.totalMassG}));}
  if(e.method==='v60')notes.push(t('Brew water is the water poured, not the beverage yield. Bloom and cumulative pours are part of that total, never added on top.'));
  notes.push(t('Machine and grinder select valid capabilities, temperature controls and safe adjustment references. Basket capacity limits dose; roast and preference set the starting ratio; measured taste and flow guide the next trial.'));

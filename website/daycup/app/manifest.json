@@ -1,7 +1,7 @@
 {
   "id": "./",
-  "name": "Daycup \u2014 A daily ritual",
-  "short_name": "Daycup",
+  "name": "DayCup \u2014 A daily ritual",
+  "short_name": "DayCup",
   "description": "Your beans, your setup, a recipe and a place to remember each cup. Works offline.",
   "lang": "en",
   "start_url": "./#brew",

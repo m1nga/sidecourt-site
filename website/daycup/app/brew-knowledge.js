@@ -1,7 +1,7 @@
 import {t} from './i18n.js';
 import {catalogRows,validateBeanTaxonomy,beanSpecies,beanCaffeine,basketMode,separateModel} from './catalog-extension.js';
 // Versioned offline knowledge, not an API or a universal grind-size conversion.
-// Values marked editorial are Daycup starting choices, not manufacturer guarantees.
+// Values marked editorial are DayCup starting choices, not manufacturer guarantees.
 export const knowledgeVersion = 'daycup-brewing-2.1.0';
 export const knowledgeChecked = '2026-09-18';
 export const brewSources = {
@@ -22,8 +22,8 @@ export const grinderKnowledge = {
  'baratza-encore-esp-pro': {kind:'numeric',min:0,max:null,step:null,finer:'lower',espresso:{start:40,range:[0,40],source:brewSources.espresso,note:'ESP Pro is not the original ESP. The current guide starts at 40; record a small repeatable movement on your stepless dial.'},v60:{start:50,source:brewSources.filter}},
  'baratza-vario-w-plus': {kind:'compound',v60:{start:'8M',source:brewSources.filter},espresso:{source:brewSources.espresso,note:'Record both the numbered macro lever and lettered micro lever; start the micro lever near its centre. No single-number conversion is valid.'}},
  'fellow-ode-gen-2': {kind:'numeric',min:1,max:11,step:null,finer:'lower',v60:{start:5,source:brewSources.fellow,note:'For stock Gen 2 burrs only. SSP or other burrs need their own calibration.'},filterOnly:true},
- '1zpresso-k-ultra': {requiresConfirmedRange:true,kind:'numeric',min:0.1,max:null,step:0.1,finer:'lower',espresso:{source:brewSources.manual,note:'Record the displayed number, including the turn count when applicable. One displayed 0.1 is one click; no unverified espresso starting number is supplied.'},v60:{start:8.5,range:[8,9],source:brewSources.zp6,note:'The manufacturer suggests 80–90 clicks (displayed 8–9). 8.5 is Daycup’s midpoint trial. Ten clicks equal one numbered interval; retain your safe zero reference.'}},
- '1zpresso-zp6-special': {requiresConfirmedRange:true,kind:'numeric',min:0.1,max:null,step:0.1,finer:'lower',v60:{start:4.5,range:[4,5],source:brewSources.zp6,note:'4–5 is the manufacturer pour-over reference; 4.5 is Daycup’s midpoint trial, not a measured calibration.'},filterOnly:true},
+ '1zpresso-k-ultra': {requiresConfirmedRange:true,kind:'numeric',min:0.1,max:null,step:0.1,finer:'lower',espresso:{source:brewSources.manual,note:'Record the displayed number, including the turn count when applicable. One displayed 0.1 is one click; no unverified espresso starting number is supplied.'},v60:{start:8.5,range:[8,9],source:brewSources.zp6,note:'The manufacturer suggests 80–90 clicks (displayed 8–9). 8.5 is DayCup’s midpoint trial. Ten clicks equal one numbered interval; retain your safe zero reference.'}},
+ '1zpresso-zp6-special': {requiresConfirmedRange:true,kind:'numeric',min:0.1,max:null,step:0.1,finer:'lower',v60:{start:4.5,range:[4,5],source:brewSources.zp6,note:'4–5 is the manufacturer pour-over reference; 4.5 is DayCup’s midpoint trial, not a measured calibration.'},filterOnly:true},
  'fellow-opus-original': {kind:'compound',espresso:{source:'https://help.fellowproducts.com/hc/en-us/articles/12697465736091-Is-Opus-1-suitable-for-grinding-espresso',note:'Record both the outer dial and inner-ring offset. Do not reuse an Opus 2 setting.'},v60:{source:brewSources.fellow,note:'Use the original Opus pour-over range on the lid; record both adjustment rings.'}},
  'niche-zero': {kind:'stepless',espresso:{source:'https://www.nichecoffee.co.uk/products/niche-zero',note:'Use your own calibrated zero and record the dial position. An unverified universal number is not supplied.'},v60:{source:'https://www.nichecoffee.co.uk/products/niche-zero',note:'Use a filter trial on your own calibrated dial; preserve the calibration reference.'}}
 };
