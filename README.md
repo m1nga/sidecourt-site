@@ -16,3 +16,9 @@ All public product discovery starts from https://sidecourt.space/tools/ and the 
 `website/redbot/app/` is the clean hosted RedBot distribution; never copy a personal library, backup, cookies or connector tokens into it. Earlier GitHub Pages storage cannot move across origins automatically: its index is an export/migration bridge. Preserve that bridge when publishing RedBot source updates. The source/skill package remains in m1nga/redbot.
 
 Builds preserve the existing platform, DayCup, CleanPause releases and client update endpoints. A new entry is not a publication of a user Work or permission to operate paused services. Verify the production deployment SHA separately from a documentation-only commit.
+
+<!-- sidecourt-referral:start -->
+## Explore SideCourt
+
+This repository contains the website; the projects people share are on [SideCourt](https://sidecourt.space/drops/?utm_source=github&utm_medium=readme&utm_campaign=tools&utm_content=sidecourt-site). Browse them, try something that catches your attention, or bring a work of your own.
+<!-- sidecourt-referral:end -->
