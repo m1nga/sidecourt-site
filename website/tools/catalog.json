@@ -1,6 +1,6 @@
 {
   "updated": "2026-11-03",
-  "source_commit": "8413cae7573a23023762d76469643796542bf99c",
+  "source_commit": "10df5fb275d6b904ecf8d5ff2c789bd444eb4b35",
   "items": [
     {
       "slug": "redbot",
@@ -15,8 +15,8 @@
       "install": "npx skills add m1nga/redbot",
       "package": "/tools/packages/redbot.zip",
       "bring": "A goal and some saved text. The preview includes original examples.",
-      "result": "One relevant source, a useful passage and a next step.",
-      "example": "Find a saved idea to make my page less cluttered."
+      "result": "A relevant source, a short extract, conditions to check and an editable project prompt.",
+      "example": "Check this saved free-tool claim, then help me use its method in my project."
     },
     {
       "slug": "daycup",

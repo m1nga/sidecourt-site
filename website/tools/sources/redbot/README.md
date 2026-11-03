@@ -4,7 +4,7 @@ You remember saving something useful. Now you need it, but cannot remember which
 
 **[Try RedBot on SideCourt](https://sidecourt.space/drops/redbot/) · [Open the preview](https://sidecourt.space/drops/redbot/app/) · [Five-minute user test](https://sidecourt.space/drops/redbot/test/)**
 
-**Version 1.5 is an interaction preview.** Connecting your own Xiaohongshu account is being built. The public webpage cannot sync your account yet. Its original example notes let you try the experience without uploading anything.
+**Version 1.6 is an interaction preview.** Connecting your own Xiaohongshu account is being built. The public webpage cannot sync your account yet. Its original example notes let you try the experience without uploading anything.
 
 ## Who it's for
 
@@ -16,7 +16,8 @@ People who save ideas for later and then struggle to find something useful when 
 2. Describe a need, such as “Make my page less cluttered.” A rough description is enough.
 3. Read one suggested starting point, the saved passage behind it and a concrete next action. Open the original source when you need more context.
 4. Choose **Save for later** to leave a plan you can continue next visit. **Try another** changes the recommendation; if nothing supports a choice, RedBot says so.
-5. **My saves** is there when you want to browse or search the whole library. Organizing and backups are secondary controls.
+5. Choose **Short version & use** for a short extract, cost/promotion cues and an editable prompt for Codex or Claude Code. Try “Check a free AI tool before trying it” for a clearly fictional practice example.
+6. **My saves** is there when you want to browse or search the whole library. Organizing and backups are secondary controls.
 
 Optional **Search by meaning** downloads a multilingual model and runs it on your device. Basic matching works without this download or a new AI API key. Title-only sources remain **Needs reading**; a saved link is not evidence that RedBot has read the post or watched its video.
 
@@ -29,7 +30,9 @@ The intended everyday setup is connect your account, bring in your saves, then a
 | Too many saves to choose from | A goal, one clarification when needed, one supported starting point |
 | Cannot remember the exact words | Optional on-device semantic retrieval over saved text |
 | Do not know which part to read | A saved passage, note or time anchor next to its source |
-| Reading never turns into doing | One next action; imported guides can include editable instructions |
+| Reading never turns into doing | One next action; editable source-grounded Codex or Claude Code prompt |
+| A “free” tool may have strings attached | Quoted wording cues, explicit unknowns and optional live GitHub repository facts |
+| Too much text to reread | A bounded short extract with notes/text/video/comment coverage stated |
 | Have to start again next visit | A saved plan and notes in the same browser |
 | Want to browse or organize | Search, collections, favorites, read status, archive and recoverable trash |
 | Want help inside an AI assistant | A read-only companion skill for an authorized backup or local Mac library |
@@ -68,6 +71,16 @@ You ask: “The screen feels busy; I need the main action to be obvious.”
 
 The original layout example can supply a passage about competing headings and controls, followed by an action: change the emphasis in one section and compare it at the same viewport. This is illustrative guidance, not evidence of improved conversion. If only a saved title exists, RedBot shows that it needs reading instead of inventing a passage.
 
+## Check a claim, then use the method
+
+Open **Short version & use** on a save or recommendation. The short version is an extract of existing text or notes, not a newly generated AI summary. Expand the wording cues to inspect free claims, payment conditions, promotion and strong promises. Cues identify what to check; they do not decide whether a project is fake.
+
+**Check GitHub now** retrieves public license, archive status and last-push facts for up to three identified repositories. Only repository names are sent to GitHub; GitHub receives ordinary network request information. No post text, account login or API token is sent. Errors and rate limits remain unverified. These facts do not establish current pricing, every dependency's license or working functionality.
+
+Edit the useful method and your project goal, choose Codex or Claude Code, then create and review the prompt. Copy it or download it as text. It carries the selected evidence, unresolved checks, a default $0 budget and acceptance requirements. Personal notes are excluded unless you choose to include them. Creating a prompt does not launch an assistant or execute code.
+
+Inside an authorized AI assistant, the companion skill can also summarize a selected post, answer a specific question, and inspect available comments for clarifications or counterexamples. It reports what was actually read. The webpage does not fetch comments or silently use the developer's source account.
+
 ## Privacy and account limits
 
 Your public-preview library stays in this browser's IndexedDB, with a local-storage recovery fallback. It is not automatically synchronized with your other devices. Clearing browser storage may remove it; export a backup from **My data and settings → Library & backups** first. The example notes are original demonstration material, not the developer's personal collection.
@@ -81,7 +94,7 @@ The app shell and model assets may be cached. Offline behavior and installation 
 - Public, isolated Xiaohongshu sign-in, complete collection enumeration and same-phone account authorization.
 - Automatic reading or transcription of every post and video.
 - Cloud synchronization, shared libraries, scheduled reminders or paid video generation.
-- Generative chat, verified retrieval accuracy across large libraries, or guaranteed search visibility.
+- Browser-generated AI summaries or automatic comment reading, verified retrieval accuracy across large libraries, or guaranteed search visibility.
 
 Before a source-connected beta can be called ready, it needs a fresh user's real account flow, reliable continuation of partial scans, preserved notes and plans, and demonstrated separation between users. Connecting an API by itself does not prove these behaviors.
 
@@ -91,7 +104,7 @@ SideCourt is the product's primary home. Browser storage belongs to its original
 
 ## Why
 
-The original problem was not a lack of categories. The owner had organized saves and still did not know what to open. RedBot starts with the current need and makes the next choice smaller. The 1.5 interface keeps two primary destinations, **For now** and **My saves**, with source evidence beside the suggested action. Organizing is available when needed, rather than being the first task.
+The original problem was not a lack of categories. The owner had organized saves and still did not know what to open. RedBot starts with the current need and makes the next choice smaller. The 1.6 interface keeps two primary destinations, **For now** and **My saves**, with source evidence beside the suggested action. Organizing is available when needed, rather than being the first task.
 
 ## Validation
 
