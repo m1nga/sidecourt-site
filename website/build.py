@@ -117,7 +117,7 @@ except Exception as error:
  print('WARNING: config.js was not read (' + type(error).__name__ + '); public pages keep the committed copies.', flush=True)
  config = {}
 public = publish_site_pages(out, application, config, warn=lambda message: print('WARNING: ' + message, flush=True))
-static_urls = ['https://sidecourt.space/', 'https://sidecourt.space/drops/', 'https://sidecourt.space/cleanpause/', 'https://sidecourt.space/drops/daycup/', 'https://sidecourt.space/drops/earbrief/', 'https://sidecourt.space/connect-ai/']
+static_urls = ['https://sidecourt.space/', 'https://sidecourt.space/discovery/', 'https://sidecourt.space/cleanpause/', 'https://sidecourt.space/drops/daycup/', 'https://sidecourt.space/drops/earbrief/', 'https://sidecourt.space/connect-ai/']
 (out / 'sitemap.xml').write_text(sitemap_xml(static_urls + public['sitemap']))
 states = [entry['state'] for entry in public['manifest']['works']]
 print('Public pages:', states.count('listed'), 'listed,', states.count('unlisted'), 'link-only,', states.count('limited'), 'limited,', states.count('withdrawn'), 'withdrawn works;', len(public['manifest']['people']), 'people; sitemap lists', len(dict.fromkeys(static_urls + public['sitemap'])), 'addresses.' + ('' if public['manifest']['complete'] else ' (public list NOT read; committed pages kept)'))
@@ -157,3 +157,6 @@ from xml.etree import ElementTree as ET
 existing=[node.text for node in ET.fromstring((out/'sitemap.xml').read_text()).iter('{http://www.sitemaps.org/schemas/sitemap/0.9}loc')]
 (out/'sitemap.xml').write_text(sitemap_xml(existing+tool_urls))
 (out/'llms.txt').write_text((out/'llms.txt').read_text()+'\n## Tools and skills by Ming\n'+''.join('- '+x['name']+': https://sidecourt.space'+x['url']+' — '+x['description']+'\n' for x in __import__('json').loads((root/'tools/catalog.json').read_text())['items']))
+
+# Discovery directory migration: preserve query/hash, leave all product children untouched.
+(out/'drops/index.html').write_text(redirect_page('/discovery/', True).replace('href="https://sidecourt.space/"','href="https://sidecourt.space/discovery/"'))

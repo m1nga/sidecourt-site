@@ -164,8 +164,8 @@ class Files(unittest.TestCase):
         self.assertIn('&amp;b=2', xml)
 
     def test_route_and_not_found_heads(self):
-        drops = route_page_html(APP, 'drops')
-        self.assertIn('<link rel="canonical" href="https://sidecourt.space/drops/">', drops)
+        drops = route_page_html(APP, 'discovery')
+        self.assertIn('<link rel="canonical" href="https://sidecourt.space/discovery/">', drops)
         self.assertNotIn('name="robots"', drops)
         self.assertIn('<meta name="robots" content="noindex">', route_page_html(APP, 'your-court/settings'))
         self.assertNotIn('name="robots"', route_page_html(APP, 'your-court/privacy'))

@@ -10,6 +10,6 @@
 
 ## Platform
 
-- [Drops](https://sidecourt.space/drops/): all public works.
+- [Discovery](https://sidecourt.space/discovery/): all public works.
 - [Connect an AI](https://sidecourt.space/connect-ai/): use SideCourt from ChatGPT, Claude, Claude Code or Codex to save drafts and read replies.
 - [Sitemap](https://sidecourt.space/sitemap.xml)

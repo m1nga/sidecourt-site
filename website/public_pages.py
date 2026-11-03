@@ -35,7 +35,7 @@ COVER_BLOCKING_LABELS = ('cover_hidden', 'sensitive')
 LLMS_BLOCKING_LABELS = ('agent_caution',)
 WITHDRAWN_TEXT = 'This work isn’t available right now.'
 CONNECT_DESCRIPTION = 'Connect ChatGPT, Claude, Claude Code or Codex to SideCourt. Save private drafts, edit your posts and choose what your AI can access. You decide what gets published.'
-INDEXABLE_ROUTES = frozenset(['', 'drops', 'season', 'get-on', 'inside', 'guide', 'connect-ai', 'your-court/privacy', 'your-court/terms'])
+INDEXABLE_ROUTES = frozenset(['', 'discovery', 'season', 'get-on', 'inside', 'guide', 'connect-ai', 'your-court/privacy', 'your-court/terms'])
 
 # Character classes are spelled out (by code point) so Python and JavaScript agree on every input.
 _CONTROL = re.compile('[' + chr(0) + '-' + chr(8) + chr(0x0e) + '-' + chr(0x1f) + chr(0x7f) + chr(0xd800) + '-' + chr(0xdfff) + ']')
