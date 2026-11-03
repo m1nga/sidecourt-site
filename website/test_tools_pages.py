@@ -10,13 +10,17 @@ class ToolsTest(unittest.TestCase):
   for marker in ['id="home-drops"','id="home-season"','id="main-court"','href="/your-court"']:
    self.assertIn(marker,out)
   self.assertEqual(out.count('id="home-ming-tools"'),1)
-  self.assertIn('href="/tools/">TOOLS',out)
+  self.assertIn('href="/skills/">SKILLS',out)
  def test_catalog_routes_packages_and_no_private_library(self):
   data=json.loads((ROOT/'tools/catalog.json').read_text());self.assertEqual(len(data['items']),20)
   self.assertEqual(len({x['slug'] for x in data['items']}),20)
   with tempfile.TemporaryDirectory() as tmp:
    out=Path(tmp);urls=publish_tools(ROOT,out)
-   self.assertEqual(len(urls),21)
+   self.assertEqual(len(urls),23)
+   products=(out/'products/index.html').read_text();skills=(out/'skills/index.html').read_text()
+   self.assertIn('Less friction.',products);self.assertIn('Give your AI',skills)
+   self.assertNotIn('http-equiv="refresh"',products)
+   self.assertEqual(products.count('data-entry='),4);self.assertEqual(skills.count('data-entry='),17)
    for item in data['items']:
     if 'package' not in item:continue
     self.assertTrue((out/('skills/'+item['slug']+'/index.html')).is_file())

@@ -15,9 +15,9 @@
       "install": "npx skills add m1nga/redbot",
       "package": "/tools/packages/redbot.zip",
       "bring": "Your invitation and your own Xiaohongshu account, or selected saved text.",
-      "result": "A bounded collection scan, selected source text, conditions to check and an editable project prompt.",
+      "result": "Saves appear as they arrive, with useful source text, conditions to check and an editable project prompt.",
       "example": "Check this saved free-tool claim, then help me use its method in my project.",
-      "source_commit": "6a31bd4f9080d7e07920c063b2cb49c15a83250b"
+      "source_commit": "4489142e38c9ebffee21f5a7a1214facc97e0798"
     },
     {
       "slug": "daycup",

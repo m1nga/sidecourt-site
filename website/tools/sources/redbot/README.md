@@ -4,7 +4,7 @@ You saved something useful, but cannot find it when you need it. RedBot helps yo
 
 **[Try RedBot on SideCourt](https://sidecourt.space/drops/redbot/) · [Open the app](https://sidecourt.space/drops/redbot/app/) · [User test](https://sidecourt.space/drops/redbot/test/)**
 
-**Version 1.7 is an invitation-only account test.** Connect your own Xiaohongshu account, scan saved cards and read selected post text. Chinese-first interface with an English switch. The small test host must be online; full collection coverage and same-phone QR sign-in are not yet verified.
+**Version 1.8 is an invitation-only account test.** Connect your own Xiaohongshu account, see saved cards arrive during a scan and read selected post text. Chinese-first interface with an English switch. The small test host must be online; full collection coverage and same-phone QR sign-in are not yet verified.
 
 ## Who it's for
 
@@ -12,9 +12,9 @@ People who collect design references, methods or tools and then struggle to deci
 
 ## Start with your account
 
-1. Open the app, choose **连接小红书 / Connect Xiaohongshu** and enter the invitation you received from Ming.
+1. Open the invitation link you received from Ming. Its code is filled into the visible invitation field; you can also choose **连接小红书 / Connect Xiaohongshu** and enter the code yourself. An existing connected session does not need the invitation again.
 2. Review how the test stores your data. Scan the login code with Xiaohongshu and confirm in that app.
-3. RedBot scans your saved-card list and shows the count, time and partial coverage. You do not need to upload files or copy cookies.
+3. RedBot shows the observed count and adds saved cards as batches arrive. You can browse and search the cards already received while scanning continues, or stop and keep them. You do not need to upload files or copy cookies.
 4. Describe what you want to do in **现在想做 / For now**, or browse **我的收藏 / My saves**.
 5. Open a relevant save and choose **读取这篇正文 / Read this post**. A list scan does not read every post or video.
 6. Read the useful text, inspect cost/promotion cues, save a plan or create an editable prompt for your project.
@@ -79,7 +79,7 @@ A saved layout passage can suggest reducing emphasis on competing controls, foll
 
 This is an unofficial browser connection built on [xiaohongshu-mcp](https://github.com/xpzouying/xiaohongshu-mcp), not official favorites OAuth. Each visitor has a separate process, cookies, identity check and library. The adapter exposes login, saved-card scanning and selected text reads only; no posting, likes, comments or native collection changes.
 
-Scans stop at bounded limits: 2,000 observed cards, 100 scroll steps or a 150-second page timeout. Every result remains marked partial. Interrupted current scans can recover private checkpoints; the next scan starts at the top and deduplicates. Old saves absent from a scan remain intact.
+Scans have no fixed saved-card or scroll-count cutoff. A 45-second lack of new cards and a 30-minute request deadline still end unconfirmed scans as partial. Progress reports what has arrived, rather than a percentage based on a guessed total. A quiet page or an unchanged count does not prove the end of the collection: only a verified successful source response reporting the list end can establish completion. Stops, source errors and unconfirmed endings remain partial. Interrupted current scans can recover private checkpoints; the next scan starts at the top and deduplicates. Old saves absent from a scan remain intact.
 
 When enabled, opening the app checks the connection and a visible page can scan every 15 minutes. Closing it stops new scans; a started job may finish. No source webhook or always-on background scheduler is implied.
 
@@ -103,7 +103,7 @@ The previous native Mac package is a separate build and is not updated by this w
 
 ## Validation
 
-[BETA-VALIDATION.md](BETA-VALIDATION.md) records automated tests and builder trials. One real sign-in returned 289 cards; a repeat scan introduced no duplicates. An interrupted scan recovered, one selected post's caption was retrieved, and a 390-pixel browser layout was checked. These do not prove all favorites were found, the video was watched, two real accounts were isolated, or an unaided user can finish.
+[BETA-VALIDATION.md](BETA-VALIDATION.md) records automated tests and builder trials. The prior 1.7 builder trial returned 289 cards, introduced no duplicates on repeat, recovered an interrupted scan and retrieved one selected post caption. A 390-pixel browser layout was checked. For 1.8, 23 connector fixtures and 27 JavaScript tests passed; controlled browser batches progressed from 20 to 60, and the real library retained 295 unique cards. The final v8 pagination fix passed fixtures but was not followed by another real full scan. Complete real-account enumeration remains unproven. These do not prove all favorites were found, the video was watched, two real accounts were isolated, or an unaided user can finish.
 
 Same-phone QR login, distinct real-user isolation, independent user trials and production uptime remain unverified. This is a small invitation test, not a production sync service.
 

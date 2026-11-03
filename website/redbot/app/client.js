@@ -14,6 +14,7 @@
   let answer = null, working = false, ai = false, aiReady = false, auto = stored('redbot.auto', true);
   let detailId = null, requestActive = false, lastJob = '', lastFetch = '', initial = true;
   let toastTimer, dialogFocus, db;
+  let onboarding = false, offline = false, startedAt = 0;
   let invitation = new URLSearchParams(location.hash.slice(1)).get('invite') || '';
   if (invitation) history.replaceState(null, '', location.pathname + location.search);
 
@@ -53,7 +54,9 @@
     data.items = C.mergeItems(data.items, fresh.items || []).items;
     data.scan = fresh.scan;
     await save();
-    render();
+    if (tab === 'library' && $('#cards')) { cards(); updateProgress(); }
+    else if (tab === 'home' && $('#goal-form')) updateProgress();
+    else render();
   }
   function rememberConnection(value) {
     credentials = value;
@@ -80,7 +83,7 @@
       busy:t('上一项读取还在进行，请稍等。','A read is already running. Please wait.'),
       qr_unavailable:t('暂时没拿到登录码，请重试。','Could not get a sign-in code. Try again.'),
       source_unavailable:t('小红书暂时没有返回内容。已有收藏保留，可稍后重试或重新连接。','Xiaohongshu did not return content. Your saves are kept; retry or reconnect later.'),
-      scan_incomplete:t('本次没有读到完整列表，已有收藏未改动。','The list could not be read. Existing saves are unchanged.'),
+      scan_incomplete:t('本次没有读到列表末尾，已收到的收藏会保留。','The end of the list was not reached. Saves already received are kept.'),
       sync_first:t('先刷新收藏，更新这篇笔记的访问链接。','Refresh your saves to update access to this post.'),
       already_connected:t('账号已连接，可直接刷新收藏。','Already connected. Refresh your saves.'),
     };
@@ -100,6 +103,7 @@
   function dismiss() { $('#dialog').close(); detailId = null; if (dialogFocus?.isConnected) dialogFocus.focus(); }
 
   function activity() {
+    if (offline && credentials) return t('同步暂不可用','Sync unavailable');
     if (status?.job?.state === 'running') {
       return {connect:t('正在准备登录码…','Preparing sign-in…'), verify:t('正在确认你的账号…','Verifying your account…'), scan:status.progress?.seen?t('正在扫描 · 已看到 ','Scanning · seen ')+status.progress.seen:t('正在扫描收藏…','Scanning your saves…'), read:t('正在读取这篇笔记…','Reading this post…')}[status.job.kind];
     }
@@ -122,15 +126,32 @@
     $('#sidecourt-link').textContent = t('SideCourt 上的小工具 ↗','A small tool on SideCourt ↗');
     if (tab === 'home') renderHome(); else renderLibrary();
   }
+  function isScanning() { return status?.job?.state === 'running' && status.job.kind === 'scan'; }
+  function elapsed() {
+    const start = status?.job?.startedAt || status?.job?.started;
+    const seconds = Math.max(0, Math.floor((Date.now() - (start ? Date.parse(start) : startedAt || Date.now())) / 1000));
+    return seconds < 60 ? seconds + t(' 秒','s') : Math.floor(seconds/60) + t(' 分 ','m ') + seconds%60 + t(' 秒','s');
+  }
   function scanLine() {
-    const scan = data.scan;
+    const scan = status?.scan || data.scan;
+    if (offline && credentials) return `<aside class="scan-panel warning" role="status"><strong>${t('暂时联系不上同步服务','Sync service is unavailable')}</strong><p>${t('已到达的收藏可以继续查看。恢复连接后再更新。','You can keep browsing saves already received. Updates will resume when the service returns.')}</p><button data-action="retry-status">${t('重新连接','Retry connection')}</button></aside>`;
+    if (credentials && status?.state !== 'connected' && status?.job?.state === 'failed') return `<aside class="scan-panel warning" role="status"><strong>${t('连接需要恢复，已有收藏仍在','Restore the connection; your saves are kept')}</strong><p>${esc(failure(Error(status.job.error)))}</p><button data-action="connection">${t('恢复连接','Restore connection')}</button></aside>`;
+    if (isScanning()) return `<aside class="scan-panel" role="status" aria-live="polite"><div class="scan-title"><span class="scan-pulse" aria-hidden="true"></span><strong>${t('收藏正在陆续到达','Your saves are arriving')}</strong><span>${elapsed()}</span></div><p>${t('本次已找到','Found this scan:')} <b>${status.progress?.seen ?? scan?.seen ?? 0}</b> ${t('条 · 已到达的可以先看，不用等全部完成。','saves · You can browse them while the rest arrive.')}</p><div class="scan-track" aria-hidden="true"></div><button data-action="cancel-sync">${t('先停在这里','Stop for now')}</button></aside>`;
     if (!scan) return '';
-    return `<div class="sync-line"><span class="status-dot"></span><span>${t('上次扫描','Last scanned')} ${esc(date(scan.at))} · ${t('本次看到','Saw')} ${scan.count} ${t('条','saves')}${scan.added ? ' · +' + scan.added + t(' 新收藏',' new') : ''}</span><button data-action="connection">${t('查看范围','Coverage')}</button></div>`;
+    const complete = scan.complete === true;
+    const title = scan.endReason === 'cancelled' ? t('已停止，收到的收藏都保留了','Stopped. Your saves are kept') : complete ? t('本次扫描已到列表末尾','Reached the end of the list') : t('已收到一部分，仍可继续检查','Some saves received; coverage is not complete');
+    return `<aside class="scan-panel ${complete?'finished':'warning'}"><div class="scan-title"><strong>${title}</strong><button data-action="connection">${t('查看连接','Connection')}</button></div><p>${t('本次找到','Found this scan:')} ${scan.seen ?? scan.count ?? 0} ${t('条','saves')} · ${esc(date(scan.at))}${scan.added ? ' · +' + scan.added + t(' 新收藏',' new') : ''}${!complete?' · '+t('之前收到的不会删除。','Earlier saves are kept.'):''}</p>${scan.endReason==='source_response_incomplete'?`<p>${t('小红书这次没有返回后续收藏。已收到的可以继续看，稍后再检查。','Xiaohongshu did not return the next saves this time. You can browse what arrived and check again later.')}</p>`:''}${!complete?`<button data-action="sync">${t('再检查一次','Check again')}</button>`:''}</aside>`;
+  }
+  function updateProgress() {
+    const region = $('#scan-progress');
+    if (region) region.innerHTML = scanLine();
+    const refresh = $('.library-heading [data-action="sync"]');
+    if (refresh) refresh.disabled = status?.job?.state === 'running';
   }
   function renderHome() {
     const has = data.items.some(x=>!annotation(x.id).trashed);
     $('#main').innerHTML = `<section class="intro ${has?'compact':''}"><p class="eyebrow">${t('少找一会儿，多用一点。','LESS SEARCHING. MORE DOING.')}</p><h1>${has?t('今天，想做点什么？','What do you want to do?'):t('好东西收藏了，<br>然后呢？','You saved something good.<br>What next?')}</h1><p class="lead">${has?t('说说你现在的问题。从自己的收藏里，找一个有用的起点。','Describe your goal. Find a useful starting point in your own saves.'):t('连接小红书，把收藏找回来。需要时，知道看哪篇、信什么、怎么用。','Connect Xiaohongshu. Find the save you need, check the claims, and put the idea to use.')}</p></section>
-    ${has?`<form id="goal-form" class="goal-form"><label class="sr-only" for="goal">${t('你现在想做什么','Your current goal')}</label><textarea id="goal" rows="2" maxlength="1000" placeholder="${t('比如：我想让产品首页更简洁，不知道从哪改','For example: make my product homepage less cluttered')}">${esc(goal)}</textarea><button class="primary" ${working?'disabled':''}>${working?t('正在找…','Looking…'):t('帮我找个起点 →','Find a starting point →')}</button></form><div class="under-goal"><button data-action="ai">${ai?'✦ ':''}${t(ai?'语义搜索已开':'开启语义搜索',ai?'Meaning search on':'Enable meaning search')}</button><button data-action="library">${t('或者，直接翻收藏','Or browse your saves')} ↗</button></div>${data.goalState?.plan?.goal&&!goal?`<button class="saved-plan" data-action="resume"><small>${t('上次留下的事','PICK UP WHERE YOU LEFT OFF')}</small><strong>${esc(data.goalState.plan.goal)}</strong><span>↗</span></button>`:''}<div id="answer">${answerHTML()}</div>${scanLine()}`:
+    ${has?`<form id="goal-form" class="goal-form"><label class="sr-only" for="goal">${t('你现在想做什么','Your current goal')}</label><textarea id="goal" rows="2" maxlength="1000" placeholder="${t('比如：我想让产品首页更简洁，不知道从哪改','For example: make my product homepage less cluttered')}">${esc(goal)}</textarea><button class="primary" ${working?'disabled':''}>${working?t('正在找…','Looking…'):t('帮我找个起点 →','Find a starting point →')}</button></form><div class="under-goal"><button data-action="ai">${ai?'✦ ':''}${t(ai?'语义搜索已开':'开启语义搜索',ai?'Meaning search on':'Enable meaning search')}</button><button data-action="library">${t('或者，直接翻收藏','Or browse your saves')} ↗</button></div>${data.goalState?.plan?.goal&&!goal?`<button class="saved-plan" data-action="resume"><small>${t('上次留下的事','PICK UP WHERE YOU LEFT OFF')}</small><strong>${esc(data.goalState.plan.goal)}</strong><span>↗</span></button>`:''}<div id="answer">${answerHTML()}</div><div id="scan-progress">${scanLine()}</div>`:
     `<div class="paper-stack" aria-hidden="true"><div class="paper back"><i></i><i></i><i></i></div><div class="paper front"><span>↗</span><p>${t('留给下一次<br>刚好需要的自己。','For the moment<br>you need it.')}</p><i></i></div></div><div class="welcome"><button class="primary" data-action="connection">${t('连接我的小红书 →','Connect my Xiaohongshu →')}</button><p>${t('登录后扫描收藏，无需上传文件。','Sign in to scan your saves. No file upload.')}</p><button class="quiet" data-action="demo">${t('先用示例试一试','Explore an example first')}</button></div>`}`;
     $('#goal-form')?.addEventListener('submit', findStart);
     $('#goal')?.addEventListener('input', e=>{goal=e.target.value;choice='';answer=null;});
@@ -162,59 +183,64 @@
   function cards() {
     const rows = filtered();
     $('#result-count').textContent = rows.length + t(' 条收藏',' saves');
-    $('#cards').innerHTML = rows.slice(0,limit).map(x=>`<article class="save-card"><button class="card-open" data-action="detail" data-id="${esc(x.id)}">${C.imageURL(x.image)?`<img src="${esc(C.imageURL(x.image))}" alt="" loading="lazy" referrerpolicy="no-referrer">`:`<div class="cover-letter" aria-hidden="true">${esc(label(annotation(x.id).category||x.category).slice(0,2))}</div>`}<span class="card-body"><small>${esc(label(annotation(x.id).category||x.category))} · ${x.hasContent?t('有正文／笔记','Text available'):t('尚未读正文','Title only')}</small><strong>${esc(x.title)}</strong><span>${esc(x.author)}</span></span></button><button class="star ${annotation(x.id).favorite?'selected':''}" data-action="favorite" data-id="${esc(x.id)}" aria-label="${t('标为常用','Favorite')}" aria-pressed="${!!annotation(x.id).favorite}">${annotation(x.id).favorite?'★':'☆'}</button></article>`).join('') || `<div class="empty"><h2>${t('这里还没有匹配的收藏。','No matching saves here.')}</h2><p>${t('换个词试试，或清除筛选。','Try another word, or clear the filters.')}</p><button data-action="clear">${t('清除筛选','Clear filters')}</button></div>`;
+    $('#cards').innerHTML = rows.slice(0,limit).map(x=>`<article class="save-card"><button class="card-open" data-action="detail" data-id="${esc(x.id)}">${C.imageURL(x.image)?`<img src="${esc(C.imageURL(x.image))}" alt="" loading="lazy" referrerpolicy="no-referrer">`:`<div class="cover-letter" aria-hidden="true">${esc(label(annotation(x.id).category||x.category).slice(0,2))}</div>`}<span class="card-body"><small>${esc(label(annotation(x.id).category||x.category))} · ${x.hasContent?t('有正文／笔记','Text available'):t('尚未读正文','Title only')}</small><strong>${esc(x.title)}</strong><span>${esc(x.author)}</span></span></button><button class="star ${annotation(x.id).favorite?'selected':''}" data-action="favorite" data-id="${esc(x.id)}" aria-label="${t('标为常用','Favorite')}" aria-pressed="${!!annotation(x.id).favorite}">${annotation(x.id).favorite?'★':'☆'}</button></article>`).join('') || `<div class="empty"><h2>${isScanning()&&!data.items.length?t('正在取回第一批收藏…','Fetching your first saves…'):t('这里还没有匹配的收藏。','No matching saves here.')}</h2><p>${isScanning()&&!data.items.length?t('第一批到达后会出现在这里，你可以先留在本页。','Your first saves will appear here as soon as they arrive.'):t('换个词试试，或清除筛选。','Try another word, or clear the filters.')}</p>${data.items.length?`<button data-action="clear">${t('清除筛选','Clear filters')}</button>`:''}</div>`;
     $('#more').hidden = rows.length <= limit;
     $('#more').textContent = t('再看一些','Show more');
     $('#cards').querySelectorAll('img').forEach(img=>img.onerror=()=>img.hidden=true);
   }
   function renderLibrary() {
-    $('#main').innerHTML = `<section class="library-heading"><div><p class="eyebrow">${t('你的积累，随时可用。','GOOD FINDS, WITHIN REACH.')}</p><h1>${t('我的收藏','My saves')}</h1></div><button data-action="sync">${t('刷新收藏 ↻','Refresh ↻')}</button></section>${scanLine()}<div class="library-search"><label class="sr-only" for="search">${t('搜索收藏','Search saves')}</label><input id="search" type="search" placeholder="${t('搜关键词、笔记或作者…','Search words, notes, or authors…')}" value="${esc(query)}"><button data-action="organize">${t('整理','Organize')}</button></div><div class="filters"><select id="filter" aria-label="${t('阅读状态','Reading status')}">${[['all',t('全部','Everything')],['unread',t('还没看','Unread')],['favorite',t('常用','Favorites')],['content',t('有文字内容','With text')],['archived',t('已归档','Archived')],['trash',t('回收站','Trash')]].map(([v,l])=>`<option value="${v}" ${filter===v?'selected':''}>${l}</option>`).join('')}</select><select id="topic" aria-label="${t('主题','Topic')}"><option value="">${t('所有主题','All topics')}</option>${C.TOPICS.map(v=>`<option value="${esc(v)}" ${topic===v?'selected':''}>${esc(label(v))}</option>`).join('')}</select><select id="collection" aria-label="${t('合集','Collection')}"><option value="">${t('所有合集','All collections')}</option>${data.collections.map(c=>`<option value="${esc(c.id)}" ${collection===c.id?'selected':''}>${esc(c.name)}</option>`).join('')}</select><select id="sort" aria-label="${t('排序','Sort')}"><option value="position">${t('收藏顺序','Saved order')}</option><option value="title" ${sort==='title'?'selected':''}>${t('标题顺序','Title')}</option><option value="recent" ${sort==='recent'?'selected':''}>${t('最近加入','Recently added')}</option></select></div><div id="result-count" class="result-count"></div><section id="cards" class="cards"></section><button id="more" data-action="more"></button>`;
-    cards();
+    $('#main').innerHTML = `<section class="library-heading"><div><p class="eyebrow">${t('你的积累，随时可用。','GOOD FINDS, WITHIN REACH.')}</p><h1>${t('我的收藏','My saves')}</h1></div><button data-action="sync">${t('刷新收藏 ↻','Refresh ↻')}</button></section><div id="scan-progress">${scanLine()}</div><div class="library-search"><label class="sr-only" for="search">${t('搜索收藏','Search saves')}</label><input id="search" type="search" placeholder="${t('搜关键词、笔记或作者…','Search words, notes, or authors…')}" value="${esc(query)}"><button data-action="organize">${t('整理','Organize')}</button></div><div class="filters"><select id="filter" aria-label="${t('阅读状态','Reading status')}">${[['all',t('全部','Everything')],['unread',t('还没看','Unread')],['favorite',t('常用','Favorites')],['content',t('有文字内容','With text')],['archived',t('已归档','Archived')],['trash',t('回收站','Trash')]].map(([v,l])=>`<option value="${v}" ${filter===v?'selected':''}>${l}</option>`).join('')}</select><select id="topic" aria-label="${t('主题','Topic')}"><option value="">${t('所有主题','All topics')}</option>${C.TOPICS.map(v=>`<option value="${esc(v)}" ${topic===v?'selected':''}>${esc(label(v))}</option>`).join('')}</select><select id="collection" aria-label="${t('合集','Collection')}"><option value="">${t('所有合集','All collections')}</option>${data.collections.map(c=>`<option value="${esc(c.id)}" ${collection===c.id?'selected':''}>${esc(c.name)}</option>`).join('')}</select><select id="sort" aria-label="${t('排序','Sort')}"><option value="position">${t('收藏顺序','Saved order')}</option><option value="title" ${sort==='title'?'selected':''}>${t('标题顺序','Title')}</option><option value="recent" ${sort==='recent'?'selected':''}>${t('最近加入','Recently added')}</option></select></div><div id="result-count" class="result-count"></div><section id="cards" class="cards"></section><button id="more" data-action="more"></button>`;
+    cards(); updateProgress();
     $('#search').oninput = e=>{query=e.target.value;limit=60;cards();};
     for (const name of ['filter','topic','collection','sort']) $('#'+name).onchange=e=>{if(name==='filter')filter=e.target.value;if(name==='topic')topic=e.target.value;if(name==='collection')collection=e.target.value;if(name==='sort')sort=e.target.value;limit=60;cards();};
   }
   function connectionDialog() {
     const running = status?.job?.state === 'running', connected = status?.state === 'connected';
-    const scan = data.scan || status?.scan;
+    const scan = status?.scan || data.scan;
     let content = '';
     if (!credentials) {
-      content = `<p>${t('用小红书确认登录，让 RedBot 只读扫描你自己的收藏。无需上传文件或复制 Cookie。','Confirm sign-in with Xiaohongshu so RedBot can read your own saves. No uploads or copying cookies.')}</p><div class="privacy-note"><strong>${t('这次试用如何保管数据','How this test stores your data')}</strong><p>${t('登录会话和收藏文本由 Ming 的测试服务分开保存，最长 7 天。远程试用会通过 Cloudflare 转发；本机访问不经过它。测试电脑离线时无法同步。断开连接会删除服务端数据。本机笔记和备份仍由你保管。','Ming’s test service stores an isolated sign-in session and saved text for up to 7 days, with remote access via Cloudflare (local access stays local). Sync stops when the test computer is offline. Disconnecting deletes server data; you keep your device notes and backup.')}</p><p>${t('这是浏览器登录连接，并非小红书官方开放的收藏授权。RedBot 不会发帖、点赞、评论或修改你的收藏。','This uses a browser sign-in, not an official favorites OAuth permission. RedBot does not post, like, comment, or change your saves.')}</p></div><form id="connect-form">${invitation?'':`<label for="invite">${t('试用邀请码','Test invitation code')}</label><input id="invite" autocomplete="off" required>`}<label class="check-row"><input id="consent" type="checkbox" required><span>${t('我了解以上保管方式，同意连接自己的账号。','I understand this storage arrangement and want to connect my own account.')}</span></label><button class="primary">${t('获取登录码 →','Get sign-in code →')}</button></form>`;
+      content = `<p>${t('用小红书确认登录，让 RedBot 只读扫描你自己的收藏。无需上传文件或复制 Cookie。','Confirm sign-in with Xiaohongshu so RedBot can read your own saves. No uploads or copying cookies.')}</p><div class="privacy-note"><strong>${t('这次试用如何保管数据','How this test stores your data')}</strong><p>${t('登录会话和收藏文本由 Ming 的测试服务分开保存，最长 7 天。远程试用会通过 Cloudflare 转发；本机访问不经过它。测试电脑离线时无法同步。断开连接会删除服务端数据。本机笔记和备份仍由你保管。','Ming’s test service stores an isolated sign-in session and saved text for up to 7 days, with remote access via Cloudflare (local access stays local). Sync stops when the test computer is offline. Disconnecting deletes server data; you keep your device notes and backup.')}</p><p>${t('这是浏览器登录连接，并非小红书官方开放的收藏授权。RedBot 不会发帖、点赞、评论或修改你的收藏。','This uses a browser sign-in, not an official favorites OAuth permission. RedBot does not post, like, comment, or change your saves.')}</p></div><form id="connect-form"><label for="invite">${t('试用邀请码','Test invitation code')}</label><input id="invite" value="${esc(invitation)}" autocomplete="off" autocapitalize="none" spellcheck="false" required>${invitation?`<p class="muted">${t('邀请链接已为你填好，确认后连接即可。','Your invitation link filled this in for you.')}</p>`:''}<label class="check-row"><input id="consent" type="checkbox" required><span>${t('我了解以上保管方式，同意连接自己的账号。','I understand this storage arrangement and want to connect my own account.')}</span></label><button class="primary">${t('获取登录码 →','Get sign-in code →')}</button></form>`;
     } else if (status?.state === 'waiting' && status.qr) {
       content = `<p>${t('打开小红书，使用“扫一扫”，在小红书里确认登录。','Open Xiaohongshu, scan this code, and confirm sign-in there.')}</p><img class="login-qr" src="${esc(status.qr)}" alt="${t('小红书登录二维码','Xiaohongshu sign-in QR code')}"><p class="muted">${t('约 4 分钟内有效，请不要把登录码发给别人。','Valid for about 4 minutes. Do not share this sign-in code.')}</p><details><summary>${t('正在同一部手机上使用？','Using only this phone?')}</summary><p>${t('可先保存二维码，再到小红书“扫一扫”选择相册。是否支持识别登录码取决于小红书版本，目前尚未完成真机验证；如果不支持，需要在电脑或另一台设备显示此页。','You can save the code and try choosing it from the photo library in Xiaohongshu’s scanner. Login-code recognition depends on the app version and has not been verified on a real phone. If unsupported, display this page on a second device.')}</p><a download="RedBot-login.png" href="${esc(status.qr)}">${t('保存登录码','Save sign-in code')}</a></details>`;
     } else if (connected) {
-      content = `<p class="connected-name">✓ ${esc(status.nickname||t('你的小红书','Your Xiaohongshu'))}</p><div class="scan-facts"><div><strong>${data.items.length}</strong><span>${t('已保存的收藏','Saves kept')}</span></div><div><strong>${data.items.filter(x=>x.description).length}</strong><span>${t('已读到正文','Post texts read')}</span></div><div><strong>0</strong><span>${t('同步所用 AI token','AI tokens for sync')}</span></div></div><p>${scan?t('上次扫描：','Last scan: ')+esc(date(scan.at)):t('登录成功，正在准备首次扫描。','Signed in. Preparing your first scan.')}</p>${scan?`<p class="coverage-note">${t('本次看到','This scan saw')} ${scan.count} ${t('条；新增','saves; new')} ${scan.added||0}，${t('变化','changed')} ${scan.changed||0}。${t('这是有上限的扫描，可能没有覆盖全部收藏。没有出现的旧收藏不会被删除；正文和视频也不会因扫描列表而自动读完。','This scan is bounded and may not cover every save. Missing old saves are kept. Scanning a list does not read all post or video content.')}</p>`:''}<label class="check-row"><input id="auto" type="checkbox" ${auto?'checked':''}><span>${t('打开时自动检查，并在页面可见时每 15 分钟扫描一次','Check on open and scan every 15 minutes while this page is visible')}</span></label><p class="muted">${t('关闭页面后不再发起新扫描；已开始的读取可在后台完成。扫描、去重和本地文字检查不调用大模型。','Closing the page stops new scans. A read already started can finish. Scanning, deduplication and local wording checks do not call a language model.')}</p><button class="primary" data-action="sync" ${running?'disabled':''}>${t('现在刷新','Refresh now')}</button>`;
+      content = `<p class="connected-name">✓ ${esc(status.nickname||t('你的小红书','Your Xiaohongshu'))}</p><div class="scan-facts"><div><strong>${data.items.length}</strong><span>${t('已保存的收藏','Saves kept')}</span></div><div><strong>${data.items.filter(x=>x.description).length}</strong><span>${t('已读到正文','Post texts read')}</span></div><div><strong>0</strong><span>${t('同步所用 AI token','AI tokens for sync')}</span></div></div><p>${scan?t('上次扫描：','Last scan: ')+esc(date(scan.at)):t('登录成功，正在准备首次扫描。','Signed in. Preparing your first scan.')}</p>${scan?`<p class="coverage-note">${t('本次看到','This scan saw')} ${scan.count} ${t('条；新增','saves; new')} ${scan.added||0}，${t('变化','changed')} ${scan.changed||0}。${t(scan.complete?'小红书已返回列表末尾。正文和视频仍需按需读取。':'尚未确认列表末尾，可以再检查。没有出现的旧收藏不会删除；正文和视频需按需读取。',scan.complete?'Xiaohongshu reported the end of the list. Post text and video still need separate reading.':'The end of the list has not been confirmed. You can check again. Missing old saves are kept; post text and video need separate reading.')}</p>`:''}<label class="check-row"><input id="auto" type="checkbox" ${auto?'checked':''}><span>${t('打开时自动检查，并在页面可见时每 15 分钟扫描一次','Check on open and scan every 15 minutes while this page is visible')}</span></label><p class="muted">${t('关闭页面后不再发起新扫描；已开始的读取可在后台完成。扫描、去重和本地文字检查不调用大模型。','Closing the page stops new scans. A read already started can finish. Scanning, deduplication and local wording checks do not call a language model.')}</p><button class="primary" data-action="sync" ${running?'disabled':''}>${t('现在刷新','Refresh now')}</button>`;
     } else {
-      content = `<p>${running?activity():status?.state==='expired'?t('登录码已过期，重新获取即可。','The sign-in code expired. Get a new one.'):status?.state==='wrong_account'?failure(Error('wrong_account')):t('连接保留在此设备。完成登录后，会先扫描收藏列表。','This device holds your connection. Confirm sign-in to scan your saves.')}</p>${!running?`<button class="primary" data-action="login">${t('获取新的登录码','Get a new sign-in code')}</button>`:''}`;
+      content = `<p>${running?activity():status?.state==='expired'?t('登录码已过期，重新获取即可。','The sign-in code expired. Get a new one.'):status?.state==='wrong_account'?failure(Error('wrong_account')):t('连接保留在此设备。完成登录后，会先扫描收藏列表。','This device holds your connection. Confirm sign-in to scan your saves.')}</p>${running?`<p class="muted">${elapsed()} · ${status?.job?.kind==='verify'?t('正在确认保留的登录信息。成功后会自动扫描收藏，无需重新输入邀请码。','Checking your saved sign-in. A successful check starts the scan without another invitation.'):t('正在打开小红书登录页，通常需要一些时间。二维码出现后会自动更新；可以先关闭这个窗口。','Opening Xiaohongshu’s sign-in page. This can take a little time. The code will appear here automatically; you can close this panel meanwhile.')}</p>`:''}${!running?`<button class="primary" data-action="login">${status?.canRetryVerification || status?.job?.error==='source_unavailable'?t('重试连接','Retry connection'):t('获取新的登录码','Get a new sign-in code')}</button>`:''}`;
     }
     if (running && connected) content += `<p role="status">${esc(activity())}</p>`;
     if (status?.job?.state==='failed') content += `<p class="error" role="alert">${esc(failure(Error(status.job.error)))}</p>`;
-    if (credentials) content += `<div class="dialog-foot"><button data-action="disconnect" class="quiet danger">${t('断开并删除服务端数据','Disconnect and delete server data')}</button></div>`;
+    if (credentials) content += `<p class="muted">${t('本设备已通过邀请验证，有效会话内无需再次输入。','This device has passed the invitation check. You do not need to re-enter it while this session is valid.')}</p><div class="dialog-foot"><button data-action="disconnect" class="quiet danger">${t('断开并删除服务端数据','Disconnect and delete server data')}</button></div>`;
     modal(`<p class="eyebrow">${t('把收藏接回来','YOUR OWN ACCOUNT')}</p><h2>${t('连接小红书','Connect Xiaohongshu')}</h2><div id="connection-content">${content}</div>`, 'connection');
     $('#connect-form')?.addEventListener('submit', async e=>{
-      e.preventDefault(); const consent = $('#consent').checked, code = invitation || $('#invite').value.trim();
+      e.preventDefault(); const consent = $('#consent').checked, code = $('#invite').value.trim();
       e.submitter.disabled = true;
       try {
         const session = await api('/api/session', {invite:code,consent});
         const apiRoot = apiURL();
         rememberConnection({...session,api:apiRoot});
         data = normalize({items:[],annotations:{},collections:[],guides:[],goalState:{}});
-        goal=''; answer=null; status={state:'needs_sign_in'};
+        goal=''; answer=null; lastFetch=''; onboarding=true; status={state:'needs_sign_in'};
         await startLogin(); render();
       } catch(error) { notify(failure(error)); if(e.submitter?.isConnected)e.submitter.disabled=false; }
     });
     $('#auto')?.addEventListener('change',e=>{auto=e.target.checked;localStorage.setItem('redbot.auto',JSON.stringify(auto));});
   }
   async function startLogin() {
-    try { await api('/api/connect',{}); status={...status,job:{kind:'connect',state:'running'}}; connectionDialog(); await refreshStatus(); }
+    try { startedAt=Date.now(); onboarding=true; const retry=status?.canRetryVerification; await api(retry?'/api/verify':'/api/connect',{}); status={...status,job:{kind:retry?'verify':'connect',state:'running'}}; connectionDialog(); await refreshStatus(); }
     catch(error) { notify(failure(error)); }
   }
   async function refreshStatus() {
     if (!credentials || requestActive) return;
     requestActive = true;
     try {
-      status = await api('/api/connection');
-      const stamp = status.scan?.at + ':' + status.scan?.readCount + ':' + (status.job?.state==='done'?status.job.id:'');
-      if (stamp !== lastFetch && (status.scan || status.job?.kind==='read'&&status.job.state==='done')) {
+      status = await api('/api/connection'); offline=false;
+      if ((onboarding || initial && isScanning() && !data.items.length) && status.state === 'connected') {
+        onboarding=false; tab='library';
+        if ($('#dialog').open && $('#dialog').dataset.kind==='connection') dismiss();
+        render();
+      }
+      const stamp = String(status.revision ?? '') + ':' + status.scan?.at + ':' + status.scan?.readCount + ':' + (status.job?.state==='done'?status.job.id:'');
+      if (stamp !== lastFetch && (status.revision !== undefined || status.scan || status.job?.kind==='read'&&status.job.state==='done')) {
         await loadLibrary(); lastFetch = stamp;
         if (status.job?.kind==='read' && status.job.state==='done' && detailId && $('#dialog').open && $('#dialog').dataset.kind==='detail') {
           // Update the returned source without discarding a note being typed.
@@ -228,21 +254,21 @@
         }
       }
       if(status.job?.state==='failed' && status.job.id!==lastJob) {notify(failure(Error(status.job.error)));lastJob=status.job.id;}
-      $('#account').textContent=activity();
+      $('#account').textContent=activity(); updateProgress();
       if ($('#dialog').open && $('#dialog').dataset.kind==='connection') {
         // The consent form never rerenders while it is being completed.
         const scroll = $('#dialog').scrollTop;
         connectionDialog(); $('#dialog').scrollTop=scroll;
       }
-      if (status.state==='connected' && auto && !['running','failed'].includes(status.job?.state) && (!status.scan?.at || Date.now()-Date.parse(status.scan.at)>15*60*1000) && !document.hidden) {
-        await api('/api/sync',{});
+      if (status.state==='connected' && auto && !['running','failed','cancelled'].includes(status.job?.state) && (!status.scan?.at || Date.now()-Date.parse(status.scan.at)>15*60*1000) && !document.hidden) {
+        await api('/api/sync',{}); startedAt=Date.now(); status={...status,job:{kind:'scan',state:'running'}}; updateProgress();
       }
-    } catch(error) { if(initial)notify(failure(error)); }
+    } catch(error) { offline=true; $('#account').textContent=activity(); updateProgress(); if(initial)notify(failure(error)); }
     finally { requestActive=false;initial=false; }
   }
   async function sync() {
     if (!credentials) return connectionDialog();
-    try { await api('/api/sync',{}); status={...status,job:{kind:'scan',state:'running'}}; $('#account').textContent=activity(); notify(t('开始扫描，原有笔记和计划都会保留。','Scanning. Your notes and plans are kept.')); }
+    try { await api('/api/sync',{}); startedAt=Date.now(); status={...status,job:{kind:'scan',state:'running'}}; $('#account').textContent=activity(); if($('#dialog').open && $('#dialog').dataset.kind==='connection')dismiss(); tab='library';render(); notify(t('开始扫描，原有笔记和计划都会保留。','Scanning. Your notes and plans are kept.')); }
     catch(error) { notify(failure(error)); }
   }
   async function disconnect() {
@@ -293,6 +319,8 @@
       try {await api('/api/disconnect',{});await save();const offline='offline:'+credentials.sessionId;const base=await database();await new Promise((resolve,reject)=>{const tx=base.transaction('library','readwrite');tx.objectStore('library').put(data,offline);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});offlineKey=offline;localStorage.setItem('redbot.offline-key',JSON.stringify(offline));rememberConnection(null);status=null;dismiss();render();notify(t('已断开，服务端数据已删除。当前副本可先导出；不会混入下一次账号连接。','Disconnected. Server data deleted. Export this offline copy before connecting again.'));}
       catch(error) {notify(failure(error));target.disabled=false;}return;
     }
+    if(action==='retry-status'){await refreshStatus();return;}
+    if(action==='cancel-sync'){target.disabled=true;try{await api('/api/cancel-sync',{});await refreshStatus();}catch(error){notify(failure(error));target.disabled=false;}return;}
     if(action==='home'||action==='library'){tab=action==='home'?'home':'library';dismiss();render();return;}
     if(action==='demo'){if(credentials)return notify(t('连接账号时不混入示例收藏。','Examples stay separate from your connected account.'));const s=window.REDBOT_SEED;data.items=C.mergeItems(data.items,s.items).items;const guides=new Map(data.guides.map(g=>[g.id,g]));s.guides.forEach(g=>guides.set(g.id,g));data.guides=[...guides.values()];save();render();return;}
     if(action==='choice'){choice=target.dataset.choice;return findStart();}
@@ -338,7 +366,11 @@
     if(invitation&&!credentials)connectionDialog();
     if(credentials)await refreshStatus();
     // This is the product's foreground refresh, not an always-on task/daemon.
-    setInterval(()=>{if(!document.hidden&&credentials)refreshStatus();},7000);
+    const poll = async () => {
+      if (!document.hidden && credentials) await refreshStatus();
+      setTimeout(poll,status?.job?.state==='running'||status?.state==='waiting'?1500:7000);
+    };
+    setTimeout(poll,1500);
     document.addEventListener('visibilitychange',()=>{if(!document.hidden&&credentials)refreshStatus();});
     window.addEventListener('hashchange',()=>{
       const code=new URLSearchParams(location.hash.slice(1)).get('invite');
