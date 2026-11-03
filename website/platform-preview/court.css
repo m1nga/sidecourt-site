@@ -980,3 +980,10 @@ button:disabled{opacity:1;cursor:not-allowed;color:#5f5368;background:#e9e1ee;bo
 @media(max-width:600px){.work-activity-row{display:block}.court-work-activity,.court-following{padding:1rem}.work-activity-row>a{display:inline-block;margin-top:.5rem}}
 
 .discussion-share-dialog{max-width:900px}.discussion-share-art{display:block;width:100%;height:auto;border-radius:8px}.discussion-share-dialog [data-discussion-card]{margin:1.25rem 0}.discussion-share-dialog details{margin:1rem 0}.discussion-share-dialog .actions{flex-wrap:wrap}.discussion-share-dialog textarea{width:100%}
+
+/* Inbox remains visible outside the collapsed mobile menu. */
+.header .global-inbox{flex-shrink:0;font-size:12px;font-weight:700;text-decoration:none;border:1px solid currentColor;border-radius:999px;padding:8px 12px;white-space:nowrap}
+.header .global-inbox[data-unread="true"]{background:var(--plum,#3F2E6B);color:var(--cream,#fff8e7)}
+.notification-excerpt{margin:12px 0;padding-left:14px;border-left:2px solid currentColor;white-space:pre-wrap;overflow-wrap:anywhere}
+@media(max-width:760px){.header .global-inbox{order:1;margin-left:auto}.header .mobile-nav{order:2}.header{gap:10px}.header .global-inbox{font-size:11px;padding:7px 10px}}
+.thread-preferences{margin-top:16px}.thread-preferences form,.linked-progress form{display:grid;gap:12px;margin-top:12px}.linked-progress fieldset{display:grid;gap:12px;max-height:280px;overflow:auto}.thread-preferences label,.linked-progress fieldset label{display:block;font-size:14px;line-height:1.6}.linked-progress textarea{min-height:100px}
