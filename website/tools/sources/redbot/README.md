@@ -1,119 +1,126 @@
 # RedBot — Find the Good Thing You Saved
 
-You remember saving something useful. Now you need it, but cannot remember which post it was or which part matters. Tell RedBot what you want to do. It helps you find **one useful source, the relevant passage and a next step**.
+You saved something useful, but cannot find it when you need it. RedBot helps you choose **one relevant source, see the useful part and take a next step**.
 
-**[Try RedBot on SideCourt](https://sidecourt.space/drops/redbot/) · [Open the preview](https://sidecourt.space/drops/redbot/app/) · [Five-minute user test](https://sidecourt.space/drops/redbot/test/)**
+**[Try RedBot on SideCourt](https://sidecourt.space/drops/redbot/) · [Open the app](https://sidecourt.space/drops/redbot/app/) · [User test](https://sidecourt.space/drops/redbot/test/)**
 
-**Version 1.6 is an interaction preview.** Connecting your own Xiaohongshu account is being built. The public webpage cannot sync your account yet. Its original example notes let you try the experience without uploading anything.
+**Version 1.7 is an invitation-only account test.** Connect your own Xiaohongshu account, scan saved cards and read selected post text. Chinese-first interface with an English switch. The small test host must be online; full collection coverage and same-phone QR sign-in are not yet verified.
 
 ## Who it's for
 
-People who save ideas for later and then struggle to find something useful when they need it. Open the mobile webpage to try the interface. Use the companion skill when you already have saved notes or a RedBot backup that you want your AI assistant to work with.
+People who collect design references, methods or tools and then struggle to decide what to use. Use the web app for your own saves. Use the companion skill inside an authorized AI assistant for a selected post, supplied notes or a RedBot backup.
 
-## Start with the preview
+## Start with your account
 
-1. Open RedBot and choose **Try with example notes**. Examples are added only when you ask, and do not replace your existing library.
-2. Describe a need, such as “Make my page less cluttered.” A rough description is enough.
-3. Read one suggested starting point, the saved passage behind it and a concrete next action. Open the original source when you need more context.
-4. Choose **Save for later** to leave a plan you can continue next visit. **Try another** changes the recommendation; if nothing supports a choice, RedBot says so.
-5. Choose **Short version & use** for a short extract, cost/promotion cues and an editable prompt for Codex or Claude Code. Try “Check a free AI tool before trying it” for a clearly fictional practice example.
-6. **My saves** is there when you want to browse or search the whole library. Organizing and backups are secondary controls.
+1. Open the app, choose **连接小红书 / Connect Xiaohongshu** and enter the invitation you received from Ming.
+2. Review how the test stores your data. Scan the login code with Xiaohongshu and confirm in that app.
+3. RedBot scans your saved-card list and shows the count, time and partial coverage. You do not need to upload files or copy cookies.
+4. Describe what you want to do in **现在想做 / For now**, or browse **我的收藏 / My saves**.
+5. Open a relevant save and choose **读取这篇正文 / Read this post**. A list scan does not read every post or video.
+6. Read the useful text, inspect cost/promotion cues, save a plan or create an editable prompt for your project.
 
-Optional **Search by meaning** downloads a multilingual model and runs it on your device. Basic matching works without this download or a new AI API key. Title-only sources remain **Needs reading**; a saved link is not evidence that RedBot has read the post or watched its video.
-
-The intended everyday setup is connect your account, bring in your saves, then ask for what you need. Manual import remains a backup/recovery route, not the planned primary onboarding. The present public preview has no account service. An existing local Mac connector can report its sign-in state and run a bounded scan; that is not a complete or isolated public account connection.
+An invitation opens a test slot; a separate random session credential protects each visitor's data. The default host supports three simultaneous sessions. No invitation? Original example notes let you try the interface without signing in. Manual JSON backup is a recovery option.
 
 ## What it does
 
-| Need | Available now |
+| Need | What RedBot does |
 |---|---|
-| Too many saves to choose from | A goal, one clarification when needed, one supported starting point |
-| Cannot remember the exact words | Optional on-device semantic retrieval over saved text |
-| Do not know which part to read | A saved passage, note or time anchor next to its source |
-| Reading never turns into doing | One next action; editable source-grounded Codex or Claude Code prompt |
-| A “free” tool may have strings attached | Quoted wording cues, explicit unknowns and optional live GitHub repository facts |
-| Too much text to reread | A bounded short extract with notes/text/video/comment coverage stated |
-| Have to start again next visit | A saved plan and notes in the same browser |
-| Want to browse or organize | Search, collections, favorites, read status, archive and recoverable trash |
-| Want help inside an AI assistant | A read-only companion skill for an authorized backup or local Mac library |
+| Too many saves to choose from | Starts with a goal and one supported suggestion |
+| Cannot remember the exact words | Optional on-device multilingual semantic matching |
+| Do not know which part matters | Shows a bounded extract of text already retrieved |
+| “Free” may have conditions | Quotes cost/promotion cues and can check public GitHub facts |
+| Want to use an idea in a project | Builds an editable, source-grounded Codex or Claude Code prompt |
+| Want to continue later | Keeps a plan and personal notes in this browser |
+| Want to organize | Search, topics, collections, favorites, read state, archive and recoverable trash |
 
-The web app retrieves existing text and curated guidance; it does not generate an answer from unseen content. Semantic search covers up to 300 current saves and methods and can miss or misrank results. A relevant topic alone is not enough to support a recommendation.
+A cue is not a fraud verdict. A public repository or MIT license does not prove zero API costs, all dependency terms or working functionality. GitHub lookup sends only identified repository names; ordinary network request information still reaches GitHub. Errors remain unverified.
+
+Prompts include your goal, the selected evidence, unresolved checks, a default $0 spending limit and acceptance requirements. Chinese interface produces Chinese instructions; the target project's language rules still apply. Personal notes are excluded unless selected. Copying a prompt does not launch an assistant or execute code.
 
 ## Install
 
-Start from the [SideCourt skill page](https://sidecourt.space/skills/redbot/) or install directly:
-
-```sh
+~~~sh
 npx skills add m1nga/redbot
-```
+~~~
 
 Then ask your AI assistant:
 
-```text
+~~~text
 Use $redbot with /path/to/my-redbot-backup.json.
 My goal is to make the first task in my app easier to understand.
 Choose one saved source, show the useful passage and give one next action.
-```
+~~~
 
-You can also supply selected notes. The bundled Python reader returns a short lexical shortlist; the assistant reads the selected full item and reasons from that evidence. The host assistant's account, privacy settings and permissions apply. This skill does not connect an account or grant access to somebody else's library.
+Or select a post already accessible through your own authorized connector:
 
-For an explicitly selected, running local Mac app:
+~~~text
+Use $redbot to summarize this saved post. Check which “free” conditions
+matter for my project, then prepare a small implementation brief.
+Keep unread comments and video steps explicit.
+~~~
 
-```sh
+The skill checks available tools and the actual account before retrieval. It can use supplied material without forcing a new installation. The Python reader returns a bounded lexical shortlist, then the host assistant reads the chosen item. Installing this skill does not install an account service or grant access to someone else's library.
+
+For an explicitly selected, running legacy Mac app:
+
+~~~sh
 python3 /path/to/installed/redbot/scripts/read_library.py --live --query "first task"
-```
+~~~
 
-This reads the Mac's localhost service. A phone's localhost is not your Mac. If the file or service is unavailable, provide selected notes or a compatible backup instead; there is no automatic remote access.
+This reads that Mac's localhost service. A phone's localhost is not your Mac. Missing service or file: use selected notes or a compatible backup; no hidden remote access.
 
-## Example: a goal to an action
+## Example
 
-You ask: “The screen feels busy; I need the main action to be obvious.”
+You ask: “The screen feels busy; make the main action clearer.”
 
-The original layout example can supply a passage about competing headings and controls, followed by an action: change the emphasis in one section and compare it at the same viewport. This is illustrative guidance, not evidence of improved conversion. If only a saved title exists, RedBot shows that it needs reading instead of inventing a passage.
+A saved layout passage can suggest reducing emphasis on competing controls, followed by a small action: adjust one section and compare it at the same screen width. The optional original example demonstrates this flow; it is not a user testimonial or conversion result. If the source is title-only, RedBot asks to read it before describing its method.
 
-## Check a claim, then use the method
+## What sync means
 
-Open **Short version & use** on a save or recommendation. The short version is an extract of existing text or notes, not a newly generated AI summary. Expand the wording cues to inspect free claims, payment conditions, promotion and strong promises. Cues identify what to check; they do not decide whether a project is fake.
+This is an unofficial browser connection built on [xiaohongshu-mcp](https://github.com/xpzouying/xiaohongshu-mcp), not official favorites OAuth. Each visitor has a separate process, cookies, identity check and library. The adapter exposes login, saved-card scanning and selected text reads only; no posting, likes, comments or native collection changes.
 
-**Check GitHub now** retrieves public license, archive status and last-push facts for up to three identified repositories. Only repository names are sent to GitHub; GitHub receives ordinary network request information. No post text, account login or API token is sent. Errors and rate limits remain unverified. These facts do not establish current pricing, every dependency's license or working functionality.
+Scans stop at bounded limits: 2,000 observed cards, 100 scroll steps or a 150-second page timeout. Every result remains marked partial. Interrupted current scans can recover private checkpoints; the next scan starts at the top and deduplicates. Old saves absent from a scan remain intact.
 
-Edit the useful method and your project goal, choose Codex or Claude Code, then create and review the prompt. Copy it or download it as text. It carries the selected evidence, unresolved checks, a default $0 budget and acceptance requirements. Personal notes are excluded unless you choose to include them. Creating a prompt does not launch an assistant or execute code.
+When enabled, opening the app checks the connection and a visible page can scan every 15 minutes. Closing it stops new scans; a started job may finish. No source webhook or always-on background scheduler is implied.
 
-Inside an authorized AI assistant, the companion skill can also summarize a selected post, answer a specific question, and inspect available comments for clarifications or counterexamples. It reports what was actually read. The webpage does not fetch comments or silently use the developer's source account.
+**Scanning and deduplication use no LLM calls.** Optional semantic search runs locally after a roughly 120 MB model download plus runtime and matches up to 300 entries. It uses bandwidth, memory and battery. Asking an AI assistant to reason over a library consumes that assistant's usage. The webpage does not generate new AI summaries, read comments or transcribe videos.
 
-## Privacy and account limits
+## Privacy and recovery
 
-Your public-preview library stays in this browser's IndexedDB, with a local-storage recovery fallback. It is not automatically synchronized with your other devices. Clearing browser storage may remove it; export a backup from **My data and settings → Library & backups** first. The example notes are original demonstration material, not the developer's personal collection.
+The invitation test stores separate login sessions and retrieved text on Ming's host for up to seven days. Remote access is forwarded through Cloudflare; local access stays local. Host downtime prevents new sync. Disconnect deletes that session's server data and keeps a device copy for export.
 
-Semantic retrieval uses Transformers.js 3.8.1 and `Xenova/paraphrase-multilingual-MiniLM-L12-v2` at revision `2c4055b12046f11709e9df2c122e59ffbdc2f900`. The first model download is roughly 120 MB plus runtime. Hugging Face and jsDelivr receive ordinary asset requests, such as IP/browser information; saved text is processed on your device rather than sent to an inference API. An older phone or restricted network may fail to load it. Basic matching remains available.
+Personal notes, plans and organizing choices stay in this browser's IndexedDB. Account libraries and old device libraries are separate. Export JSON through **设置与我的数据 / Settings and my data** before switching devices or clearing storage. No automatic phone-to-computer note sync.
 
-The app shell and model assets may be cached. Offline behavior and installation vary by browser. Do not post private backups, cookies or credentials in GitHub issues. The feedback page downloads only the answers you enter; sharing them is your choice.
+Semantic matching downloads Transformers.js 3.8.1 and the multilingual MiniLM model pinned to revision 2c4055b12046f11709e9df2c122e59ffbdc2f900. Hugging Face and jsDelivr receive ordinary asset requests; saved text is processed on device rather than sent to an inference API. Basic matching remains available if loading fails.
 
-## What is not available yet
+Never post backups, cookies, access tokens or login codes in public issues. Feedback downloads only what you type and is not sent automatically.
 
-- Public, isolated Xiaohongshu sign-in, complete collection enumeration and same-phone account authorization.
-- Automatic reading or transcription of every post and video.
-- Cloud synchronization, shared libraries, scheduled reminders or paid video generation.
-- Browser-generated AI summaries or automatic comment reading, verified retrieval accuracy across large libraries, or guaranteed search visibility.
+## Run your own test host
 
-Before a source-connected beta can be called ready, it needs a fresh user's real account flow, reliable continuation of partial scans, preserved notes and plans, and demonstrated separation between users. Connecting an API by itself does not prove these behaviors.
+The distribution includes [application source](source/README.md), the adapter, its tests and a pinned upstream patch. See [connector provenance and build steps](source/connector/UPSTREAM.md). Binary/browser dependencies are not bundled. Use a new private runtime directory and your own endpoint configuration; never attach public visitors to an existing personal MCP.
 
-## Moving from GitHub Pages
-
-SideCourt is the product's primary home. Browser storage belongs to its original website and does not move automatically. The earlier GitHub Pages address offers an export of the library stored there. Keep that original backup, open RedBot through SideCourt, and import it through **Library & backups**. Confirm the saves, notes and plan before removing anything. The migration page never uploads or deletes the original library. Legacy starter links remain migration entry points.
-
-## Why
-
-The original problem was not a lack of categories. The owner had organized saves and still did not know what to open. RedBot starts with the current need and makes the next choice smaller. The 1.6 interface keeps two primary destinations, **For now** and **My saves**, with source evidence beside the suggested action. Organizing is available when needed, rather than being the first task.
+The previous native Mac package is a separate build and is not updated by this web release.
 
 ## Validation
 
-[BETA-VALIDATION.md](BETA-VALIDATION.md) records actual automated and builder-operated checks, including mobile-width navigation and saving a plan across a reload. These are not independent user research, proof of a working public account connection, sales or market demand. Physical phone testing and unaided trials with new users remain necessary.
+[BETA-VALIDATION.md](BETA-VALIDATION.md) records automated tests and builder trials. One real sign-in returned 289 cards; a repeat scan introduced no duplicates. An interrupted scan recovered, one selected post's caption was retrieved, and a 390-pixel browser layout was checked. These do not prove all favorites were found, the video was watched, two real accounts were isolated, or an unaided user can finish.
+
+Same-phone QR login, distinct real-user isolation, independent user trials and production uptime remain unverified. This is a small invitation test, not a production sync service.
+
+## Moving from GitHub Pages
+
+SideCourt is the product's primary home. Earlier GitHub Pages and starter links retain a non-deleting export bridge. Export from the old origin, keep the backup, then restore it in SideCourt's **Settings and my data**. Verify saves, notes and plan before removing anything. Website storage does not move automatically.
+
+## Why
+
+The owner already had categories but still did not know which save to open. The two main destinations—what you want to do and your saves—keep the choice small. Account connection removes manual export from the everyday setup. Source coverage stays visible so a tidy result never pretends to have read more than it has.
 
 ## Search visibility
 
-The SideCourt pages provide crawlable descriptions, concrete steps, examples, limitations, authorship and canonical metadata that match this preview. Internal semantic search is separate from external SEO/GEO. [Google's AI-feature documentation](https://developers.google.com/search/docs/appearance/ai-features) says its ordinary search practices still apply. Metadata does not guarantee indexing, ranking or AI recommendations.
+SideCourt pages provide descriptive text, real steps, limitations and canonical metadata matching the implemented product. Internal semantic retrieval is separate from external SEO/GEO. Crawlable content does not guarantee indexing, ranking, AI citations or customers.
 
 ## Author
 
-Built by [Ming](https://sidecourt.space/people/m1nga/). Application and original skill source are MIT licensed. Transformers.js and the embedding model retain their own upstream licenses and notices. Third-party saved content belongs to its creators.
+Built by [Ming](https://sidecourt.space/people/m1nga/). Original RedBot code and skill are MIT licensed; the upstream source connector is Apache-2.0. Dependencies retain their own terms. Saved content belongs to its creators.
+
+After trying RedBot, [browse what people are making on SideCourt](https://sidecourt.space/drops/). You can share something you made and describe the feedback that would help you use it better.

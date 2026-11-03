@@ -7,16 +7,17 @@
       "name": "RedBot",
       "title": "RedBot — Find the Good Thing You Saved",
       "kind": "App + skill",
-      "description": "Find the useful thing you saved.",
+      "description": "Connect your own Xiaohongshu account and put a useful save to work.",
       "url": "/drops/redbot/",
       "action": "/drops/redbot/app/",
-      "status": "Preview · account sync in development",
+      "status": "Invitation-only test",
       "repository": "https://github.com/m1nga/redbot",
       "install": "npx skills add m1nga/redbot",
       "package": "/tools/packages/redbot.zip",
-      "bring": "A goal and some saved text. The preview includes original examples.",
-      "result": "A relevant source, a short extract, conditions to check and an editable project prompt.",
-      "example": "Check this saved free-tool claim, then help me use its method in my project."
+      "bring": "Your invitation and your own Xiaohongshu account, or selected saved text.",
+      "result": "A bounded collection scan, selected source text, conditions to check and an editable project prompt.",
+      "example": "Check this saved free-tool claim, then help me use its method in my project.",
+      "source_commit": "6a31bd4f9080d7e07920c063b2cb49c15a83250b"
     },
     {
       "slug": "daycup",
