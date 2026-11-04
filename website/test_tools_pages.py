@@ -24,7 +24,8 @@ class ToolsTest(unittest.TestCase):
   self.assertEqual(len({x['slug'] for x in data['items']}),20)
   with tempfile.TemporaryDirectory() as tmp:
    out=Path(tmp);urls=publish_tools(ROOT,out)
-   self.assertEqual(len(urls),23)
+   self.assertEqual(len(urls),22)
+   self.assertNotIn('https://sidecourt.space/drops/redbot/test/',urls)
    products=(out/'products/index.html').read_text();skills=(out/'skills/index.html').read_text()
    self.assertIn('Less friction.',products);self.assertIn('<h1>Skills</h1>',skills)
    self.assertNotIn('class="catalog-tabs"',skills)

@@ -162,3 +162,7 @@ existing=[node.text for node in ET.fromstring((out/'sitemap.xml').read_text()).i
 
 # Discovery directory migration: preserve query/hash, leave all product children untouched.
 (out/'drops/index.html').write_text(redirect_page('/discovery/', True).replace('href="https://sidecourt.space/"','href="https://sidecourt.space/discovery/"'))
+
+# Shared search metadata is applied after all product overlays.
+from seo import finish_search_metadata
+finish_search_metadata(out)

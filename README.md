@@ -4,12 +4,12 @@ Website source for sidecourt.space. CleanPause release assets are read at build 
 
 The product is available at https://sidecourt.space/cleanpause/.
 
-Daycup, an offline coffee companion, is published from `website/daycup/` at https://sidecourt.space/drops/daycup/ (app at `/drops/daycup/app/`). Its source lives in the private `m1nga/daycup` repository; `scripts/publish_sidecourt.py` there refreshes `website/daycup/`.
+DayCup, a coffee companion with offline guest use and optional private account sync, is published from `website/daycup/` at https://sidecourt.space/drops/daycup/ (app at `/drops/daycup/app/`). Its source lives in the private `m1nga/daycup` repository; `scripts/publish_sidecourt.py` there refreshes `website/daycup/`.
 
 
 ## Canonical product and skill entry points
 
-All public product discovery starts from https://sidecourt.space/tools/ and the TOOLS link on the SideCourt homepage. RedBot runs at /drops/redbot/app/ with its product page at /drops/redbot/ and testing at /drops/redbot/test/. Released skills each have /skills/<name>/, an installation command, a source guide and a /tools/packages/<name>.zip download. GitHub remains the code and install backend.
+Public web product discovery starts from https://sidecourt.space/tools/ and the TOOLS link on the SideCourt homepage. RedBot runs at /drops/redbot/app/ with its product page at /drops/redbot/ and testing at /drops/redbot/test/. Released skills each have /skills/<name>/, an installation command, a source guide and a /tools/packages/<name>.zip download. GitHub is the primary source and install entry for skills. Existing SideCourt skill guides remain available; a new skill release does not automatically create a platform page.
 
 `website/tools/catalog.json` is the committed public catalog. `website/tools/sources/` and `website/tools/packages/` contain only released public material, bound to the catalog source commit. `website/tools_pages.py` adds the homepage entry and builds the catalog and skill pages. Update the source snapshot, package, catalog and checks together when adding a released skill. Private local skills and unfinished drafts are not release inputs.
 

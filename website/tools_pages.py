@@ -1,5 +1,6 @@
 """Owned product entry points. Additive static hosting, no account or work mutations."""
 import html,json,shutil,re
+from seo import search_metadata
 from pathlib import Path
 
 STYLE='''@font-face{font-family:Inter;src:url('/assets/InterLatin.woff2') format('woff2');font-weight:100 900;font-display:swap}
@@ -15,11 +16,17 @@ STYLE='''@font-face{font-family:Inter;src:url('/assets/InterLatin.woff2') format
 
 def page(title,description,url,body,schema=None):
  esc=html.escape
+ if schema is not None:
+  schema=dict(schema)
+  schema['@id']='https://sidecourt.space'+url+'#entity'
+  if url.startswith('/skills/') and url!='/skills/':
+   schema={'@context':'https://schema.org','@graph':[schema,{'@type':'BreadcrumbList','itemListElement':[{'@type':'ListItem','position':1,'name':'Skills','item':'https://sidecourt.space/skills/'},{'@type':'ListItem','position':2,'name':title,'item':'https://sidecourt.space'+url}]}]}
  structured='' if schema is None else '<script type="application/ld+json">'+json.dumps(schema).replace('</','<\\/')+'</script>'
  links=''.join('<a href="'+u+'"'+(' aria-current="page"' if u=='/skills/' and url.startswith('/skills/') else '')+'>'+label+'</a>' for u,label in [('/', 'HOME'),('/discovery/', 'DISCOVERY'),('/skills/', 'SKILLS'),('/season', 'SEASON'),('/get-on', 'GET ON THE COURT'),('/your-court', 'YOUR COURT')])
  navigation='<header class="catalog-header"><a class="catalog-brand" href="/" aria-label="SideCourt home"><img src="/assets/logo-cream.svg" alt="SideCourt"></a><nav class="catalog-nav" aria-label="Main navigation">'+links+'</nav><details class="catalog-mobile-nav"><summary>Menu</summary><nav aria-label="Mobile navigation">'+links+'</nav></details></header>'
  if url.startswith('/skills/') and url!='/skills/':body='<article class="catalog-detail">'+body+'</article>'
- return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(title)+' · SideCourt</title><meta name="description" content="'+esc(description,quote=True)+'"><link rel="canonical" href="https://sidecourt.space'+url+'"><meta property="og:title" content="'+esc(title,quote=True)+'"><meta property="og:description" content="'+esc(description,quote=True)+'"><meta property="og:url" content="https://sidecourt.space'+url+'"><link rel="icon" href="/favicon.svg"><link rel="preload" href="/assets/InterLatin.woff2" as="font" type="font/woff2" crossorigin><style>'+STYLE+'</style>'+structured+'</head><body class="catalog-page">'+navigation+'<main>'+body+'<footer>Made by Ming (<a href="/people/m1nga/">@m1nga</a>) · <a href="/">SideCourt</a> · <a href="/tools/">All products and skills</a> · Updated November 3, 2026</footer></main></body></html>'
+ document='<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(title)+' · SideCourt</title><meta name="description" content="'+esc(description,quote=True)+'"><link rel="canonical" href="https://sidecourt.space'+url+'"><meta property="og:title" content="'+esc(title,quote=True)+'"><meta property="og:description" content="'+esc(description,quote=True)+'"><meta property="og:url" content="https://sidecourt.space'+url+'"><link rel="icon" href="/favicon.svg"><link rel="preload" href="/assets/InterLatin.woff2" as="font" type="font/woff2" crossorigin><style>'+STYLE+'</style>'+structured+'</head><body class="catalog-page">'+navigation+'<main>'+body+'<footer>Made by Ming (<a href="/people/m1nga/">@m1nga</a>) · <a href="/">SideCourt</a> · <a href="/tools/">All products and skills</a></footer></main></body></html>'
+ return search_metadata(document,title+' · SideCourt',description,'https://sidecourt.space'+url)
 
 def card(x):
  e=html.escape
@@ -56,9 +63,9 @@ def publish_tools(root,out):
  shutil.copytree(root/'tools',out/'tools',dirs_exist_ok=True)
  urls=[]
  for kind,url,title,heading,description in [
-  ('all','/tools/','Products & Skills','Something useful,<br>within reach.','Apps to open and skills to use with your AI. All made by Ming.'),
-  ('products','/products/','Products','Less friction.<br>More doing.','Open a web app or download a product. Pick the thing you want help with.'),
-  ('skills','/skills/','Skills','Skills','Skills are reusable instructions and tools for your AI assistant. Choose a task, open the guide, then install.')]:
+  ('all','/tools/','Independent Apps and AI Agent Skills','Something useful,<br>within reach.','Apps to open and skills to use with your AI. All made by Ming.'),
+  ('products','/products/','Coffee, Audio, Saved Research and Mac Cleaning Apps','Less friction.<br>More doing.','Open a web app or download a product. Pick the thing you want help with.'),
+  ('skills','/skills/','AI Agent Skills for Codex and Compatible Assistants','Skills','Skills are reusable instructions and tools for your AI assistant. Choose a task, open the guide, then install.')]:
   selected=items if kind=='all' else [x for x in items if ('install' in x if kind=='skills' else x['kind']!='Skill')]
   if kind=='skills':selected=[dict(x,url='/skills/'+x['slug']+'/') for x in selected]
   intro='<h1>'+heading+'</h1><p class="catalog-intro">'+e(description)+'</p><label for="tool-search">What would you like help with?</label><input id="tool-search" type="search" placeholder="Try saved links, coffee, handoff or design"><small id="count" role="status">'+str(len(selected))+' '+('skills' if kind=='skills' else 'products' if kind=='products' else 'products and skills')+'</small>'
@@ -81,7 +88,7 @@ def publish_tools(root,out):
   (folder/'index.html').write_text(page(x['title'],x['description'],'/skills/'+slug+'/',body,{'@context':'https://schema.org','@type':'SoftwareSourceCode','name':x['title'],'description':x['description'],'url':'https://sidecourt.space/skills/'+slug+'/','codeRepository':x['repository'],'author':{'@type':'Person','name':'Ming','url':'https://sidecourt.space/people/m1nga/'}}))
   urls.append('https://sidecourt.space/skills/'+slug+'/')
  shutil.copytree(root/'redbot',out/'drops/redbot',dirs_exist_ok=True)
- urls += ['https://sidecourt.space/drops/redbot/','https://sidecourt.space/drops/redbot/app/','https://sidecourt.space/drops/redbot/test/']
+ urls += ['https://sidecourt.space/drops/redbot/','https://sidecourt.space/drops/redbot/app/']
  # Familiar route aliases enter the same canonical platform page.
  for path,target in [('redbot','/drops/redbot/')]:
   folder=out/path;folder.mkdir(exist_ok=True);(folder/'index.html').write_text('<!doctype html><html lang="en"><meta charset="utf-8"><title>SideCourt</title><link rel="canonical" href="https://sidecourt.space'+target+'"><meta http-equiv="refresh" content="0;url='+target+'"><a href="'+target+'">Continue to SideCourt</a></html>')

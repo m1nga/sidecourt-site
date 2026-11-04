@@ -1,15 +1,19 @@
 # SideCourt
 
-> SideCourt (sidecourt.space) is a home for independent work: small products people make for themselves and then share. Each work has a page where others can reply, offer help and follow what changes. Made by M1NGA. English and Chinese.
+> SideCourt (sidecourt.space) is a home for independent work: small products people make for themselves and then share. Each work has a page where others can reply, offer help and follow what changes. Made by Ming (M1NGA). The platform is in English; individual products document their supported languages.
 
-## Products (all free)
+## Products
 
 - [CleanPause](https://sidecourt.space/cleanpause/): Mac app that pauses keyboard and trackpad input so you can wipe your Mac clean; Windows preview available.
-- [Daycup 每日一杯](https://sidecourt.space/drops/daycup/): offline coffee companion; save your setup and beans, start from a recipe, time the brew, record the taste, change one thing next time. No account.
-- [EarBrief](https://earbrief.sidecourt.space/): turns work notes and PDF reports into Chinese or English audio episodes. Bring your own free AI key; sign in with a SideCourt account. Product page: https://sidecourt.space/drops/earbrief/
+- [DayCup](https://sidecourt.space/drops/daycup/): offline coffee companion; save your setup and beans, start from a recipe, time the brew, record the taste, change one thing next time. Guest records stay on the device. Optional SideCourt sign-in enables a private cloud library; public sharing is a separate choice. The iPhone app is an invitation TestFlight release, not a publicly available App Store download.
+- [EarBrief](https://sidecourt.space/drops/earbrief/): turns work notes and PDF reports into Chinese or English audio episodes. Bring your own AI key and sign in with a SideCourt account. Provider pricing and quotas apply. The product guide is public; private episodes require sign-in. App: https://earbrief.sidecourt.space/
 
 ## Platform
 
 - [Discovery](https://sidecourt.space/discovery/): all public works.
 - [Connect an AI](https://sidecourt.space/connect-ai/): use SideCourt from ChatGPT, Claude, Claude Code or Codex to save drafts and read replies.
 - [Sitemap](https://sidecourt.space/sitemap.xml)
+
+## Source and scope
+
+Product pages state current requirements and limitations. A skill is installed into a compatible assistant; it is not a hosted model service. GitHub source, examples and installation instructions: https://github.com/m1nga/skills . This guide is a convenience for readers and tools, not a claim of search indexing or AI endorsement.
