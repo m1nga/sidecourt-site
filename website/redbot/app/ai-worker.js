@@ -7,7 +7,7 @@ async function load(){
   const {pipeline,env}=await import('./vendor/transformers/transformers.min.js');
   env.allowLocalModels=false;env.backends.onnx.wasm.numThreads=1;
   env.backends.onnx.wasm.wasmPaths=new URL('./vendor/transformers/',import.meta.url).href;
-  extractor=await pipeline('feature-extraction',MODEL,{revision:REVISION,dtype:'q8',device:'wasm',progress_callback:p=>{if(p.status==='progress')postMessage({progress:'Downloading AI model: '+Math.round(p.progress||0)+'%'});}});
+  extractor=await pipeline('feature-extraction',MODEL,{revision:REVISION,dtype:'q8',device:'wasm',progress_callback:p=>{const download={status:String(p.status||''),file:String(p.file||'').split('/').pop(),progress:Number.isFinite(p.progress)?Math.round(p.progress):null,loaded:Number.isFinite(p.loaded)?p.loaded:null,total:Number.isFinite(p.total)?p.total:null};postMessage({progress:'Downloading AI model: '+(download.progress===null?download.status:download.progress+'%'),download});}});
   cache=await new VectorCache(self.indexedDB).open();return extractor;
  })().catch(e=>{loading=null;throw e;});
  return loading;
