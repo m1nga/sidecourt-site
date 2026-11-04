@@ -1,7 +1,7 @@
 /* RedBot account-first web client. User text is never passed through translation. */
 (() => {
   'use strict';
-  const C = ShelfCore, R = RedBotCheck, APP_VERSION = '1.9.4';
+  const C = ShelfCore, R = RedBotCheck, APP_VERSION = '1.9.5';
   const $ = s => document.querySelector(s);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const stored = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } };
@@ -143,7 +143,7 @@
   function failure(error) {
     const messages = {
       connection_config_unavailable:t('未能读取连接地址，尚未发起登录。请再次点击获取登录码以重新读取；已有收藏和连接信息保留。','Could not load the connection address. Sign-in has not started. Click Get sign-in code to retry; your saves and connection are kept.'),
-      service_offline:t('暂时联系不上 RedBot 登录服务，尚未取得二维码。可再次点击连接按钮重试；若仍失败，需要恢复测试服务。已有收藏保留。','RedBot’s sign-in service cannot be reached, so no QR code was issued. Click the connection button to retry; if it persists, the test host needs to be restored. Your saves are kept.'),
+      service_offline:t('暂时联系不上同步服务。已有收藏仍可查看；恢复连接后继续更新。','The sync service cannot be reached. Your saved content is still available; updates can continue when it reconnects.'),
       invite_required:t('邀请码不正确，请使用收到的试用链接。','Use the invitation link you received.'),
       beta_full:t('目前试用名额已满，请稍后再试。','All test slots are in use. Try again later.'),
       service_restarted:t('服务重启中断了这次读取。已有内容已保留，可手动重试。','A service restart interrupted this read. Existing content is kept. Retry manually.'),
@@ -199,6 +199,9 @@
     if (credentials) return t('查看连接','Connection');
     return t('连接小红书','Connect Xiaohongshu');
   }
+  function accountLabel() {
+    return credentials ? t('小红书账号','Xiaohongshu account') : t('连接小红书','Connect Xiaohongshu');
+  }
   function render() {
     document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
     document.title = t('RedBot — 找回收藏，马上用起来','RedBot — Put your saves to use');
@@ -206,7 +209,7 @@
     $('#nav-library').textContent = t('我的收藏','My saves');
     $('#nav-home').ariaCurrent = tab === 'home' ? 'page' : 'false';
     $('#nav-library').ariaCurrent = tab === 'library' ? 'page' : 'false';
-    $('#account').textContent = activity();
+    $('#account').textContent = accountLabel();
     $('#language').textContent = lang === 'zh' ? 'EN' : '中文';
     $('#language').ariaLabel = t('切换到英文','Switch to Chinese');
     $('#settings').ariaLabel = t('设置与备份','Settings and backups');
@@ -354,7 +357,7 @@
       }
       await reconcileRead();
       if(status.job?.state==='failed' && status.job.id!==lastJob) {if(!['read','video'].includes(status.job.kind))notify(failure(Error(status.job.error)));lastJob=status.job.id;}
-      $('#account').textContent=activity(); updateProgress();if($('#source-progress')&&detailId)$('#source-progress').innerHTML=readProgress(item(detailId));
+      $('#account').textContent=accountLabel(); updateProgress();if($('#source-progress')&&detailId)$('#source-progress').innerHTML=readProgress(item(detailId));
       if ($('#dialog').open && $('#dialog').dataset.kind==='connection') {
         // The consent form never rerenders while it is being completed.
         const scroll = $('#dialog').scrollTop;
@@ -367,13 +370,13 @@
       // A busy/cooldown response or a rendering exception is not an outage.
       offline=['service_offline','service_unavailable','connection_config_unavailable'].includes(error.message);
       if(!offline&&!['busy','scan_cooldown','session_expired'].includes(error.message))console.warn('RedBot refresh did not finish:',error.name);
-      $('#account').textContent=activity(); updateProgress();if($('#source-progress')&&detailId)$('#source-progress').innerHTML=readProgress(item(detailId)); if(initial)notify(failure(error));
+      $('#account').textContent=accountLabel(); updateProgress();if($('#source-progress')&&detailId)$('#source-progress').innerHTML=readProgress(item(detailId)); if(initial)notify(failure(error));
     }
     finally { requestActive=false;initial=false; }
   }
   async function sync() {
     if (!credentials) return connectionDialog();
-    try { await api('/api/sync',{}); startedAt=Date.now(); status={...status,job:{kind:'scan',state:'running'}}; $('#account').textContent=activity(); if($('#dialog').open && $('#dialog').dataset.kind==='connection')dismiss(); tab='library';render(); notify(t('开始扫描，原有笔记和计划都会保留。','Scanning. Your notes and plans are kept.')); }
+    try { await api('/api/sync',{}); startedAt=Date.now(); status={...status,job:{kind:'scan',state:'running'}}; $('#account').textContent=accountLabel(); if($('#dialog').open && $('#dialog').dataset.kind==='connection')dismiss(); tab='library';render(); notify(t('开始扫描，原有笔记和计划都会保留。','Scanning. Your notes and plans are kept.')); }
     catch(error) { notify(failure(error)); }
   }
   async function disconnect() {
@@ -605,7 +608,7 @@
     if(action==='favorite'||action==='read-mark'||action==='archive'||action==='trash'){const key={favorite:'favorite','read-mark':'read',archive:'archived',trash:'trashed'}[action];data.annotations[id]={...a,[key]:!a[key]};save();render();if($('#dialog').open)detail(id);return;}
     if(action==='detail')return detail(id);
     if(action==='cancel-video'||action==='cancel-read'){target.disabled=true;try{await api(action==='cancel-video'?'/api/cancel-video':'/api/cancel-read',{});await refreshStatus();}catch(error){if(['no_read_running','no_video_running'].includes(error.message)){await recoverCancelledRead();return;}const r=reads.get(detailId);if(r)r.error=failure(error);refreshDetail();}return;}
-    if(action==='video'){target.disabled=true;try{await api('/api/video',{id});videoStartedAt=Date.now();status={...status,job:{kind:'video',state:'running',startedAt:new Date().toISOString()}};if($('#video-progress'))$('#video-progress').innerHTML=videoProgress();$('#account').textContent=activity();}catch(error){notify(failure(error));target.disabled=false;}return;}
+    if(action==='video'){target.disabled=true;try{await api('/api/video',{id});videoStartedAt=Date.now();status={...status,job:{kind:'video',state:'running',startedAt:new Date().toISOString()}};if($('#video-progress'))$('#video-progress').innerHTML=videoProgress();$('#account').textContent=accountLabel();}catch(error){notify(failure(error));target.disabled=false;}return;}
     if(action==='read')return requestRead(id,{retry:true});
     if(action==='update-app')return reloadUpdatedApp();
     if(action==='note'){data.annotations[id]={...a,note:$('#personal-note').value,category:$('#save-topic').value,...($('#save-collection')?{collections:$('#save-collection').value?[$('#save-collection').value]:[]}: {})};await save();notify(t('笔记已保存。','Note saved.'));render();return;}
@@ -641,8 +644,9 @@
     $('#backup-file').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{if(f.size>45*1024*1024)throw Error();const raw=JSON.parse(await f.text());if(!Array.isArray(raw.items))throw Error();data.items=C.mergeItems(data.items,raw.items).items;data.annotations={...raw.annotations,...data.annotations};const cs=new Map(data.collections.map(c=>[c.id,c]));for(const c of raw.collections||[])if(!cs.has(c.id))cs.set(c.id,c);data.collections=[...cs.values()];if(!data.goalState?.plan&&raw.goalState)data.goalState=C.normalizeGoalState(raw.goalState);const gs=new Map(data.guides.map(g=>[g.id,g]));for(const g of raw.guides||[]){const n=C.normalizeGuide(g);if(n&&!gs.has(n.id))gs.set(n.id,n);}data.guides=[...gs.values()];await save();dismiss();tab='library';render();notify(t('备份已合并，已有笔记保留。','Backup merged. Existing notes are kept.'));}catch{notify(t('无法读取这份备份，请选择有效的 RedBot JSON 备份。','Could not read this backup. Choose a valid RedBot JSON backup.'));}e.target.value='';};
     resetSearchScope();
     try {data=normalize(await cacheRead()||(!credentials?stored('shelf.library.v1',{}):{}));}catch{}
-    try {await refreshConnectionConfig();} catch(error) {connectionError=failure(error);}
+    // Browsing the saved device copy must not wait for any network request.
     render();
+    try {await refreshConnectionConfig();} catch(error) {connectionError=failure(error);}
     void checkVersion();
     if(invitation&&!credentials)connectionDialog();
     if(credentials)await refreshStatus();
