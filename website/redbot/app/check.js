@@ -31,7 +31,10 @@ function methodText(value){return lines(value).filter(s=>!/(?:关注|私信|领�
 function writtenMethod(value){const s=methodText(value);return s.length>=24&&/(?:检查|核对|定位|保留|创建|更新|配置|输入|输出|步骤|先.{2,50}(?:再|然后)|inspect|verify|preserve|configur|implement|input|steps?\b)/i.test(s)&&!(/^(?:关注|私信|评论.{0,8}领取|follow|dm\b)/i.test(s)&&!/(?:检查|核对|定位|保留|创建|更新|inspect|verify|preserve|configur)/i.test(s));}
 function presentation(x){
  const author=(x.comments?.scope==='first_page_returned'?x.comments.items||[]:[]).filter(c=>c.isAuthor===true&&writtenMethod(c.text)).map(c=>methodText(c.text));
- const candidates=[['author_method','原作者评论中的方法',author.join('\n')],['saved_summary','已有摘要',text(x.summary)||text(x.research?.decision)],['post_text','笔记正文',methodText(x.description)],['saved_notes','已有阅读笔记',x.readingNotes],['ocr','画面文字采样',(x.videoAnalysis?.frames||[]).flatMap(f=>(f.text||[]).map(t=>text(t.text))).join('\n')],['transcript','自动语音转录',text(x.transcript)||(x.videoAnalysis?.transcript||[]).map(t=>text(t.text)).join('\n')]];
+ const caption=methodText(x.description),withoutTags=s=>text(s).replace(/#[^\s#]+#?/g,'').replace(/[\s\p{P}\p{S}]/gu,'');
+ const titleOnly=x.type==='video'&&withoutTags(caption)&&withoutTags(x.title).includes(withoutTags(caption));
+ const body=['post_text','笔记正文',caption];
+ const candidates=[['author_method','原作者评论中的方法',author.join('\n')],['saved_summary','已有摘要',text(x.summary)||text(x.research?.decision)],...(!titleOnly?[body]:[]),['saved_notes','已有阅读笔记',x.readingNotes],['ocr','画面文字采样',(x.videoAnalysis?.frames||[]).flatMap(f=>(f.text||[]).map(t=>text(t.text))).join('\n')],['transcript','自动语音转录',text(x.transcript)||(x.videoAnalysis?.transcript||[]).map(t=>text(t.text)).join('\n')],...(titleOnly?[body]:[])];
  const selected=[];for(const [kind,label,value] of candidates){const cleaned=lines(value).join('\n');if(!cleaned||selected.some(v=>v.text===cleaned))continue;selected.push({kind,label,text:cleaned});}
  return {primary:selected[0]||{kind:'none',label:'尚未取得方法原文',text:''},sources:selected};
 }

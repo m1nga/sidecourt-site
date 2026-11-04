@@ -1,7 +1,7 @@
 /* RedBot account-first web client. User text is never passed through translation. */
 (() => {
   'use strict';
-  const C = ShelfCore, R = RedBotCheck, APP_VERSION = '1.9.3';
+  const C = ShelfCore, R = RedBotCheck, APP_VERSION = '1.9.4';
   const $ = s => document.querySelector(s);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const stored = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } };
@@ -63,6 +63,7 @@
     if (tab === 'library' && $('#cards')) { cards(); updateProgress(); }
     else if (tab === 'home' && $('#goal-form')) updateProgress();
     else render();
+    refreshDetail();
   }
   function cancelSearch(){searchGeneration++;window.RedBotAI?.cancel();working=false;searchProgress='';}
   function resetSearchScope(){reads.clear();cancelSearch();window.RedBotAI?.setScope(libraryKey());answer=null;searchCoverage=null;}
@@ -160,8 +161,9 @@
       video_busy:t('另一段视频正在处理，请稍后重试。','Another video is being processed. Try later.'),
       video_cancelled:t('视频读取已取消，原收藏和笔记保留。','Video reading cancelled. Saves and notes are kept.'),
       video_timeout:t('视频处理超时。已有文字保留，可稍后再试或打开原视频。','Video processing timed out. Existing text is kept; retry later or open the source.'),
-      video_duration_limit:t('目前只支持 10 分钟以内的视频。请打开原视频查看。','Currently supports videos up to 10 minutes. Open the original for longer videos.'),
-      video_too_large:t('视频超过 100 MB，暂时无法读取。请打开原视频。','This video exceeds 100 MB. Open the original.'),
+      video_duration_limit:t('旧服务拒绝了这段视频，需要更新服务后重试。','The older service rejected this video. Update the service and retry.'),
+      video_too_large:t('旧服务拒绝了这个文件，需要更新服务后重试。','The older service rejected this file. Update the service and retry.'),
+      video_storage_full:t('测试服务空间不足，已有结果已保留。释放空间后可以继续读取。','The test host is low on storage. Existing results are kept; free space and continue.'),
       video_setup_required:t('视频转录组件尚未准备好，需要测试服务维护者完成安装；收藏仍可查看。','Video transcription is not set up. The test host maintainer needs to finish setup; saves remain available.'),
       video_model_mismatch:t('本机转录模型校验未通过，需要维护者修复后重试。','The local transcription model failed verification. The host maintainer needs to repair it.'),
       video_source_unavailable:t('没有取得可读取的视频来源。请先刷新收藏再重试，或打开原视频。','No readable video source was returned. Refresh saves, retry, or open the original.'),
@@ -231,9 +233,17 @@
   }
   function updateProgress() {
     const region = $('#scan-progress');
-    if (region) region.innerHTML = scanLine();
+    if (region) region.innerHTML = scanLine() + readingLine();
     const refresh = $('.library-heading [data-action="sync"]');
     if (refresh) refresh.disabled = status?.job?.state === 'running';
+  }
+  function readingLine() {
+    if(!credentials || !data.items.length)return '';
+    const q=status?.readingQueue, finished=data.items.filter(x=>x.type==='video'?x.videoAnalysis?.complete:['ready','empty'].includes(x.contentReadStatus)&&x.contentReadAt).length;
+    const running=q?.state==='running', paused=q?.state==='paused', unread=data.items.length-finished;
+    const title=running?t('正在读取全部收藏','Reading all saves'):paused?t(q.currentId?'当前这篇读完后暂停':'读取已暂停',q.currentId?'Finishing this save, then pausing':'Reading paused'):t(unread?'让收藏里的内容也能被找到':'全部收藏内容已读取',unread?'Make the content inside your saves searchable':'All saved content has been read');
+    const message=running||paused?t(`已读 ${q.done} / ${q.total} 条，剩余 ${q.remaining} 条。`,`Read ${q.done} / ${q.total}; ${q.remaining} remaining.`):t(`已读 ${finished} / ${data.items.length} 条。${unread?'正文和视频会逐篇读取，读好一篇就能用。':'现在可以直接搜索和查看。'}`,`Read ${finished} / ${data.items.length}. ${unread?'Post text and videos become available one at a time.':'Ready to search and browse.'}`);
+    return `<aside class="scan-panel content-reading" role="status"><strong>${title}</strong><p>${message}${q?.failed?t(` ${q.failed} 条需要重试。`,` ${q.failed} need another attempt.`):''}</p>${running?`<button data-action="pause-reading">${t('暂停读取','Pause reading')}</button>`:`${unread>(q?.failed||0)?`<button data-action="read-all" ${paused&&q.currentId?'disabled':''}>${t(paused?'继续读取':'读取全部内容',paused?'Continue reading':'Read all content')}</button>`:''}${q?.failed?` <button data-action="retry-all">${t('重试未读成功的','Retry unsuccessful reads')}</button>`:''}`}</aside>`;
   }
   function renderHome() {
     const has = data.items.some(x=>!annotation(x.id).trashed);
@@ -350,10 +360,15 @@
         const scroll = $('#dialog').scrollTop;
         connectionDialog(); $('#dialog').scrollTop=scroll;
       }
-      if (status.state==='connected' && auto && !['running','failed','cancelled'].includes(status.job?.state) && (!status.scan?.at || Date.now()-Date.parse(status.scan.at)>15*60*1000) && !document.hidden) {
+      if (status.state==='connected' && status.readingQueue?.state!=='running' && auto && !['running','failed','cancelled'].includes(status.job?.state) && (!status.scan?.at || Date.now()-Date.parse(status.scan.at)>15*60*1000) && !document.hidden) {
         await api('/api/sync',{}); startedAt=Date.now(); status={...status,job:{kind:'scan',state:'running'}}; updateProgress();
       }
-    } catch(error) { offline=true; $('#account').textContent=activity(); updateProgress();if($('#source-progress')&&detailId)$('#source-progress').innerHTML=readProgress(item(detailId)); if(initial)notify(failure(error)); }
+    } catch(error) {
+      // A busy/cooldown response or a rendering exception is not an outage.
+      offline=['service_offline','service_unavailable','connection_config_unavailable'].includes(error.message);
+      if(!offline&&!['busy','scan_cooldown','session_expired'].includes(error.message))console.warn('RedBot refresh did not finish:',error.name);
+      $('#account').textContent=activity(); updateProgress();if($('#source-progress')&&detailId)$('#source-progress').innerHTML=readProgress(item(detailId)); if(initial)notify(failure(error));
+    }
     finally { requestActive=false;initial=false; }
   }
   async function sync() {
@@ -388,7 +403,7 @@
     const r=reads.get(x.id), pending=['queued','starting','running'].includes(r?.state);
     let message=r?.state==='queued'?t('正在等待上一项读取结束…','Waiting for the current read to finish…'):r?.state==='starting'?t('正在开始读取…','Starting the read…'):r?.state==='running'?t(x.type==='video'?'正在读取这篇视频的语音和画面文字，可能需要几分钟。':'正在读取正文…',x.type==='video'?'Reading this video’s speech and on-screen text. This may take a few minutes.':'Reading the source text…'):r?.error||'';
     if(r?.error&&pending)message+=' '+r.error;
-    if(offline&&pending)message=t('同步暂不可用；恢复连接后会核对这次读取，不会重复发起。','Sync is unavailable. This read will be checked after reconnection without being started again.');
+    if(offline&&pending)message=t('正在重新连接，读取结果会自动更新。你可以先看其它收藏。','Reconnecting. The read result will update automatically. You can browse other saves meanwhile.');
     if(!message&&readable(x))message=t('内容已就绪。','Content is ready.');
     return `<div role="status" aria-live="polite">${esc(message)}</div>${r?.state==='running'?`<button data-action="${x.type==='video'?'cancel-video':'cancel-read'}">${t('取消读取','Cancel reading')}</button>`:''}${pending||!credentials||!/^[a-f0-9]{24}$/.test(x.id)?'':`<button data-action="read" data-id="${esc(x.id)}">${t(r?.error?'重试读取':readable(x)?'重新读取':'读取内容',r?.error?'Retry reading':readable(x)?'Read again':'Read content')}</button>`}`;
   }
@@ -397,13 +412,15 @@
     let r=reads.get(id);
     if(r&&!retry){if(briefAfter)r.briefAfter=true;return;}
     if(r&&['queued','starting','running'].includes(r.state))return;
-    r={state:'queued',briefAfter,jobId:'',error:'',baseline:readOutcome(x)};reads.set(id,r);refreshDetail();
+    r={state:'queued',briefAfter,force:retry,jobId:'',error:'',baseline:readOutcome(x)};reads.set(id,r);refreshDetail();
     await startSelectedRead(id,r);
   }
   async function startSelectedRead(id,r) {
     if(!selected(id)||reads.get(id)!==r||r.state!=='queued')return;
+    if(!r.force&&readable(item(id))&&item(id).contentReadStatus==='ready') {r.state='done';refreshDetail();if(r.briefAfter)brief(id);return;}
     if(status?.job?.state==='running') {
       if(status.job.targetId===id&&status.job.kind===(item(id).type==='video'?'video':'read')){r.state='running';r.jobId=status.job.id;r.epoch=readEpoch;r.acceptedAt=statusSnapshot.startedAt;r.requestStartedAt=Date.parse(status.job.startedAt)||Date.now();refreshDetail();}
+      else if(status.readingQueue?.state==='running'&&!r.priorityRequested){r.priorityRequested=true;try{await api('/api/prioritize-read',{id});}catch(error){r.error=failure(error);refreshDetail();}}
       return;
     }
     r.state='starting';r.baseline=readOutcome(item(id));r.requestStartedAt=Date.now();refreshDetail();
@@ -509,7 +526,7 @@
     const v=x.videoAnalysis,transcript=v?.transcript||[],frames=v?.frames||[];
     const audioNames={transcribed:t('已转录','Transcribed'),no_speech_detected:t('未检测到语音','No speech detected')};
     const frameNames={sampled_ocr:t('已均匀采样并读取画面文字','Uniform samples read with OCR'),ocr_setup_required:t('画面文字组件尚未准备好','On-screen text reader needs setup')};
-    return `<section class="video-reading"><h3>${t('视频内容','Video content')}</h3><p>${t('按需读取语音与少量画面文字采样，不是完整视觉理解，也不鉴定真假。没有云端模型 token 账单，但会使用测试服务电脑的算力；目前限 10 分钟、100 MB 以内。','Reads speech and sampled on-screen text on request. This is not full visual understanding or a truth check. No cloud-model token bill; processing uses the test host computer. Limit: 10 minutes and 100 MB.')}</p>${v?`<p class="coverage-note">${t(v.complete?'本次处理完成；覆盖范围仍仅限下列语音与采样。':'本次只得到部分结果，不能视为读完视频。',v.complete?'Processing completed; coverage is limited to speech and samples below.':'Only partial results are available; the video has not been fully read.')} ${v.cached?t('复用相同版本的本机结果。','Reused a local result for the same version.'):''}</p><p>${t('语音：','Audio: ')}${esc(audioNames[v.coverage?.audio]||t('未完成','Not completed'))} · ${t('画面文字：','On-screen text: ')}${esc(frameNames[v.coverage?.frames]||t('未完成','Not completed'))}</p>${v.lastRefreshError?.retainedPrevious?`<p class="warning">${t('最近一次重新读取失败；下方保留上次成功结果，并非这次的新结果。','The latest refresh failed. Results below are from the previous successful read.')} ${esc(failure(Error(v.lastRefreshError.code)))}</p>`:''}${v.error?`<p class="warning">${esc(failure(Error(v.error)))}</p>`:''}${transcript.length?`<details><summary>${t('原始语音转录','Timestamped transcript')}</summary><p class="coverage-note">${t('自动转录可能听错，请对照画面文字或原视频核对。','Automatic transcripts may mishear speech. Check against on-screen text or the original video.')}</p>${transcript.map(t=>`<p><time>${timecode(t.start)}–${timecode(t.end)}</time> ${esc(t.text)}</p>`).join('')}</details>`:''}${frames.length?`<details><summary>${t('采样画面中的文字','Text from sampled frames')} (${frames.length})</summary>${frames.map(f=>`<p><time>${timecode(f.at)}</time> ${esc((f.text||[]).map(t=>t.text).join(' ')||t('此采样未读出文字','No text read in this sample'))}</p>`).join('')}</details>`:''}`:''}</section>`;
+    return `<section class="video-reading"><h3>${t('视频内容','Video content')}</h3><p>${t('按需读取语音与少量画面文字采样，不是完整视觉理解，也不鉴定真假。没有云端模型 token 账单，但会使用测试服务电脑的算力；长视频会分段处理。','Reads speech and sampled on-screen text on request. This is not full visual understanding or a truth check. No cloud-model token bill; processing uses the test host computer. Long videos are processed in chunks.')}</p>${v?`<p class="coverage-note">${t(v.complete?'本次处理完成；覆盖范围仍仅限下列语音与采样。':'本次只得到部分结果，不能视为读完视频。',v.complete?'Processing completed; coverage is limited to speech and samples below.':'Only partial results are available; the video has not been fully read.')} ${v.cached?t('复用相同版本的本机结果。','Reused a local result for the same version.'):''}</p><p>${t('语音：','Audio: ')}${esc(audioNames[v.coverage?.audio]||t('未完成','Not completed'))} · ${t('画面文字：','On-screen text: ')}${esc(frameNames[v.coverage?.frames]||t('未完成','Not completed'))}</p>${v.lastRefreshError?.retainedPrevious?`<p class="warning">${t('最近一次重新读取失败；下方保留上次成功结果，并非这次的新结果。','The latest refresh failed. Results below are from the previous successful read.')} ${esc(failure(Error(v.lastRefreshError.code)))}</p>`:''}${v.error?`<p class="warning">${esc(failure(Error(v.error)))}</p>`:''}${transcript.length?`<details><summary>${t('原始语音转录','Timestamped transcript')}</summary><p class="coverage-note">${t('自动转录可能听错，请对照画面文字或原视频核对。','Automatic transcripts may mishear speech. Check against on-screen text or the original video.')}</p>${transcript.map(t=>`<p><time>${timecode(t.start)}–${timecode(t.end)}</time> ${esc(t.text)}</p>`).join('')}</details>`:''}${frames.length?`<details><summary>${t('采样画面中的文字','Text from sampled frames')} (${frames.length})</summary>${frames.map(f=>`<p><time>${timecode(f.at)}</time> ${esc((f.text||[]).map(t=>t.text).join(' ')||t('此采样未读出文字','No text read in this sample'))}</p>`).join('')}</details>`:''}`:''}</section>`;
   }
   function detail(id,{refresh=false}={}) {
     const x=item(id);if(!x)return;detailId=id;
@@ -573,6 +590,11 @@
       catch(error) {notify(failure(error));target.disabled=false;}return;
     }
     if(action==='retry-status'){try {await refreshConnectionConfig();await refreshStatus();}catch(error){showConnectionError(error);}return;}
+    if(['read-all','retry-all','pause-reading'].includes(action)){
+      target.disabled=true;
+      try {const q=await api(action==='pause-reading'?'/api/pause-reading':'/api/read-all',{retryFailed:action==='retry-all'});status={...status,readingQueue:q};updateProgress();await refreshStatus();}
+      catch(error){notify(failure(error));target.disabled=false;}return;
+    }
     if(action==='cancel-sync'){target.disabled=true;try{await api('/api/cancel-sync',{});await refreshStatus();}catch(error){notify(failure(error));target.disabled=false;}return;}
     if(action==='home'||action==='library'){tab=action==='home'?'home':'library';dismiss();render();return;}
     if(action==='demo'){if(credentials)return notify(t('连接账号时不混入示例收藏。','Examples stay separate from your connected account.'));const s=window.REDBOT_SEED;data.items=C.mergeItems(data.items,s.items).items;const guides=new Map(data.guides.map(g=>[g.id,g]));s.guides.forEach(g=>guides.set(g.id,g));data.guides=[...guides.values()];save();render();return;}
