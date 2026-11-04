@@ -1,6 +1,6 @@
 // Explicit, local-only diagnostics: ?measure=1. No telemetry or account data is sent.
 (() => {
- const route=(location.hash||'#home').slice(1).split('?')[0];
+ const route=window.SCRoutes?.parse(location.pathname,location.search).page||(location.hash?location.hash.slice(1).split('?')[0]:location.pathname);
  const report={route,viewport:innerWidth,lcp:null,cls:0,ready:{},errors:[]};
  let output;
  function observe(type,consume){try{new PerformanceObserver(list=>list.getEntries().forEach(consume)).observe({type,buffered:true})}catch{}}
@@ -21,7 +21,7 @@
   const status=document.querySelector('#home-post-status')?.textContent||'';
   stamp('publicPosts',status&&!/Loading/.test(status));
   const court=document.querySelector('#court-content')?.textContent||'';
-  stamp('account',route==='court'&&court&&!/Loading|Checking your saved session|Opening Your Court/.test(court));
+  stamp('account',(route==='court'||route.startsWith('/your-court'))&&court&&!/Loading|Checking your saved session|Opening Your Court/.test(court));
   const art=scene?getComputedStyle(scene,'::before').backgroundImage.match(/url\(["']?(.*?)["']?\)/)?.[1]:null;
   const resource=art?performance.getEntriesByName(art).at(-1):null;
   if(resource)report.background={path:new URL(art).pathname,downloadComplete:Math.round(resource.responseEnd)};

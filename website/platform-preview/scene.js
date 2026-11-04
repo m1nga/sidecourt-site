@@ -20,16 +20,16 @@ let draftTimer,noteTimer,intent=state.intent,current='',currentPage='',dropRetur
 // arriving: a new address is waiting for its first frame. A forced re-route of that same address (edit, new draft) must not
 // store the page we just left as this page's scroll position (author-participant#3: the Share form opened halfway down).
 const scrolls=new Map();let arriving=false;
-// Scene art. scene.css paints a tiny inline placeholder at once; the full picture (WebP, or JPEG where image-set type() is unsupported — the same choice the CSS makes) fades in once it is decoded, so text and background arrive together instead of the picture popping in later.
+// Scene art. scene.css paints a tiny inline placeholder at once; the full picture (WebP, or JPEG where image-set type() is unsupported — the same choice the CSS makes) fades in once it is decoded, while content is available immediately.
 const artFormat=typeof CSS!=='undefined'&&typeof CSS.supports==='function'&&CSS.supports('background-image','image-set(url("a.webp") type("image/webp") 1x)')?'webp':'jpg';
 const artReady=new Set(),artPending=new Map();
 function loadArt(name){if(artReady.has(name))return Promise.resolve(true);if(artPending.has(name))return artPending.get(name);const p=new Promise(resolve=>{const img=new Image();img.decoding='async';img.onload=()=>{const done=()=>{artReady.add(name);artPending.delete(name);resolve(true)};typeof img.decode==='function'?img.decode().then(done,done):done()};img.onerror=()=>{artPending.delete(name);resolve(false)};img.src=R.assetPath('assets/'+name+'.'+artFormat)});artPending.set(name,p);return p}
-// index.html decodes the first page's picture itself and names it in data-art-ready. A page whose picture is not decoded yet keeps its text back too (art-wait), at most 800 ms, so both appear in the same frame; after that the text shows on the placeholder and the picture fades in when it arrives.
-function showArt(scene){const name=scene?.dataset.art;if(!name)return;if(document.documentElement.dataset.artReady===name)artReady.add(name);if(artReady.has(name)){scene.classList.add('bg-loaded');return}let waiting=true;scene.classList.add('art-wait');const reveal=()=>{if(!waiting)return;waiting=false;scene.classList.remove('art-wait')},cap=setTimeout(reveal,800);loadArt(name).then(ok=>{if(ok){scene.classList.add('bg-loaded');if(waiting){clearTimeout(cap);scene.getBoundingClientRect()}}reveal()})}
-// Once this page's own picture is in and the scripts have run, warm the other scenes' pictures one at a time, likeliest next page first, so an early click still opens with its background. Skipped on data-saver or 2G connections.
-const artOrder=['drops','home','season','get-on','utility','inside'];
-function prefetchArt(){const c=navigator.connection;if(c&&(c.saveData||/2g/.test(c.effectiveType||'')))return;const names=[...new Set([...artOrder,...$$('.scene[data-art]').map(n=>n.dataset.art)])].filter(n=>!artReady.has(n));(function next(){const n=names.shift();if(n)loadArt(n).then(()=>setTimeout(next,50))})()}
-Promise.all([window.SCArtFirst?.ready,document.readyState==='loading'&&new Promise(r=>document.addEventListener('DOMContentLoaded',r,{once:true}))]).then(()=>setTimeout(prefetchArt,0));
+// Share the head decode request so initialization does not decode the same image twice.
+if(window.SCArtFirst){const first=window.SCArtFirst;artPending.set(first.name,first.ready.then(ok=>{artPending.delete(first.name);if(ok)artReady.add(first.name);return ok}))}
+function showArt(scene){const name=scene?.dataset.art;if(!name)return;if(document.documentElement.dataset.artReady===name)artReady.add(name);if(artReady.has(name)){scene.classList.add('bg-loaded');return}loadArt(name).then(ok=>{if(ok)scene.classList.add('bg-loaded')})}
+// Warm only an intended destination, without competing with first-view data and fonts.
+function prefetchArt(event){const c=navigator.connection;if(c&&(c.saveData||/2g/.test(c.effectiveType||'')))return;const link=event.target.closest?.('a[href]');if(!link)return;let url;try{url=new URL(link.href,location.href)}catch{return}if(url.origin!==location.origin)return;const page=R.parse(url.pathname,url.search).page;const name=$$('.scene[data-page]').find(n=>n.dataset.page===page)?.dataset.art;if(name)loadArt(name)}
+for(const type of ['pointerover','focusin','touchstart'])document.addEventListener(type,prefetchArt,{passive:true});
 const say=(selector,message)=>{$(selector).textContent=message};
 function commit(patch,selector,success){
  const next={...state,...patch,updated:new Date().toISOString()};

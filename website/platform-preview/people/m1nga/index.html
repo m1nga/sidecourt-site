@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <script>if(new URLSearchParams(location.search).get('measure')==='1'){const s=document.createElement('script');s.src=(document.documentElement.dataset.base||'/')+'performance.js';s.defer=true;document.head.append(s)}</script>
-<!-- First view: the page's picture is requested and decoded here, and the page stays hidden until it is ready (at most 800 ms after the first frame could paint), so text and background appear together. -->
-<script>(()=>{const base=document.documentElement.dataset.base||'/',hash=location.hash?location.hash.slice(1).split('?')[0]:'',path=location.pathname.startsWith(base)?location.pathname.slice(base.length).split('/')[0]:'',first=hash?({home:'',player:'people',white:'share',court:'your-court',account:'sign-in'}[hash]??hash):path,art=({'':'home',people:'home',discovery:'drops',drops:'drops',work:'drops',preview:'drops',season:'season','get-on':'get-on',inside:'inside'})[first]||'utility',webp=!!window.CSS&&CSS.supports('background-image','image-set(url("a.webp") type("image/webp") 1x)');const h=document.documentElement,href=base+'assets/'+art+(webp?'.webp':'.jpg');h.dataset.entry=first===''?'home':'other';h.classList.add('art-js','art-hold','art-still');const link=document.createElement('link');link.rel='preload';link.as='image';link.href=href;link.fetchPriority='high';document.head.append(link);let held=true;const show=()=>{if(!held)return;held=false;h.classList.remove('art-hold');requestAnimationFrame(()=>requestAnimationFrame(()=>h.classList.remove('art-still')))},img=new Image();img.src=href;window.SCArtFirst={name:art,ready:(typeof img.decode==='function'?img.decode():new Promise((y,n)=>{img.onload=y;img.onerror=n})).then(()=>{h.dataset.artReady=art;show();return true},()=>{show();return false})};requestAnimationFrame(()=>setTimeout(show,800))})();</script><style>html[data-entry="other"] [data-page="home"]{display:none}</style>
+<!-- Request the artwork early; content is available immediately. -->
+<script>(()=>{const base=document.documentElement.dataset.base||'/',hash=location.hash?location.hash.slice(1).split('?')[0]:'',path=location.pathname.startsWith(base)?location.pathname.slice(base.length).split('/')[0]:'',first=hash?({home:'',player:'people',white:'share',court:'your-court',account:'sign-in'}[hash]??hash):path,art=({'':'home',people:'home',discovery:'drops',drops:'drops',work:'drops',preview:'drops',season:'season','get-on':'get-on',inside:'inside'})[first]||'utility',webp=!!window.CSS&&CSS.supports('background-image','image-set(url("a.webp") type("image/webp") 1x)');const h=document.documentElement,href=base+'assets/'+art+(webp?'.webp':'.jpg');h.dataset.entry=first===''?'home':'other';h.classList.add('art-js');const link=document.createElement('link');link.rel='preload';link.as='image';link.href=href;link.fetchPriority='high';document.head.append(link);const img=new Image();img.src=href;window.SCArtFirst={name:art,ready:(typeof img.decode==='function'?img.decode():new Promise((y,n)=>{img.onload=y;img.onerror=n})).then(()=>{h.dataset.artReady=art;return true},()=>false)}})();</script><style>html[data-entry="other"] [data-page="home"]{display:none}</style>
 <link rel="preload" href="/assets/InterLatin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/scene.css?v=b0fe9b1165e7">
+<link rel="stylesheet" href="/scene.css?v=42e11d1b8fcd">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=stacked1">
 <meta name="color-scheme" content="dark light">
 <link rel="stylesheet" href="/court.css?v=1f16e530746b">
@@ -21,6 +21,8 @@
 <meta property="og:title" content="@m1nga · SideCourt">
 <meta property="og:description" content="Work by @m1nga on SideCourt.">
 <meta property="og:url" content="https://sidecourt.space/people/m1nga/">
+<link rel="preconnect" href="https://rwbwfokdipabwjparcwy.supabase.co" crossorigin>
+<link rel="dns-prefetch" href="https://rwbwfokdipabwjparcwy.supabase.co">
 </head>
 <body>
 <a class="skip" href="#main-home">Skip to content</a><noscript><div class="no-script">SideCourt needs JavaScript for navigation and account access. Enable it and reload this page.</div></noscript>
@@ -246,8 +248,8 @@
 <a href="/your-court/privacy">Privacy</a> <a href="/your-court/terms">Terms</a></footer>
 </div>
 <dialog id="preview-dialog"><button class="close" type="button" aria-label="Close dialog">×</button><h2 id="dialog-title">SideCourt</h2>
-<div id="dialog-body"></div></dialog><script defer src="/config.js?v=d017a53b97d9"></script><script defer src="/routes.js?v=4f9b3f16f549"></script><script defer src="/scene.js?v=0e3545efdeb8"></script>
-<script defer src="/court.js?v=9d222ebe54c9"></script>
+<div id="dialog-body"></div></dialog><script defer src="/config.js?v=d017a53b97d9"></script><script defer src="/routes.js?v=4f9b3f16f549"></script><script defer src="/scene.js?v=979d93b0b675"></script>
+<script defer src="/court.js?v=ccb48c09bfa3"></script>
 <script defer src="/analytics.js?v=f00cb16e04e3"></script>
 </body>
 </html>
