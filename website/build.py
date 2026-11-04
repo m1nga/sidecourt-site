@@ -153,6 +153,8 @@ print('Structured data added to', 4, 'pages; llms.txt published.')
 
 # Owned product and skill entry points share the canonical SideCourt domain.
 tool_urls=publish_tools(root,out)
+from redbot_assets import ensure_redbot_runtime
+ensure_redbot_runtime(root,out)
 from xml.etree import ElementTree as ET
 existing=[node.text for node in ET.fromstring((out/'sitemap.xml').read_text()).iter('{http://www.sitemaps.org/schemas/sitemap/0.9}loc')]
 (out/'sitemap.xml').write_text(sitemap_xml(existing+tool_urls))
