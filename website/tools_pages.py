@@ -3,6 +3,8 @@ import html,json,shutil,re
 from seo import search_metadata
 from pathlib import Path
 
+SKILL_CATEGORIES=('Design','Productivity','Development','Creative','Research')
+
 STYLE='''@font-face{font-family:Inter;src:url('/assets/InterLatin.woff2') format('woff2');font-weight:100 900;font-display:swap}
 .catalog-page{--cream:#f6f1e8;--plum:#3f2e6b;--lilac:#d9c7e8;--site-margin:32px;isolation:isolate;position:relative;margin:0;color:var(--cream);background:#1a1a1a;font:14px/22px Inter,system-ui,sans-serif;min-height:100svh}
 .catalog-page:before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(26,26,26,.65),rgba(26,26,26,.65)),url('/assets/drops.jpg') center top/cover no-repeat;background-image:linear-gradient(180deg,rgba(26,26,26,.65),rgba(26,26,26,.65)),image-set(url('/assets/drops.webp') type('image/webp'),url('/assets/drops.jpg') type('image/jpeg'))}
@@ -12,6 +14,8 @@ STYLE='''@font-face{font-family:Inter;src:url('/assets/InterLatin.woff2') format
 .skill-list{list-style:none;padding:0;margin:32px 0;border-top:1px solid #ded3ef55}.skill-list>li{margin:0;border-bottom:1px solid #ded3ef44}.skill-list>li[hidden]{display:none}.skill-row{display:grid;grid-template-columns:36px 220px minmax(0,1fr) auto;align-items:center;gap:24px;padding:22px 16px;text-decoration:none;background:#291e4599;transition:background .2s}.skill-row:hover{background:#3f2e6beb}.skill-ring{display:block;width:36px;height:36px;object-fit:contain}.catalog-page .skill-name h2{font:600 17px/24px Inter,system-ui,sans-serif;margin:0;overflow-wrap:anywhere}.skill-name small{display:block;color:var(--lilac);margin-top:4px}.catalog-page .skill-summary p{max-width:none;font-size:14px;line-height:22px;margin:0}.catalog-page .skill-summary .skill-bring{font-size:12px;line-height:20px;color:#ded3ef;margin-top:4px}.skill-entry{font-size:12px;line-height:20px;white-space:nowrap;color:var(--lilac)}
 @media(max-width:1050px){.skill-row{grid-template-columns:36px 190px minmax(0,1fr) auto;gap:18px}}@media(max-width:760px){.skill-row{grid-template-columns:28px minmax(0,1fr) auto;gap:8px 14px;padding:18px 12px;align-items:start}.skill-ring{width:28px;height:28px}.skill-name{align-self:center}.catalog-page .skill-name h2{font-size:16px;line-height:22px}.skill-summary{grid-column:2/-1}.skill-entry{grid-column:3;grid-row:1;align-self:center}.catalog-page .skill-summary p{font-size:13px;line-height:20px}.catalog-page .skill-summary .skill-bring{font-size:12px;line-height:18px}.skill-list{margin-top:24px}}
 
+.skill-categories{display:flex;flex-wrap:wrap;gap:4px 20px;margin:24px 0 12px;border-bottom:1px solid #ded3ef55}.catalog-page .skill-categories button{font:500 14px/22px Inter,system-ui,sans-serif;border:0;border-bottom:2px solid transparent;background:none;color:var(--cream);padding:10px 0;min-height:44px;cursor:pointer;border-radius:0}.catalog-page .skill-categories button[aria-pressed=true]{border-bottom-color:var(--cream)}.skill-categories button span{font-size:10px;margin-left:4px;color:var(--lilac);vertical-align:super}.skill-category-label{display:block;font-size:11px;line-height:18px;color:var(--lilac);margin-top:4px}.catalog-page #tool-reset{font:inherit;padding:6px 0;background:none;border:0;color:var(--cream);text-decoration:underline;cursor:pointer}.catalog-page #tool-reset[hidden]{display:none}.catalog-page .skill-list{margin-top:24px}
+@media(max-width:760px){.skill-categories{gap:0 18px;margin-top:18px}.catalog-page .skill-categories button{font-size:13px}}
 '''
 
 def page(title,description,url,body,schema=None):
@@ -40,10 +44,12 @@ def card(x):
 
 def skill_row(x):
  e=html.escape
- search=' '.join(str(x.get(key,'')) for key in ('name','description','kind','bring','status')).lower()
+ search=' '.join(str(x.get(key,'')) for key in ('name','description','kind','bring','status','category')).lower()
+ category=x.get('category','')
+ category_label='<span class="skill-category-label">'+e(category)+'</span>' if category else ''
  status='<small>Legacy · Reference</small>' if x['status']=='Legacy' else ('<small>'+e(x['status'])+'</small>' if x['status']!='Available' else '')
  bring='<p class="skill-bring">Bring: '+e(x['bring'])+'</p>' if x.get('bring') else ''
- return '<li data-entry="'+e(search,quote=True)+'"><a class="skill-row" href="'+e(x['url'],quote=True)+'"><img class="skill-ring" src="/assets/sidecourt-ring-cream.svg" alt="" width="36" height="36" loading="lazy"><div class="skill-name"><h2>'+e(x['name'])+'</h2>'+status+'</div><div class="skill-summary"><p>'+e(x['description'])+'</p>'+bring+'</div><span class="skill-entry">Guide <span aria-hidden="true">→</span></span></a></li>'
+ return '<li data-entry="'+e(search,quote=True)+'" data-category="'+e(category,quote=True)+'"><a class="skill-row" href="'+e(x['url'],quote=True)+'"><img class="skill-ring" src="/assets/sidecourt-ring-cream.svg" alt="" width="36" height="36" loading="lazy"><div class="skill-name"><h2>'+e(x['name'])+'</h2>'+category_label+status+'</div><div class="skill-summary"><p>'+e(x['description'])+'</p>'+bring+'</div><span class="skill-entry">Guide <span aria-hidden="true">→</span></span></a></li>'
 
 
 def inject_home_tools(document):
@@ -69,9 +75,12 @@ def publish_tools(root,out):
   selected=items if kind=='all' else [x for x in items if ('install' in x if kind=='skills' else x['kind']!='Skill')]
   if kind=='skills':selected=[dict(x,url='/skills/'+x['slug']+'/') for x in selected]
   intro='<h1>'+heading+'</h1><p class="catalog-intro">'+e(description)+'</p><label for="tool-search">What would you like help with?</label><input id="tool-search" type="search" placeholder="Try saved links, coffee, handoff or design"><small id="count" role="status">'+str(len(selected))+' '+('skills' if kind=='skills' else 'products' if kind=='products' else 'products and skills')+'</small>'
-  if kind=='skills':intro+='<p class="catalog-note">Use a compatible AI assistant such as Codex. Each page includes an install command, examples and the exact instructions. Legacy skills are kept as references.</p>'
+  if kind=='skills':
+   intro+='<nav class="skill-categories" aria-label="Filter skills by category">'+''.join('<button type="button" data-skill-category="'+e(category,quote=True)+'" aria-pressed="'+str(category=='All').lower()+'">'+e(category)+' <span>'+str(len(selected) if category=='All' else sum(x.get('category')==category for x in selected))+'</span></button>' for category in ('All',)+SKILL_CATEGORIES)+'</nav>'
+   intro+='<p class="catalog-note">Each guide includes an install command, examples and the exact instructions. Legacy skills remain available as references.</p>'
+  intro+='<button type="button" id="tool-reset" hidden>Clear filters</button>'
   schema={'@context':'https://schema.org','@type':'ItemList','name':title+' by Ming on SideCourt','itemListElement':[{'@type':'ListItem','position':i+1,'name':x['name'],'url':'https://sidecourt.space'+x['url']} for i,x in enumerate(selected)]}
-  search='<script>const search=document.querySelector("#tool-search");const apply=()=>{let n=0;for(const card of document.querySelectorAll("[data-entry]")){card.hidden=!card.dataset.entry.includes(search.value.toLowerCase().trim());if(!card.hidden)n++;}document.querySelector("#count").textContent=n?`${n} results`:"No match. Try a different task or clear the search.";};search.oninput=apply;</script>'
+  search='''<script>const search=document.querySelector('#tool-search'),buttons=[...document.querySelectorAll('[data-skill-category]')],reset=document.querySelector('#tool-reset'),params=new URLSearchParams(location.search);let category=buttons.some(b=>b.dataset.skillCategory===params.get('category'))?params.get('category'):'All';search.value=params.get('q')||'';const apply=(write=false)=>{const q=search.value.toLowerCase().trim();let n=0;for(const row of document.querySelectorAll('[data-entry]')){row.hidden=!row.dataset.entry.includes(q)||(category!=='All'&&row.dataset.category!==category);if(!row.hidden)n++;}buttons.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.skillCategory===category)));document.querySelector('#count').textContent=n?`${n} results${category==='All'?'':' in '+category}`:'No match. Try a different task or clear the search.';reset.hidden=!q&&category==='All';if(write){const url=new URL(location.href);q?url.searchParams.set('q',search.value.trim()):url.searchParams.delete('q');category==='All'?url.searchParams.delete('category'):url.searchParams.set('category',category);history.replaceState(null,'',url);}};search.oninput=()=>apply(true);buttons.forEach(b=>b.onclick=()=>{category=b.dataset.skillCategory;apply(true)});reset.onclick=()=>{search.value='';category='All';apply(true);search.focus()};apply();</script>'''
   folder=out/url.strip('/');folder.mkdir(parents=True,exist_ok=True)
   listing='<ul class="skill-list" aria-label="Skills">'+''.join(skill_row(x) for x in selected)+'</ul>' if kind=='skills' else '<div class="grid">'+''.join(card(x) for x in selected)+'</div>'
   (folder/'index.html').write_text(page(title,description,url,intro+listing+search,schema))

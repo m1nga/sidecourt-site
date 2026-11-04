@@ -1,6 +1,6 @@
 import html,json,tempfile,unittest,zipfile
 from pathlib import Path
-from tools_pages import inject_home_tools,publish_tools,skill_row
+from tools_pages import inject_home_tools,publish_tools,skill_row,SKILL_CATEGORIES
 
 ROOT=Path(__file__).parent
 class ToolsTest(unittest.TestCase):
@@ -45,6 +45,11 @@ class ToolsTest(unittest.TestCase):
    self.assertIn('No match. Try a different task or clear the search.',skills)
    self.assertNotIn('http-equiv="refresh"',products)
    self.assertEqual(products.count('data-entry='),4);self.assertEqual(skills.count('data-entry='),17)
+   for category in SKILL_CATEGORIES:
+    self.assertIn('data-skill-category="'+category+'"',skills)
+   for item in data['items']:
+    if 'install' in item:self.assertIn(item['category'],SKILL_CATEGORIES)
+   self.assertIn('id="tool-reset"',skills)
    for item in data['items']:
     if item.get('preview_image'):
      self.assertIn(item['preview_image'],products)

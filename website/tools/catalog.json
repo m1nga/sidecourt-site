@@ -18,7 +18,8 @@
       "result": "Saves appear as they arrive, with useful source text, conditions to check and an editable project prompt.",
       "example": "Check this saved free-tool claim, then help me use its method in my project.",
       "source_commit": "4489142e38c9ebffee21f5a7a1214facc97e0798",
-      "preview_image": "/tools/previews/redbot-home.jpg"
+      "preview_image": "/tools/previews/redbot-home.jpg",
+      "category": "Productivity"
     },
     {
       "slug": "daycup",
@@ -71,7 +72,8 @@
       "package": "/tools/packages/design-agent.zip",
       "bring": "Your page, a visual reference and what feels wrong.",
       "result": "A focused design change, implemented and checked in your project.",
-      "example": "Use $design-agent to make this page feel closer to this reference. Keep its content and main action."
+      "example": "Use $design-agent to make this page feel closer to this reference. Keep its content and main action.",
+      "category": "Design"
     },
     {
       "slug": "diagnose-project-rebuild",
@@ -87,7 +89,8 @@
       "package": "/tools/packages/diagnose-project-rebuild.zip",
       "bring": "The existing project and the problem that made you consider rebuilding.",
       "result": "A reasoned recommendation and a bounded next step.",
-      "example": "Use $diagnose-project-rebuild to inspect this project before I decide whether to start over."
+      "example": "Use $diagnose-project-rebuild to inspect this project before I decide whether to start over.",
+      "category": "Development"
     },
     {
       "slug": "experience-pack",
@@ -103,7 +106,8 @@
       "package": "/tools/packages/experience-pack.zip",
       "bring": "What happened, what changed, and evidence of the result.",
       "result": "A project incident record and possible reusable lessons, with limits.",
-      "example": "Use $experience-pack to record this incident and what would prevent it happening again."
+      "example": "Use $experience-pack to record this incident and what would prevent it happening again.",
+      "category": "Productivity"
     },
     {
       "slug": "iteration-close",
@@ -119,7 +123,8 @@
       "package": "/tools/packages/iteration-close.zip",
       "bring": "The project, completed work and the current milestone.",
       "result": "A checked handoff, preserved decisions and an explicit cleanup proposal.",
-      "example": "Use $iteration-close to close this milestone. Preserve unfinished work and show me any proposed deletions."
+      "example": "Use $iteration-close to close this milestone. Preserve unfinished work and show me any proposed deletions.",
+      "category": "Productivity"
     },
     {
       "slug": "map-product-system",
@@ -135,7 +140,8 @@
       "package": "/tools/packages/map-product-system.zip",
       "bring": "An idea or codebase and the journey you want to understand.",
       "result": "A map of user steps, required behavior and missing paths.",
-      "example": "Use $map-product-system to map the first-time user journey in this project."
+      "example": "Use $map-product-system to map the first-time user journey in this project.",
+      "category": "Design"
     },
     {
       "slug": "mixtape",
@@ -151,7 +157,8 @@
       "package": "/tools/packages/mixtape.zip",
       "bring": "A mood, a few songs or a listening situation.",
       "result": "A curated playlist with a verified import link.",
-      "example": "Use $mixtape to make a playlist for a quiet evening cooking. Give me an import link."
+      "example": "Use $mixtape to make a playlist for a quiet evening cooking. Give me an import link.",
+      "category": "Creative"
     },
     {
       "slug": "product-experience-officer",
@@ -167,7 +174,8 @@
       "package": "/tools/packages/product-experience-officer.zip",
       "bring": "A runnable product or screenshots and the task a new user should finish.",
       "result": "An evidence-based report with the most useful fixes and retests.",
-      "example": "Use $product-experience-officer to try this app as a first-time user. Can you finish its first task without help?"
+      "example": "Use $product-experience-officer to try this app as a first-time user. Can you finish its first task without help?",
+      "category": "Design"
     },
     {
       "slug": "prompt-distill",
@@ -183,7 +191,8 @@
       "package": "/tools/packages/prompt-distill.zip",
       "bring": "Your rough notes, corrections and intended request.",
       "result": "A clear reusable prompt that keeps your meaning.",
-      "example": "Use $prompt-distill to turn these dictated notes into a reusable prompt. Keep my corrections."
+      "example": "Use $prompt-distill to turn these dictated notes into a reusable prompt. Keep my corrections.",
+      "category": "Productivity"
     },
     {
       "slug": "publish-skill-product",
@@ -199,7 +208,8 @@
       "package": "/tools/packages/publish-skill-product.zip",
       "bring": "An owned skill and its source repository.",
       "result": "Reviewed instructions, tested improvements and a verified public release when authorized.",
-      "example": "Use $publish-skill-product to review and release this owned skill, with evidence that installation works."
+      "example": "Use $publish-skill-product to review and release this owned skill, with evidence that installation works.",
+      "category": "Development"
     },
     {
       "slug": "scenario-probe",
@@ -215,7 +225,8 @@
       "package": "/tools/packages/scenario-probe.zip",
       "bring": "A skill or instruction file and the people or situations it serves.",
       "result": "Labeled scenario simulations and specific fixes; not a guarantee of live behavior.",
-      "example": "Use $scenario-probe to test these instructions against a beginner, a missing file and an ambiguous request."
+      "example": "Use $scenario-probe to test these instructions against a beginner, a missing file and an ambiguous request.",
+      "category": "Development"
     },
     {
       "slug": "thinking-partner",
@@ -231,7 +242,8 @@
       "package": "/tools/packages/thinking-partner.zip",
       "bring": "The decision, constraints and real alternatives.",
       "result": "Clearer tradeoffs and a recommendation only when the evidence supports one.",
-      "example": "Use $thinking-partner to compare these two directions with my constraints."
+      "example": "Use $thinking-partner to compare these two directions with my constraints.",
+      "category": "Research"
     },
     {
       "slug": "taskdock",
@@ -247,7 +259,8 @@
       "package": "/tools/packages/taskdock.zip",
       "bring": "Your task folder and the current goal.",
       "result": "A portable project record with current progress and a clear next step.",
-      "example": "Use $taskdock to make this task ready to continue in a new chat. Keep the existing repository where it is."
+      "example": "Use $taskdock to make this task ready to continue in a new chat. Keep the existing repository where it is.",
+      "category": "Productivity"
     },
     {
       "slug": "daily-brief",
@@ -263,7 +276,8 @@
       "package": "/tools/packages/daily-brief.zip",
       "bring": "Your holdings and the questions you want checked.",
       "result": "A sourced portfolio brief with data gaps and possible actions; no trades.",
-      "example": "Use $daily-brief to review my holdings and explain which new facts matter to the original investment thesis."
+      "example": "Use $daily-brief to review my holdings and explain which new facts matter to the original investment thesis.",
+      "category": "Research"
     },
     {
       "slug": "podcast-revival",
@@ -279,7 +293,8 @@
       "package": "/tools/packages/podcast-revival.zip",
       "bring": "Your source, intended listener, production format and budget.",
       "result": "A directed conversation and an authorized production workflow; paid generation is separate.",
-      "example": "Use $podcast-revival to develop a podcast conversation from this source. Start with a script for review."
+      "example": "Use $podcast-revival to develop a podcast conversation from this source. Start with a script for review.",
+      "category": "Creative"
     },
     {
       "slug": "major-tom",
@@ -295,7 +310,8 @@
       "package": "/tools/packages/major-tom.zip",
       "bring": "Your directive, existing owners and the source of truth.",
       "result": "Scoped assignments and verified outcomes without a second task queue.",
-      "example": "Use $major-tom to coordinate this outcome with the existing owners. Preserve their current holds."
+      "example": "Use $major-tom to coordinate this outcome with the existing owners. Preserve their current holds.",
+      "category": "Productivity"
     },
     {
       "slug": "work-memory",
@@ -311,7 +327,8 @@
       "package": "/tools/packages/work-memory.zip",
       "bring": "A project and the decision or context you need to recover.",
       "result": "Relevant sourced context, current status and visible knowledge gaps.",
-      "example": "Use $work-memory to recover the latest decision about this project and show what may be out of date."
+      "example": "Use $work-memory to recover the latest decision about this project and show what may be out of date.",
+      "category": "Productivity"
     }
   ]
 }
