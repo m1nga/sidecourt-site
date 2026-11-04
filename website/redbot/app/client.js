@@ -67,13 +67,18 @@
   async function api(path, body) {
     const root = apiURL();
     if (!root) throw Error('service_unavailable');
-    const response = await fetch(root + path, {method:body ? 'POST' : 'GET', credentials:'omit', referrerPolicy:'no-referrer', headers:{...(credentials ? {Authorization:'Bearer ' + credentials.token} : {}), ...(body ? {'Content-Type':'application/json'} : {})}, ...(body ? {body:JSON.stringify(body)} : {}), signal:AbortSignal.timeout(15000), cache:'no-store'});
-    const result = await response.json();
+    let response;
+    try {
+      response = await fetch(root + path, {method:body ? 'POST' : 'GET', credentials:'omit', referrerPolicy:'no-referrer', headers:{...(credentials ? {Authorization:'Bearer ' + credentials.token} : {}), ...(body ? {'Content-Type':'application/json'} : {})}, ...(body ? {body:JSON.stringify(body)} : {}), signal:AbortSignal.timeout(15000), cache:'no-store'});
+    } catch { throw Error('service_offline'); }
+    let result;
+    try { result = await response.json(); } catch { throw Error('service_offline'); }
     if (!response.ok) throw Error(result.error || 'service_unavailable');
     return result;
   }
   function failure(error) {
     const messages = {
+      service_offline:t('暂时联系不上 RedBot 登录服务，尚未取得二维码。请刷新页面后重试；若仍失败，需要恢复测试服务。已有收藏保留。','RedBot’s sign-in service cannot be reached, so no QR code was issued. Refresh and retry; if it persists, the test host needs to be restored. Your saves are kept.'),
       invite_required:t('邀请码不正确，请使用收到的试用链接。','Use the invitation link you received.'),
       beta_full:t('目前试用名额已满，请稍后再试。','All test slots are in use. Try again later.'),
       session_expired:t('这次连接已过期。重新连接后可继续；本机备份仍保留。','This session expired. Reconnect to continue; your device copy is kept.'),
