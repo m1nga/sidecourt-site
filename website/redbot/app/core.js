@@ -7,19 +7,32 @@ const clean=x=>typeof x==='string'?x.slice(0,200000):'';
 function safeURL(x){try{const u=new URL(x);return ['https:','http:'].includes(u.protocol)&&!u.username&&!u.password?u.href:'';}catch{return '';}}
 function imageURL(x){return /^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=\s]+$/i.test(x||'')?x:safeURL(x);}
 function classify(title){return RULES.find(r=>r[1].test(title))?.[0]||'Unsorted';}
+function normalizeVideoAnalysis(x){
+ if(!x||typeof x!=='object')return null;
+ const number=v=>Number.isFinite(Number(v))&&Number(v)>=0?Number(v):0;
+ const text=v=>clean(v).slice(0,4000);
+ const audio=['transcribed','no_speech_detected','video_tool_failed'],frames=['sampled_ocr','ocr_setup_required','video_tool_failed'];
+ return {pipeline:text(x.pipeline),durationSeconds:number(x.durationSeconds),localCompute:true,cloudCalls:0,visualUnderstanding:false,
+  transcript:(Array.isArray(x.transcript)?x.transcript:[]).slice(0,20000).filter(v=>v&&typeof v.text==='string').map(v=>({start:number(v.start),end:number(v.end),text:text(v.text)})),
+  frames:(Array.isArray(x.frames)?x.frames:[]).slice(0,12).filter(v=>v&&typeof v==='object').map(v=>({at:number(v.at),text:Array.isArray(v.text)?v.text.slice(0,200).filter(t=>t&&typeof t.text==='string').map(t=>({text:text(t.text),confidence:Math.min(1,number(t.confidence))})):null})),
+  coverage:{audio:audio.includes(x.coverage?.audio)?x.coverage.audio:'video_tool_failed',frames:frames.includes(x.coverage?.frames)?x.coverage.frames:'video_tool_failed',visual:'not_performed'},
+  sampling:{method:'uniform',intervalSeconds:number(x.sampling?.intervalSeconds),maxFrames:12,allFrames:false},complete:x.complete===true,
+  sourceVersion:/^[a-f0-9]{64}$/i.test(x.sourceVersion||'')?x.sourceVersion:'',cached:x.cached===true,readAt:/^\d{4}-\d{2}-\d{2}T/.test(x.readAt||'')?text(x.readAt):'',...(x.lastRefreshError&&/^[a-z0-9_:-]{1,80}$/i.test(x.lastRefreshError.code||'')?{lastRefreshError:{code:x.lastRefreshError.code,at:/^\d{4}-\d{2}-\d{2}T/.test(x.lastRefreshError.at||'')?text(x.lastRefreshError.at):'',retainedPrevious:x.lastRefreshError.retainedPrevious===true}}:{}),...(typeof x.error==='string'&&/^[a-z0-9_:-]{1,80}$/i.test(x.error)?{error:x.error}:{})};
+}
+function publicVideoURL(raw){const url=safeURL(raw);if(!url)return '';const u=new URL(url);return [...u.searchParams.keys()].some(k=>/token|sign|credential|auth|expire|policy|key-pair/i.test(k))?'':url;}
 function normalize(x,i=0){
  const c=x.noteCard||{}, n=x.data?.note||x.note||x;const title=clean(x.title||c.displayTitle||n.title)||'Untitled save';
  const raw=clean(x.url||x.href||x.post_url);const id=clean(x.id||n.noteId)||(raw.match(/(?:explore|discovery\/item)\/([a-f0-9]{24})/)||[])[1]||('link-'+hash(raw||title));
  let url=safeURL(raw.startsWith('/')?'https://www.xiaohongshu.com'+raw:raw);if(!url&&/^[a-f0-9]{24}$/.test(id))url='https://www.xiaohongshu.com/explore/'+id;
  if(url){let u=new URL(url);for(const k of ['xsec_token','xsec_source','xhsshare','app_platform','share_from_user_hidden'])u.searchParams.delete(k);url=u.href;}
  const description=clean(x.description||n.desc||c.desc),summary=clean(x.summary||x.method||x.lesson);
- return {id,title,url,author:clean(typeof x.author==='string'?x.author:n.user?.nickname||c.user?.nickname),image:imageURL(x.image||c.cover?.urlDefault||c.cover?.url||n.imageList?.[0]?.urlDefault||''),type:['video','note','link'].includes(x.type||c.type)?x.type||c.type:(c.type==='normal'?'note':'link'),category:TOPICS.includes(x.category)?x.category:classify(title),tags:(Array.isArray(x.tags)?x.tags:[]).filter(t=>typeof t==='string').slice(0,30),description,summary,readingNotes:clean(x.readingNotes||x.application),limits:clean(x.limits||x.corrections),resources:(Array.isArray(x.resources)?x.resources:Array.isArray(x.sources)?x.sources:[]).map(safeURL).filter(Boolean).slice(0,30),anchors:(x.anchors||[]).filter(t=>typeof t==='string').slice(0,40),videoURL:safeURL(x.videoURL),transcript:clean(x.transcript),duration:Number(x.duration)||0,research:x.research&&typeof x.research==='object'?{points:(Array.isArray(x.research.points)?x.research.points:[]).filter(p=>Array.isArray(p)&&p.length===2).slice(0,40).map(p=>p.map(clean)),decision:clean(x.research.decision),limits:clean(x.research.limits)}:null,position:Number.isFinite(x.position)?x.position:i,hasContent:Boolean(x.hasContent||description||summary||x.transcript),coverage:clean(x.coverage),importedAt:clean(x.importedAt)||new Date().toISOString()};
+ return {id,title,url,author:clean(typeof x.author==='string'?x.author:n.user?.nickname||c.user?.nickname),image:imageURL(x.image||c.cover?.urlDefault||c.cover?.url||n.imageList?.[0]?.urlDefault||''),type:['video','note','link'].includes(x.type||c.type)?x.type||c.type:(c.type==='normal'?'note':'link'),category:TOPICS.includes(x.category)?x.category:classify(title),tags:(Array.isArray(x.tags)?x.tags:[]).filter(t=>typeof t==='string').slice(0,30),description,summary,readingNotes:clean(x.readingNotes||x.application),limits:clean(x.limits||x.corrections),resources:(Array.isArray(x.resources)?x.resources:Array.isArray(x.sources)?x.sources:[]).map(safeURL).filter(Boolean).slice(0,30),anchors:(x.anchors||[]).filter(t=>typeof t==='string').slice(0,40),videoURL:publicVideoURL(x.videoURL),videoAnalysis:normalizeVideoAnalysis(x.videoAnalysis),transcript:clean(x.transcript),duration:Number(x.duration)||0,research:x.research&&typeof x.research==='object'?{points:(Array.isArray(x.research.points)?x.research.points:[]).filter(p=>Array.isArray(p)&&p.length===2).slice(0,40).map(p=>p.map(clean)),decision:clean(x.research.decision),limits:clean(x.research.limits)}:null,position:Number.isFinite(x.position)?x.position:i,hasContent:Boolean(x.hasContent||description||summary||x.transcript),coverage:clean(x.coverage),importedAt:clean(x.importedAt)||new Date().toISOString()};
 }
 function hash(s){let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619);}return(h>>>0).toString(36);}
 function extract(x){if(Array.isArray(x))return x;if(!x||typeof x!=='object')throw Error('This file does not contain a save library.');for(const k of ['items','feeds','posts','bookmarks'])if(Array.isArray(x[k]))return x[k];for(const k of ['data','result'])if(x[k]){try{return extract(x[k]);}catch{}}for(const c of x.content||[]){try{return extract(JSON.parse(c.text));}catch{}}throw Error('No saves found. Import a RedBot backup, a bookmark HTML file, CSV, or a Xiaohongshu JSON export.');}
 function mergeItems(before,incoming){let map=new Map(before.map(x=>[x.id,x]));let urls=new Map(before.filter(x=>x.url).map(x=>[x.url,x.id]));let added=0;for(const raw of incoming){const n=normalize(raw,map.size);if(!n.url&&!n.description&&!n.summary)continue;const id=map.has(n.id)?n.id:urls.get(n.url)||n.id;let old=map.get(id);if(old){const next={...old};for(const [k,v]of Object.entries(n))if(v!==''&&v!=null&&(!Array.isArray(v)||v.length))next[k]=v;next.id=id;next.position=old.position;next.hasContent=old.hasContent||n.hasContent;map.set(id,next);}else{map.set(id,n);if(n.url)urls.set(n.url,id);added++;}}return {items:[...map.values()],added};}
 const synonyms=[['设计','design','界面','交互','ui','ux'],['咖啡','coffee','冲煮','espresso','手冲'],['健身','fitness','运动','训练'],['记忆','memory','上下文'],['工作流','workflow','自动化'],['营销','marketing','seo','geo'],['音乐','music','配乐'],['视频','video','剪辑'],['agent','智能体'],['收藏','bookmark']];
-function score(item,annotation,query){let q=query.trim().toLowerCase();if(!q)return 1;const title=item.title.toLowerCase(), all=[item.title,item.author,item.category,item.description,item.summary,item.readingNotes,item.transcript,JSON.stringify(item.research||''),...item.tags,annotation?.note,annotation?.category].join(' ').toLowerCase();const terms=q.split(/\s+/).filter(Boolean);let total=0;for(const t of terms){let group=synonyms.find(g=>g.includes(t));let variants=group||[t];let best=0;for(const v of variants){if(title.includes(v))best=Math.max(best,20+(v===t?10:0));else if(all.includes(v))best=Math.max(best,5+(v===t?3:0));}if(!best)return 0;total+=best;}return total;}
+function score(item,annotation,query){let q=query.trim().toLowerCase();if(!q)return 1;const title=item.title.toLowerCase(), all=[sourceBody(item),item.title,item.author,item.category,item.description,item.summary,item.readingNotes,item.transcript,JSON.stringify(item.research||''),...item.tags,annotation?.note,annotation?.category].join(' ').toLowerCase();const terms=q.split(/\s+/).filter(Boolean);let total=0;for(const t of terms){let group=synonyms.find(g=>g.includes(t));let variants=group||[t];let best=0;for(const v of variants){if(title.includes(v))best=Math.max(best,20+(v===t?10:0));else if(all.includes(v))best=Math.max(best,5+(v===t?3:0));}if(!best)return 0;total+=best;}return total;}
 function filterItems(items,state,view,filter,query,sort){const ann=state.annotations||{};let list=items.map(x=>({item:x,annotation:ann[x.id]||{},score:score(x,ann[x.id],query)})).filter(({item:x,annotation:a,score:s})=>{
  if(!s)return false;if(view==='trash')return a.trashed;if(a.trashed)return false;if(view==='archived'){if(!a.archived)return false;}else if(a.archived)return false;
  if(view==='unread'&&a.read)return false;if(view==='favorite'&&!a.favorite)return false;if(view.startsWith('topic:')&&(a.category||x.category)!==view.slice(6))return false;if(view.startsWith('collection:')&&!(a.collections||[]).includes(view.slice(11)))return false;
@@ -55,16 +68,59 @@ const INTENTS=[
 
 ];
 const GOAL_STOP=new Set(['want','need','help','please','how','my','i','to','do','make','improve','use','now','a','the','can','with','is','it','me','and','for','some','this','that','look','better','find','saved','save','note','notes','post','posts','collection','collections','remember','something','read','show','where','was','from','about']);
+// Bounded vocabulary constraints, not a general natural-language inference engine.
+const GOAL_CONCEPTS=[
+ {id:'cooking',label:'Home cooking',pattern:/做饭|下厨|自己做|食谱|菜谱|烹饪|recipe|cook(?:ing)?/i,evidence:/做饭|下厨|食谱|菜谱|烹饪|做法|制作|食材|步骤|recipe|cook(?:ing)?|ingredients/i},
+ {id:'weight-loss',label:'Weight-loss suitability',pattern:/减肥|减脂|weight loss|fat loss/i,evidence:/(?:减肥|减脂)(?:餐|食谱|菜谱|午餐|晚餐|早餐|饮食|训练|运动|计划)|(?:适合|帮助|用于|支持)(?:健康)?(?:减肥|减脂)|(?:weight|fat) loss (?:meal|recipe|diet|workout|plan)|(?:suitable|designed|intended) for (?:weight|fat) loss/i,conflict:/(?:不|没|并非|不是)(?:能|会|是|适合|用于|帮助|支持)?(?:减肥|减脂)|not (?:a |suitable for |intended for )?(?:weight|fat) loss/i},
+ {id:'free',label:'Free to use',pattern:/免费|不要钱|free(?: of charge)?/i,evidence:/免费|不要钱|free(?: of charge)?/i,conflict:/(?:不|并非|不是)免费|not free|必须付费|需付费|试用.{0,12}(?:收费|付费)|免费.{0,12}(?:后收费|后付费|后需订阅)|(?:paid|subscription) (?:after|following)|requires? (?:a )?(?:paid|subscription)/i},
+ {id:'cheap',label:'Low cost',pattern:/便宜|低成本|低预算|cheap|low.cost|budget/i,evidence:/便宜|低成本|低预算|平价|cheap|low.cost|budget/i,conflict:/昂贵|高成本|expensive/i},
+ {id:'no-equipment',label:'No equipment',pattern:/无器械|不用器械|不需要器械|no equipment/i,evidence:/无器械|不用器械|不需要器械|徒手|no equipment|bodyweight/i,conflict:/必须.*器械|需要哑铃|需用哑铃|requires?.*(?:dumbbell|equipment)/i}
+];
+function goalRequirements(goal){
+ const negativeWeight=/(?:不|不要|无需)(?:减肥|减脂)/.test(goal);
+ const required=GOAL_CONCEPTS.filter(c=>c.pattern.test(goal)&&!(c.id==='weight-loss'&&negativeWeight)&&!(c.id==='cheap'&&/page|design|website|网页|质感|设计/i.test(goal))).map(c=>({...c}));
+ if(negativeWeight)required.push({id:'exclude:weight-loss',label:'Exclude weight-loss content',excluded:'减肥',excludePattern:/减肥|减脂|weight loss|fat loss/i,negativePattern:/(?:不|不要|无需)(?:减肥|减脂)/i});
+ // Negations are intentionally limited to explicit exclusions with concrete nouns.
+ for(const m of goal.replace(/不要钱/g,'免费').replace(/不要(?:减肥|减脂)/g,'').matchAll(/(?:不要|不含|不吃|排除|without|exclude)\s*([a-z][a-z -]{1,24}|[\u3400-\u9fff]{1,8})/gi)){
+  const term=m[1].split(/[，。和或的]/)[0].trim();if(!term||/^(钱|器械)$/.test(term))continue;
+  required.push({id:'exclude:'+term,label:'Exclude '+term,excluded:term});
+ }
+ for(const m of goal.matchAll(/(?:必须|仅限|不超过|只用|不使用)([^，。！？;；]{1,40})/g)){
+  let rest=m[1];for(const c of GOAL_CONCEPTS)rest=rest.replace(c.pattern,'');
+  if(rest.replace(/(?:且|并且|的|工具|食谱|训练|使用|是|要|来)/g,'').trim())required.push({id:'unresolved:'+m[0],label:'Unresolved requirement: '+m[0],evidence:/$a/});
+ }
+ return required;
+}
+function sourceBody(x){return [x.description,x.summary,x.transcript,x.readingNotes,x.research?.decision,...(x.videoAnalysis?.transcript||[]).map(v=>v.text),...(x.videoAnalysis?.frames||[]).flatMap(v=>(v.text||[]).map(t=>t.text)),...(x.research?.points||[]).map(p=>Array.isArray(p)?p.join(' '):p)].filter(Boolean).join(' ');}
+function evidenceSentence(text,pattern){return text.split(/(?<=[。！？.!?\n])/).map(s=>s.trim()).find(s=>pattern.test(s))||'';}
+function goalEvidence(goal,source){
+ const body=sourceBody(source||{}),title=source?.title||'',requirements=goalRequirements(goal),evidence=[],missing=[],conflicts=[];
+ for(const c of requirements){
+  if(c.excluded){
+   // An exclusion needs explicit negative evidence; absence alone proves nothing.
+   const escaped=c.excluded.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+   const negative=new RegExp('(?:不含|不吃|不要|无|without|exclude)\s*'+escaped,'i');
+   if(negative.test(body))evidence.push({requirement:c.id,text:evidenceSentence(body,negative),basis:'source_claim'});
+   else if(c.excludePattern?c.excludePattern.test(body+' '+title):body.toLowerCase().includes(c.excluded.toLowerCase())||title.toLowerCase().includes(c.excluded.toLowerCase()))conflicts.push(c.label);
+   else missing.push(c.label);
+  }else if(c.conflict?.test(body+' '+title))conflicts.push(c.label);
+  else {const sentence=evidenceSentence(body,c.evidence);if(sentence)evidence.push({requirement:c.id,text:sentence,basis:'source_claim'});else missing.push(c.label);}
+ }
+ const titleSupports=requirements.every(c=>c.excluded?(c.negativePattern||new RegExp('(?:不含|不吃|不要|无|without|exclude)\\s*'+c.excluded,'i')).test(title):c.evidence.test(title));
+ return {status:conflicts.length?'conflict':missing.length?(body.trim()||!titleSupports?'insufficient':'unknown'):'supported',requirements:requirements.map(c=>({id:c.id,label:c.label})),evidence,missing,conflicts};
+}
 function goalTerms(goal){
  const out=new Set();for(const t of goal.toLowerCase().match(/[a-z0-9-]{2,}/g)||[])if(!GOAL_STOP.has(t))out.add(t);
- const stripped=goal.replace(/我想要?|想要|帮我|一下|怎么|如何|这个|那个|现在|可以|一些|一个|没有|什么|我要|希望|做得|收藏|笔记|保存|找回|找到/g,' ');
- for(const run of stripped.match(/[\u3400-\u9fff]{2,}/g)||[])for(let i=0;i<run.length-1;i++)out.add(run.slice(i,i+2));
+ const stripped=goal.replace(/我想要?|想要|帮我|一下|怎么|如何|这个|那个|现在|可以|一些|一个|什么|我要|希望|做得|收藏|笔记|保存|找回|找到|适合|自己|有什么|吃的/g,' ');
+ if(typeof Intl!=='undefined'&&Intl.Segmenter){for(const x of new Intl.Segmenter('zh',{granularity:'word'}).segment(stripped))if(x.isWordLike&&/[\u3400-\u9fff]/.test(x.segment)&&x.segment.length>1)out.add(x.segment);}
+ else for(const c of GOAL_CONCEPTS)if(c.pattern.test(goal))out.add(goal.match(c.pattern)[0]);
+ if(/减肥|减脂/.test(goal)){out.add('减肥');out.add('减脂');}
  for(const t of ['髋','肩','腰','咖啡','健身','设计','视频','记忆'])if(goal.includes(t))out.add(t);
  return [...out].slice(0,80);
 }
 function normalizeGoalState(x){x=x&&typeof x==='object'?x:{};const skips={};for(const [key,val] of Object.entries(x.skips||{}).slice(-50))if(/^[a-z0-9-]{1,80}$/.test(key)&&Array.isArray(val))skips[key]=val.filter(v=>typeof v==='string').slice(0,30).map(v=>v.slice(0,120));const p=x.plan;return {skips,plan:p&&typeof p==='object'&&typeof p.goal==='string'?{goal:clean(p.goal).slice(0,1000),choice:clean(p.choice).slice(0,120),status:p.status==='done'?'done':'ready'}:null};}
 function hasResearch(x){return !!(x.research?.decision?.trim()||x.research?.points?.some(p=>p[1]?.trim()));}
-function hasText(x){return !!(x.summary||x.readingNotes||x.description||x.transcript);}
+function hasText(x){return !!sourceBody(x).trim();}
 function chooseStart(items,guides,state,goal,choice=''){
  goal=String(goal||'').trim().slice(0,1000);const ann=state.annotations||{},gs=normalizeGoalState(state.goalState),key=hash(goal.toLowerCase()),skips=new Set(gs.skips[key]||[]);
  const live=items.filter(x=>!ann[x.id]?.trashed&&!ann[x.id]?.archived),liveBy=new Map(live.map(x=>[x.id,x]));
@@ -91,17 +147,19 @@ function chooseStart(items,guides,state,goal,choice=''){
  if(matched.length){
   const intent=matched[0],guide=routes.find(g=>g.id===intent.id);
   const sources=guide.sourceIds.map(id=>liveBy.get(id)).filter(Boolean).sort((a,b)=>Number(hasResearch(b))-Number(hasResearch(a))||Number(!!(b.description||b.transcript))-Number(!!(a.description||a.transcript)));
-  const source=sources[0]||null;
-  return {status:source&&!hasResearch(source)&&!hasText(source)?'needs_reading':'ready',kind:'guide',goal,key,guide,source,reason:intent.reason,next:intent.next,observations:(intent.id==='shared-search'?source?.research?.points?.filter((_,i)=>[0,2,3].includes(i)):source?.research?.points?.slice(intent.id==='promotion-positioning'?5:0,intent.id==='promotion-positioning'?7:2))||[],external:!source,limitations:source?.research?.limits||guide.limit};
+  const checked=sources.map(x=>ann[x.id]?.note?{...x,readingNotes:[x.readingNotes,ann[x.id].note].filter(Boolean).join('\n')}:x).map(source=>({source,assessment:goalEvidence(goal,source)})).filter(x=>!['conflict','insufficient'].includes(x.assessment.status));
+  const source=checked[0]?.source||null,assessment=checked[0]?.assessment||goalEvidence(goal,{});
+  if(assessment.requirements.length&&!source)return {...assessment,status:'no_match',message:'The saved method does not provide evidence for your requirements.'};
+  return {...assessment,status:assessment.status==='unknown'||source&&!hasResearch(source)&&!hasText(source)?'needs_reading':'ready',kind:'guide',goal,key,guide,source,reason:intent.reason,next:intent.next,observations:(intent.id==='shared-search'?source?.research?.points?.filter((_,i)=>[0,2,3].includes(i)):source?.research?.points?.slice(intent.id==='promotion-positioning'?5:0,intent.id==='promotion-positioning'?7:2))||[],external:!source,limitations:source?.research?.limits||guide.limit};
  }
  if(skips.size&&INTENTS.some(i=>i.pattern.test(goal)))return {status:'no_match',message:'That prepared route was not a fit. I do not have another reviewed route for this goal yet. Describe what was wrong or add the missing constraint.'};
  const terms=goalTerms(goal);let candidates=live.filter(x=>!skips.has(x.id)).map(x=>{
-  const title=x.title.toLowerCase(),body=[x.description,x.summary,x.transcript,x.readingNotes,JSON.stringify(x.research||''),ann[x.id]?.note].join(' ').toLowerCase();
-  const contains=(text,term)=>/^[a-z0-9-]+$/.test(term)?new RegExp('(^|[^a-z0-9-])'+term+'(?=$|[^a-z0-9-])').test(text):text.includes(term);let titleHits=terms.filter(t=>contains(title,t)),bodyHits=terms.filter(t=>contains(body,t));return {source:x,rank:titleHits.length*4+bodyHits.length*2,hits:[...new Set([...titleHits,...bodyHits])].slice(0,5)};
- }).filter(x=>x.rank>0).sort((a,b)=>b.rank-a.rank||Number(!!b.source.research)-Number(!!a.source.research));
- if(!candidates.length)return {status:'no_match',message:skips.size?'There is no other supported starting point for this goal in your current library. Describe the missing requirement or add a relevant source.':'I cannot support a useful choice from your current library for this goal. Try a concrete outcome, or add a relevant save.'};
- const {source,hits}=candidates[0],readable=hasResearch(source)||hasText(source);
- return {status:readable?'ready':'needs_reading',kind:'save',goal,key,source,reason:readable?'This save contains text or research related to your goal. The saved passage below is the basis for this choice.':'The title is related to your goal, but I have not read the content. I cannot choose a useful part from its title alone.',next:source.research?.decision||'Read the matching passage, then decide whether it supports your next step.',observations:source.research?.points?.slice(0,2)||[],limitations:source.research?.limits||source.coverage||'Only the content already saved in your library was considered.'};
+  const title=x.title.toLowerCase(),body=[sourceBody(x),ann[x.id]?.note].join(' ').toLowerCase();
+  const contains=(text,term)=>/^[a-z0-9-]+$/.test(term)?new RegExp('(^|[^a-z0-9-])'+term+'(?=$|[^a-z0-9-])').test(text):text.includes(term);let titleHits=terms.filter(t=>contains(title,t)),bodyHits=terms.filter(t=>contains(body,t));const source=ann[x.id]?.note?{...x,readingNotes:[x.readingNotes,ann[x.id].note].filter(Boolean).join('\n')}:x;return {source,assessment:goalEvidence(goal,source),rank:titleHits.length*4+bodyHits.length*2,hits:[...new Set([...titleHits,...bodyHits])].slice(0,5)};
+ }).filter(x=>x.rank>0&&!['conflict','insufficient'].includes(x.assessment.status)).sort((a,b)=>b.rank-a.rank||Number(!!b.source.research)-Number(!!a.source.research));
+ if(!candidates.length)return {requirements:goalRequirements(goal).map(c=>({id:c.id,label:c.label})),missing:goalRequirements(goal).map(c=>c.label),evidence:[],status:'no_match',message:skips.size?'There is no other supported starting point for this goal in your current library. Describe the missing requirement or add a relevant source.':'I cannot support a useful choice from your current library for this goal. Try a concrete outcome, or add a relevant save.'};
+ const {source,hits,assessment}=candidates[0],readable=assessment.status==='supported'&&(hasResearch(source)||hasText(source));
+ return {...assessment,status:readable?'ready':'needs_reading',kind:'save',goal,key,source,reason:readable?'This save contains text or research related to your goal. The saved passage below is the basis for this choice.':'The title is related to your goal, but I have not read the content. I cannot choose a useful part from its title alone.',next:source.research?.decision||'Read the matching passage, then decide whether it supports your next step.',observations:source.research?.points?.slice(0,2)||[],limitations:source.research?.limits||source.coverage||'Only the content already saved in your library was considered.'};
 }
 
 function semanticStart(items,guides,state,goal,ranked){
@@ -117,11 +175,12 @@ function semanticStart(items,guides,state,goal,ranked){
    const x=live.find(x=>x.id===h.id);if(!x)continue;
    const related=guides.find(g=>g.sourceIds.includes(x.id)&&hits.some(t=>t.kind==='guide'&&t.id===g.id&&t.score>=h.score-0.05));if(related){const r=chooseStart(items,guides,state,goal,related.id);if(r.source?.id===x.id&&['ready','needs_reading'].includes(r.status))return {...r,semantic:true,reason:'On-device AI matched your goal to this saved source and its linked method. Review the evidence before acting.'};}
    const note=state.annotations?.[x.id]?.note||'';const source=note?{...x,readingNotes:[x.readingNotes,note].filter(Boolean).join('\n')}:x;
-   const readable=hasResearch(source)||hasText(source);
-   return {status:readable?'ready':'needs_reading',kind:'save',goal,key,source,reason:readable?'On-device AI matched the meaning of your goal to this saved text. Review the passage before acting.':'AI found a related title, but the content has not been read.',next:source.research?.decision||'Read the saved passage and check whether it supports your next action.',observations:source.research?.points?.slice(0,2)||[],limitations:'Semantic similarity over saved text only. No automatic reading of the original page or video.',semantic:true};
+   const assessment=goalEvidence(goal,source);if(['conflict','insufficient'].includes(assessment.status))continue;
+   const readable=assessment.status==='supported'&&(hasResearch(source)||hasText(source));
+   return {...assessment,status:readable?'ready':'needs_reading',kind:'save',goal,key,source,reason:readable?'On-device AI matched the meaning of your goal to this saved text. Review the passage before acting.':'AI found a related title, but the content has not been read.',next:source.research?.decision||'Read the saved passage and check whether it supports your next action.',observations:source.research?.points?.slice(0,2)||[],limitations:'Semantic similarity over saved text only. No automatic reading of the original page or video.',semantic:true};
   }
  }
- return {status:'no_match',message:'AI did not find a strong enough match in the saved text. Add a useful note or describe a more concrete goal.'};
+ return {requirements:goalRequirements(goal).map(c=>({id:c.id,label:c.label})),missing:goalRequirements(goal).map(c=>c.label),evidence:[],status:'no_match',message:'AI did not find a strong enough match in the saved text. Add a useful note or describe a more concrete goal.'};
 }
-root.ShelfCore={semanticStart,chooseStart,goalTerms,normalizeGoalState,sharedLinks,normalizeGuide,TOPICS,clean,safeURL,imageURL,classify,normalize,extract,mergeItems,score,filterItems,hash};if(typeof module!=='undefined')module.exports=root.ShelfCore;
+root.ShelfCore={normalizeVideoAnalysis,goalRequirements,goalEvidence,semanticStart,chooseStart,goalTerms,normalizeGoalState,sharedLinks,normalizeGuide,TOPICS,clean,safeURL,imageURL,classify,normalize,extract,mergeItems,score,filterItems,hash};if(typeof module!=='undefined')module.exports=root.ShelfCore;
 })(typeof window!=='undefined'?window:globalThis);

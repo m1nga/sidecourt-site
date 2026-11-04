@@ -1,19 +1,24 @@
-/* Opt-in local embeddings. Only public model assets are fetched, never save text. */
-import {pipeline,env} from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1/dist/transformers.min.js';
-env.allowLocalModels=false;
-env.backends.onnx.wasm.numThreads=1;
-let extractor,loading;const vectors=new Map();
+/* Save text is processed locally. Only pinned public model assets use the network. */
+import {MODEL,REVISION,VectorCache,retrieve,digest} from './semantic-engine.mjs';
+let extractor,loading,cache;const cancelled=new Set();let queue=Promise.resolve();
 async function load(){
- if(!loading)loading=pipeline('feature-extraction','Xenova/paraphrase-multilingual-MiniLM-L12-v2',{revision:'2c4055b12046f11709e9df2c122e59ffbdc2f900',dtype:'q8',device:'wasm',progress_callback:p=>{if(p.status==='progress')postMessage({progress:'Downloading AI model: '+Math.round(p.progress||0)+'%'});}}).then(p=>extractor=p).catch(e=>{loading=null;throw e;});
+ if(!loading)loading=(async()=>{
+  // Vendored verified distribution; no runtime CDN JavaScript execution.
+  const {pipeline,env}=await import('./vendor/transformers/transformers.min.js');
+  env.allowLocalModels=false;env.backends.onnx.wasm.numThreads=1;
+  env.backends.onnx.wasm.wasmPaths=new URL('./vendor/transformers/',import.meta.url).href;
+  extractor=await pipeline('feature-extraction',MODEL,{revision:REVISION,dtype:'q8',device:'wasm',progress_callback:p=>{if(p.status==='progress')postMessage({progress:'Downloading AI model: '+Math.round(p.progress||0)+'%'});}});
+  cache=await new VectorCache(self.indexedDB).open();return extractor;
+ })().catch(e=>{loading=null;throw e;});
  return loading;
 }
-self.onmessage=async({data:m})=>{try{
- await load();
- if(m.action==='load'){postMessage({id:m.id,ready:true});return;}
- const rows=m.rows.slice(0,300);const missing=rows.filter(r=>!vectors.has(r.text));
- for(let i=0;i<missing.length;i+=4){const batch=missing.slice(i,i+4);const out=await extractor(batch.map(x=>x.text),{pooling:'mean',normalize:true});out.tolist().forEach((v,j)=>vectors.set(batch[j].text,v));postMessage({progress:'Reading saved text: '+Math.min(i+4,missing.length)+' / '+missing.length});}
- const q=(await extractor(m.query,{pooling:'mean',normalize:true})).tolist()[0];
- const ranked=rows.map(r=>({id:r.id,kind:r.kind,score:vectors.get(r.text).reduce((s,v,i)=>s+v*q[i],0)})).sort((a,b)=>b.score-a.score);
- if(vectors.size>1000)vectors.clear();
- postMessage({id:m.id,ranked:ranked.slice(0,12)});
- }catch(e){postMessage({id:m.id,error:'The AI model could not run. Check your connection, device memory or browser support. Your library is unchanged.'});}};
+self.onmessage=({data:m})=>{
+ if(m.action==='cancel'){cancelled.add(m.target);return;}
+ queue=queue.then(async()=>{try{
+  if(m.action==='clearCache'){cache||=await new VectorCache(self.indexedDB).open();await cache.prune(await digest(m.scope));postMessage({id:m.id,cleared:cache.persistent});return;}
+  await load();if(cancelled.has(m.id))throw Error('Search cancelled.');
+  if(m.action==='load'){postMessage({id:m.id,ready:true});return;}
+  const result=await retrieve({...m,extractor,cache,cancelled:()=>cancelled.has(m.id),progress:p=>postMessage({id:m.id,progress:`Reading saved text: ${p.rows} / ${p.totalRows} saves; ${p.indexedChunks} chunks`,coverage:p})});
+  postMessage({id:m.id,...result});
+ }catch(e){postMessage({id:m.id,error:cancelled.has(m.id)?'Search cancelled. Completed batches are cached locally.':'The local AI model could not run. Check model downloads, device memory or browser support. Basic search is still available.'});}finally{cancelled.delete(m.id);}});
+};
