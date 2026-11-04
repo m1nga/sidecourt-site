@@ -81,3 +81,13 @@ def finish_search_metadata(out):
     if 'name="robots"' not in text:
         text = text.replace('</head>', '<meta name="robots" content="noindex,follow"></head>', 1)
     test.write_text(text)
+
+
+def publish_indexnow_key(out, key):
+    """Publish the domain proof supplied by the owner; never log the key."""
+    if not key:
+        return False
+    if not re.fullmatch(r'[A-Za-z0-9-]{8,128}', key):
+        raise ValueError('Invalid IndexNow ownership key format')
+    (out / (key + '.txt')).write_text(key, encoding='utf-8')
+    return True

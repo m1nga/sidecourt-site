@@ -1,4 +1,4 @@
-import argparse, hashlib, json, pathlib, shutil, urllib.request, zipfile, plistlib
+import argparse, hashlib, json, os, pathlib, shutil, urllib.request, zipfile, plistlib
 from release_assets import fetch_asset
 from public_pages import llms_text, publish_site_pages, read_config, sitemap_xml
 parser=argparse.ArgumentParser()
@@ -140,6 +140,12 @@ for relative in ['index.html', 'drops/index.html', 'drops/cleanpause/index.html'
   assert '<title>' in document, relative
   target.write_text(document.replace('<title>', tag + '<title>', 1))
 print('Google website ownership metadata included.')
+
+# IndexNow domain proof comes from the repository secret, not public source.
+# URL notification is an explicit release action; this adds no background submitter.
+from seo import publish_indexnow_key
+if publish_indexnow_key(out, os.environ.get('INDEXNOW_KEY', '')):
+ print('IndexNow website ownership file included.')
 
 # Structured data (schema.org JSON-LD) and a plain-text site guide for search engines and AI answer engines.
 # Head-only additions: no visible markup, styles or scripts of any page change.

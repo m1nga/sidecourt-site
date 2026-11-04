@@ -24,6 +24,7 @@ jobs:
       - name: Build and verify original packages
         env:
           GH_TOKEN: ${{ secrets.CLEANPAUSE_ASSETS_TOKEN }}
+          INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY }}
         run: python3 website/build.py
       # upload-pages-artifact v4+ excludes every hidden path, which would drop the
       # OAuth discovery documents under /.well-known. Archive the same way but keep them.
