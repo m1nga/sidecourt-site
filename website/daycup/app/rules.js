@@ -1,7 +1,9 @@
+import {analyzeExtraction} from './extraction.js';
+import {tasteKinds,validateTasteRecord} from './taste.js';
 import {t} from './i18n.js';
 import {validateCatalogSetup,validateBeanTaxonomy,basketMode,beanSpecies,beanCaffeine} from './catalog-extension.js';
 import {knowledgeVersion,brewSources,grinderKnowledge,brewerKnowledge,equipmentKnowledge,validateBrewSetup,initialGrind,temperatureGuide,beanContext,parseGrind,nextGrind,grindScale} from './brew-knowledge.js';
-export const drinks={espresso:'Espresso',americano:'Americano','iced-americano':'Iced Americano',v60:'V60 pour-over'};
+export const drinks={espresso:'Espresso',americano:'Americano','iced-americano':'Iced Americano',milk:'Latte',v60:'V60 pour-over'};
 export const drinkStrengths={strong:'Stronger',standard:'Balanced',light:'Lighter'};
 export const methods={espresso:'Espresso',v60:'V60 pour-over'};
 export const roasts={light:'Light',medium:'Medium',dark:'Dark',unknown:'Not sure yet'};
@@ -27,11 +29,12 @@ export function validateLabel(l){
 }
 function same(a,b){if(a===b)return true;if(!a||!b||typeof a!=='object'||typeof b!=='object')return false;const keys=Object.keys(a);return keys.length===Object.keys(b).length&&keys.every(k=>same(a[k],b[k]));}
 function brewRequest(e,options){
- const drink=options.drink||e.method,strength=['americano','iced-americano'].includes(drink)?(options.strength||'standard'):'standard';
+ const drink=options.drink||e.method,strength=['americano','iced-americano','milk'].includes(drink)?(options.strength||'standard'):'standard';
  if(!drinks[drink]||!drinkStrengths[strength]||(e.method==='v60'?drink!=='v60':drink==='v60'))throw Error(t('Choose a drink supported by this setup. Americano requires an espresso setup.'));
  return {drink,strength};
 }
 function brewServing(r,waterRatio){
+ if(r.drink==='milk'){const milkRatio={strong:3,standard:4,light:5}[r.request.strength],milkG=Math.round(r.output*milkRatio*10)/10;return {milkRatio,milkG,waterG:0,iceG:0,totalMassG:Math.round((r.output+milkG)*10)/10,note:t('DayCup latte starting ratio by mass. Weigh the milk added to the cup; foam volume and milk left in the pitcher are not included. Adjust milk to taste.')};}
  if(!['americano','iced-americano'].includes(r.drink))return null;
  const ratio=waterRatio??({strong:2,standard:3,light:4}[r.request.strength]);
  const waterG=Math.round(r.output*ratio*10)/10,iceG=r.drink==='iced-americano'?Math.round(r.output*3*10)/10:0;
@@ -64,7 +67,7 @@ if(e.waterNote)r.contextNotes.push(t('Your saved water: {note}',{note:e.waterNot
 export function sameBrewContext(x,e,b,preference,dose,request){return x?.recipe&&same(x.recipe.equipment,e)&&same(x.recipe.bean,b)&&x.recipe.preference===preference&&Math.abs(x.recipe.dose-dose)<.01&&same(x.recipe.request||{drink:x.recipe.equipment.method,strength:'standard'},request);}
 export function captureBrewRecipe(r,f){
  const copy=structuredClone(r),value=f.grindSetting?.trim();
- if(value){parseGrind(r.equipment,value);if(copy.version===knowledgeVersion){copy.grindData={...(copy.grindData||{}),value,kind:'measured'};copy.confidence=t('Measured setting · confirm the next cup by taste');}copy.grind=t('Your measured grind setting: {value}',{value});}
+ if(value){parseGrind(r.equipment,value);if(copy.version===knowledgeVersion){copy.grindData={...(copy.grindData||{}),value,kind:f.grindConfirmed===false?'recorded':'measured'};copy.confidence=t(f.grindConfirmed===false?'Recorded setting · not confirmed for brewing adjustments':'Measured setting · confirm the next cup by taste');}copy.grind=t(f.grindConfirmed===false?'Your recorded grind setting (unconfirmed): {value}':'Your measured grind setting: {value}',{value});}
  return copy;
 }
 export function recommend(e,b,preference,dose,brews=[],options={}){
@@ -78,7 +81,7 @@ export function recommend(e,b,preference,dose,brews=[],options={}){
  validateBeanTaxonomy(b);validateLabel(b.labelRecipe);beanContext(b);
  const request=brewRequest(e,options),history=brews.filter(x=>sameBrewContext(x,e,b,preference,dose,request)).sort((a,b)=>b.created.localeCompare(a.created));
  const previous=history[0];
- if(previous?.recipe.version===knowledgeVersion){
+ if(previous?.recipe.version===knowledgeVersion&&previous.feedback?.grindConfirmed!==false){
   const r=structuredClone(previous.recipe);r.id=crypto.randomUUID();
   if(previous.decision.status==='keep'){r.origin=t('Your saved favorite for this exact setup, batch, dose and drink');r.confidence=t('Your tasted favorite');return r;}
   if(previous.decision.status==='one_change'&&previous.decision.parameter==='water'){
@@ -90,7 +93,7 @@ export function recommend(e,b,preference,dose,brews=[],options={}){
    const direction=previous.decision.direction,scale=grindScale(e),n=current?parseGrind(e,current):null;
    const opposite=history.slice(1).filter(x=>{
     const f=x.feedback,q=x.recipe,d=x.decision;
-    return d?.status==='one_change'&&d.parameter!=='water'&&d.direction!==direction&&['finer','coarser'].includes(d.direction)&&f.observed&&f.even&&f.timingConfirmed&&(!['americano','iced-americano'].includes(q.drink)||f.tastedBase)&&Math.abs(f.dose-q.dose)<=.3&&Math.abs(f.output-q.output)<=1&&q.output===r.output&&same(q.temperature,r.temperature)&&same(q.pours,r.pours)&&q.timeMin===r.timeMin&&q.timeMax===r.timeMax;
+    return d?.status==='one_change'&&d.parameter!=='water'&&d.direction!==direction&&['finer','coarser'].includes(d.direction)&&f.grindConfirmed!==false&&f.observed&&f.even&&f.timingConfirmed&&(!['americano','iced-americano','milk'].includes(q.drink)||f.tastedBase)&&Math.abs(f.dose-q.dose)<=.3&&Math.abs(f.output-q.output)<=1&&q.output===r.output&&same(q.temperature,r.temperature)&&same(q.pours,r.pours)&&q.timeMin===r.timeMin&&q.timeMax===r.timeMax;
    }).map(x=>{try{return parseGrind(e,x.feedback.grindSetting||'');}catch{return null;}}).filter(x=>n!=null&&x!=null&&scale&&((direction==='finer')===(scale.finer==='lower')?x<n:x>n)).sort((a,b)=>Math.abs(a-n)-Math.abs(b-n))[0];
    const change=nextGrind(e,current,direction,opposite);
    r.grindData={value:null,start:change.value,kind:change.mode||'calibration-needed'};
@@ -101,7 +104,7 @@ export function recommend(e,b,preference,dose,brews=[],options={}){
   r.origin=t('Repeat the same targets and review the last cup: {message}',{message:previous.decision.message});return r;
  }
  // Legacy favorites remain valid snapshots; do not invent their historical temperature or grind.
- if(previous?.decision.status==='keep')return {...structuredClone(previous.recipe),id:crypto.randomUUID(),origin:t('Your saved favorite for this exact setup and batch of beans')};
+ if(previous?.decision.status==='keep'&&previous.feedback?.grindConfirmed!==false)return {...structuredClone(previous.recipe),id:crypto.randomUUID(),origin:t('Your saved favorite for this exact setup and batch of beans')};
  let ratio=e.method==='espresso'?(b.roast==='light'?2.5:2):500/30;
  if(e.method==='espresso'){if(preference==='clarity')ratio+=.25;if(preference==='body'&&b.roast!=='light')ratio=1.75;}
  else {if(preference==='body')ratio=15;if(preference==='clarity')ratio=17;}
@@ -112,8 +115,9 @@ export function recommend(e,b,preference,dose,brews=[],options={}){
 export function adjust(r,f){
  const review=message=>({status:'review',message});
  if(f.grindSetting)parseGrind(r.equipment,f.grindSetting);
+ if(f.grindSetting&&f.grindConfirmed===false)return review(t('Confirm the recorded grind setting before using this cup for a brewing adjustment.'));
  if(!tastes[f.taste])return review('Choose the taste you observed.');
- if(['americano','iced-americano'].includes(r.drink)&&!f.tastedBase)return review('Taste a small sample of the espresso before dilution. Finished-drink strength alone must not trigger a grinder change.');
+ if(['americano','iced-americano','milk'].includes(r.drink)&&!f.tastedBase)return review('Taste a small sample of the espresso before dilution. Finished-drink strength alone must not trigger a grinder change.');
  if(!f.observed||![f.dose,f.output,f.seconds].every(x=>finite(x)&&x>0)||f.seconds>3600||f.dose>100||f.output>2000)return review('Record the actual dose, output and time, then confirm you have tasted the coffee.');
  if(r.timeDiagnostic!==false&&!f.timingConfirmed)return review('Use a consistent timer start: '+basis(r.equipment.method)+'.');
  if(!f.even||f.taste==='mixed')return review('Check distribution, channeling or pour evenness first. Keep the recipe unchanged while the cup tastes both sour and bitter.');
@@ -138,8 +142,9 @@ function validBean(p){
  return p&&text(p.name)&&p.name.trim()&&['light','medium','dark','unknown'].includes(p.roast)&&typeof p.blend==='boolean'&&text(p.batch)&&['origin','process','roastedOn'].every(k=>p[k]===undefined||p[k]===null||text(p[k]));
 }
 export function validateEntry(e){
- if(!e||typeof e.id!=='string'||!/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.test(e.id)||!['bean','equipment','brew','photo'].includes(e.kind)||typeof e.created!=='string'||Number.isNaN(Date.parse(e.created))||typeof e.payload!=='string'||new TextEncoder().encode(e.payload).length>=(e.kind==='photo'?260000:64000))throw Error(t('This backup contains an invalid record.'));
+ if(!e||typeof e.id!=='string'||!/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.test(e.id)||!['bean','equipment','brew','photo',...tasteKinds].includes(e.kind)||typeof e.created!=='string'||Number.isNaN(Date.parse(e.created))||typeof e.payload!=='string'||new TextEncoder().encode(e.payload).length>=(['photo','taste-candidate','cup-design'].includes(e.kind)?280000:64000))throw Error(t('This backup contains an invalid record.'));
  const p=JSON.parse(e.payload);if(!p||p.id!==e.id)throw Error(t('The record IDs do not match.'));
+ if(tasteKinds.includes(e.kind)){if(p.created!==e.created)throw Error('Taste record dates do not match.');return validateTasteRecord(e.kind,p);}
  if(e.kind==='photo'){if(typeof p.beanId!=='string'||!/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.test(p.beanId)||p.created!==e.created||typeof p.image!=='string'||(p.image!==''&&!/^data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/.test(p.image)))throw Error('Invalid local bag photo.');}
  if(e.kind==='equipment')validateEquipment(p,false);
  if(e.kind==='bean'){if(!validBean(p))throw Error(t('A bean record is incomplete.'));validateLabel(p.labelRecipe);}
@@ -155,6 +160,10 @@ export function validateEntry(e){
 }
 
 function validateRecipeExtras(r,f,d){
+ for(const key of ['tdsPercent','beverageMassG'])if(f[key]!==undefined&&(!finite(f[key])||f[key]<=0))throw Error(t('Invalid extraction measurement.'));
+ if(f.tdsPercent!==undefined||f.beverageMassG!==undefined){const result=analyzeExtraction({method:r.equipment.method,doseG:f.dose,beverageMassG:r.equipment.method==='espresso'?f.output:f.beverageMassG,tdsPercent:f.tdsPercent});if(!result.valid&&!(r.equipment.method==='v60'&&f.beverageMassG===undefined&&f.tdsPercent>0&&f.tdsPercent<=100))throw Error(t('Invalid extraction measurement.'));}
+
+ if(f.grindConfirmed!==undefined&&typeof f.grindConfirmed!=='boolean')throw Error(t('Invalid brew confirmation.'));
  if(f.grindSetting!==undefined&&(typeof f.grindSetting!=='string'||f.grindSetting.length>100))throw Error(t('Invalid recorded grind setting.'));
  if(f.grindSetting)parseGrind(r.equipment,f.grindSetting);
  if(![knowledgeVersion,'daycup-brewing-2.0.0'].includes(r.version)){if(['temperature','pours','serving','grindData','request'].some(k=>r[k]!=null))throw Error(t('This recipe has unsupported versioned fields. Keep the original backup and update DayCup.'));return;}
@@ -169,6 +178,7 @@ function validateRecipeExtras(r,f,d){
   if(f.strength!==undefined&&!['balanced','weak','strong'].includes(f.strength))throw Error(t('Invalid drink strength feedback.'));
   for(const key of ['waterG','iceG'])if(f[key]!==undefined&&(!finite(f[key])||f[key]<0||f[key]>2000))throw Error(t('Invalid measured dilution.'));
  }
+ if(r.drink==='milk'){const v=r.serving;if(!v||![v.milkG,v.milkRatio,v.totalMassG].every(finite)||v.milkRatio<1||v.milkRatio>8||v.milkG<=0||v.waterG!==0||v.iceG!==0||Math.abs(v.milkG-r.output*v.milkRatio)>.11||Math.abs(v.totalMassG-r.output-v.milkG)>.11||!text(v.note,2000))throw Error(t('Invalid latte recipe'));if(f.milkG!==undefined&&(!finite(f.milkG)||f.milkG<0||f.milkG>2000))throw Error(t('Invalid milk mass'));}
  if(r.pours){if(r.equipment.method!=='v60'||!Array.isArray(r.pours)||r.pours.length!==3)throw Error(t('Invalid pour schedule.'));let last=0,until=0;for(const p of r.pours){if(![p.at,p.until,p.totalG].every(finite)||p.at<until||p.until<p.at||p.until>900||p.totalG<=last||p.totalG>r.output||!text(p.label,200))throw Error(t('Invalid cumulative pour targets.'));last=p.totalG;until=p.until;}if(Math.abs(last-r.output)>.01)throw Error(t('Pour targets must finish at total water.'));}
  if(d.parameter==='water'&&(!['americano','iced-americano'].includes(r.drink)||!finite(d.nextWaterRatio)||d.nextWaterRatio<1||d.nextWaterRatio>8))throw Error(t('Invalid next dilution target.'));
  for(const k of ['tastedBase','servingConfirmed'])if(f[k]!==undefined&&typeof f[k]!=='boolean')throw Error(t('Invalid drink confirmation.'));
@@ -181,7 +191,8 @@ export function explainRecipe(r){
  const e=r.equipment,b=r.bean,notes=[t('Confirmed working dose D = {dose} g, within this setup’s {min}–{max} g capacity.',{dose:r.dose,min:e.minDose,max:e.maxDose}),t('{quantity} = D × R = {dose} × {ratio} ≈ {output} g.',{quantity:t(e.method==='espresso'?'Espresso yield E':'Total brew water W'),dose:r.dose,ratio:Math.round(r.output/r.dose*1000)/1000,output:r.output})];
  const label=b.labelRecipe;
  notes.push(label?.method===e.method&&Math.abs(label.dose-r.dose)<.01?t('R comes from your bag recipe at the same method and dose; this overrides the taste-preference table.'):t('R is a DayCup starting choice for {roast} roast and {preference} preference. It is not a claim that a specific bean variety extracts to a known percentage.',{roast:t(roasts[b.roast]||b.roast),preference:t(preferences[r.preference]||r.preference)}));
- if(r.serving){notes.push(t('Dilution water = E × k = {output} × {ratio} = {water} g. It is added after extraction, not run through the puck.',{output:r.output,ratio:r.serving.waterRatio,water:r.serving.waterG}));notes.push(t('Total ingredient mass = espresso + water + ice = {output} + {water} + {ice} = {total} g. This is not a cup-volume or ice-melt prediction.',{output:r.output,water:r.serving.waterG,ice:r.serving.iceG,total:r.serving.totalMassG}));}
+ if(r.drink==='milk')notes.push(t('Milk added = espresso × {ratio} = {milk} g',{ratio:r.serving.milkRatio,milk:r.serving.milkG}));
+ else if(r.serving){notes.push(t('Dilution water = E × k = {output} × {ratio} = {water} g. It is added after extraction, not run through the puck.',{output:r.output,ratio:r.serving.waterRatio,water:r.serving.waterG}));notes.push(t('Total ingredient mass = espresso + water + ice = {output} + {water} + {ice} = {total} g. This is not a cup-volume or ice-melt prediction.',{output:r.output,water:r.serving.waterG,ice:r.serving.iceG,total:r.serving.totalMassG}));}
  if(e.method==='v60')notes.push(t('Brew water is the water poured, not the beverage yield. Bloom and cumulative pours are part of that total, never added on top.'));
  notes.push(t('Machine and grinder select valid capabilities, temperature controls and safe adjustment references. Basket capacity limits dose; roast and preference set the starting ratio; measured taste and flow guide the next trial.'));
  if(r.timeDiagnostic===false)notes.push(t('Pressurized basket: the normal single-wall espresso timing window does not apply. No time-to-grind correction is calculated.'));

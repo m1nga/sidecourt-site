@@ -1,0 +1,29 @@
+/* Existing equipment and cup flows: two clear entry routes and an honest decorative pour. */
+.tm-label-reader .reader-title{font-size:14px;font-weight:600;margin:0 0 10px;line-height:1.5}
+.reader-choices{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:stretch}
+.reader-choices>button{width:100%;min-width:0;min-height:48px;font-size:14px;line-height:1.4;padding:10px 8px;margin:0;display:flex;align-items:center;justify-content:center;text-align:center}
+.reader-choices .reader-photo{background:#59654b;color:#fffaf1;border-color:#59654b;box-shadow:none}
+.reader-choices .reader-manual{background:transparent;box-shadow:none;border:1px solid #c8bead}
+.tm-label-reader .field-help{font-size:12px;line-height:1.6;margin:10px 0 0}
+.brew-flow{width:100%;max-width:280px;margin:0 auto 8px;color:var(--muted)}
+.brew-flow svg{width:100%;height:82px;display:block}
+.brew-flow>span{display:block;font-size:10px;line-height:1.5;margin-top:0}
+.brew-stream{opacity:0;stroke-dasharray:6 5;animation:daycup-pour .8s linear infinite;animation-play-state:paused}
+.brew-flow.is-running .brew-stream{opacity:.85;animation-play-state:running}
+@keyframes daycup-pour{to{stroke-dashoffset:-22}}
+.extraction-guide p,.extraction-measurements p{font-size:13px;line-height:1.6}
+.extraction-guide a{font-size:12px;overflow-wrap:anywhere}
+.extraction-measurements{margin:18px 0;border-block:1px solid var(--line);padding:6px 0}
+.extraction-measurements summary{font-size:14px;min-height:44px;display:flex;align-items:center;cursor:pointer}
+.extraction-result{color:var(--muted);margin:10px 0}
+@media(max-width:700px){.recipe .ritual-dial{max-width:270px}.recipe .timer .actions{margin-top:6px}.recipe .timer .actions button{min-width:0;line-height:1.4}.brew-flow{margin-bottom:0}.reader-choices>button{font-size:13px}}
+@media(prefers-reduced-motion:reduce){.brew-stream{animation:none}.brew-flow.is-running .brew-stream{stroke-dasharray:none}}
+.native-app .brew-flow svg{height:68px}.native-app .brew-flow>span{font-size:calc(10px * var(--text-scale,1))}
+.native-app .reader-choices>button{font-size:calc(14px * var(--text-scale,1));min-height:48px}
+.native-app .extraction-measurements summary{font-size:calc(14px * var(--text-scale,1))}
+.native-app .extraction-measurements .extraction-result{font-size:calc(13px * var(--text-scale,1))}
+
+.timer-numeric{display:grid;text-align:center;justify-items:center;gap:10px;padding:30px 0}.timer-numeric small{font-size:11px;letter-spacing:.16em}.timer-numeric output{font:500 clamp(64px,15vw,110px)/1 -apple-system,BlinkMacSystemFont,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.05em}.timer-numeric span{font-size:10px;letter-spacing:.15em}.quick-recipe{padding:16px 0;border-block:1px solid #d8d2c5;margin:20px 0}.quick-recipe p{margin:6px 0}.account-panel{margin:18px 0}
+
+/* Clear sign-in choices; provider availability never masquerades as completed setup. */
+.account-signin{max-width:440px;margin:0 auto}.account-signin h2{font-size:clamp(24px,6vw,32px);line-height:1.2}.account-signin>p:not(.eyebrow){font-size:14px;color:var(--muted,#746c61);line-height:1.6}.account-providers{display:grid;gap:10px;margin-top:24px}.account-providers button{width:100%;min-height:48px;display:flex;align-items:center;justify-content:center;gap:12px;border:1px solid #d7d0c3;background:#fff;color:#302c27;border-radius:12px;box-shadow:none;font-size:15px}.account-providers button[hidden]{display:none}.account-providers button:disabled{opacity:.5}.provider-mark{font-weight:700;font-size:21px}.provider-unavailable{display:flex;justify-content:space-between;align-items:center;padding:12px 4px;color:#777365;font-size:14px}.provider-unavailable small{font-size:12px;border-radius:20px;padding:4px 9px;background:#e9e6dd}.account-divider{display:flex;gap:12px;align-items:center;margin:20px 0;font-size:12px;color:#847c70}.account-divider:before,.account-divider:after{content:'';height:1px;flex:1;background:#ddd6c9}.account-signin form{display:grid;gap:10px}.account-signin form input{width:100%;min-width:0;box-sizing:border-box}.account-signin form button{min-height:46px;margin:0}.account-code,.account-privacy{margin-top:18px;font-size:13px}.account-code form{padding-top:14px}.account-privacy p{line-height:1.65;color:#777365}#account-provider-status:empty{display:none}

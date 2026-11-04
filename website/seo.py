@@ -24,7 +24,7 @@ SOFTWARE = {
         'UtilitiesApplication', ['macOS', 'Windows'],
         {'inLanguage': ['en', 'zh'], 'downloadUrl': SITE + '/cleanpause/'}),
     'daycup': app('DayCup', SITE + '/drops/daycup/',
-        'Add your equipment and beans, get an espresso or V60 starting recipe, and keep brew notes in your browser. No account or API key needed.',
+        'Brew, remember and share your coffee. Starting recipes, a private cup journal and editable photo cards. Start without an account; private cloud sync is optional.',
         'LifestyleApplication', 'Any (web browser, add to home screen)',
         {'inLanguage': ['zh-CN', 'en']}),
     'earbrief': app('EarBrief', 'https://earbrief.sidecourt.space/',
