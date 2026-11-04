@@ -1,7 +1,7 @@
 /* RedBot account-first web client. User text is never passed through translation. */
 (() => {
   'use strict';
-  const C = ShelfCore, R = RedBotCheck, APP_VERSION = '1.9.5';
+  const C = ShelfCore, R = RedBotCheck, APP_VERSION = '1.9.6';
   const $ = s => document.querySelector(s);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const stored = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } };
@@ -56,11 +56,16 @@
     return {...data, ...raw, items:(raw.items || []).map(x=>C.normalize(x)), annotations:raw.annotations || {}, collections:raw.collections || [], guides:(raw.guides || []).map(C.normalizeGuide).filter(Boolean), goalState:C.normalizeGoalState(raw.goalState)};
   }
   async function loadLibrary() {
-    const fresh = await api('/api/library');
-    data.items = C.mergeItems(data.items, fresh.items || []).items;
+    const scope = libraryKey(), cursor = data.remoteCursor;
+    const fresh = await api('/api/library' + (cursor ? '?cursor=' + encodeURIComponent(cursor) : ''));
+    if (scope !== libraryKey()) return;
+    const changed = (fresh.items || []).length > 0;
+    const persist = changed || data.remoteCursor !== fresh.cursor || JSON.stringify(data.scan) !== JSON.stringify(fresh.scan);
+    if (changed) data.items = C.mergeItems(data.items, fresh.items).items;
     data.scan = fresh.scan;
-    await save();
-    if (tab === 'library' && $('#cards')) { cards(); updateProgress(); }
+    data.remoteCursor = typeof fresh.cursor === 'string' ? fresh.cursor : null;
+    if (persist) await save();
+    if (tab === 'library' && $('#cards')) { if (changed) cards(); updateProgress(); }
     else if (tab === 'home' && $('#goal-form')) updateProgress();
     else render();
     refreshDetail();
@@ -130,7 +135,7 @@
     if (!configValidated || !root) throw Error('connection_config_unavailable');
     let response;
     try {
-      response = await fetch(root + path, {method:body ? 'POST' : 'GET', credentials:'omit', referrerPolicy:'no-referrer', headers:{...(credentials ? {Authorization:'Bearer ' + credentials.token} : {}), ...(body ? {'Content-Type':'application/json'} : {})}, ...(body ? {body:JSON.stringify(body)} : {}), signal:AbortSignal.timeout(15000), cache:'no-store'});
+      response = await fetch(root + path, {method:body ? 'POST' : 'GET', credentials:'omit', referrerPolicy:'no-referrer', headers:{...(credentials ? {Authorization:'Bearer ' + credentials.token} : {}), ...(body ? {'Content-Type':'application/json'} : {})}, ...(body ? {body:JSON.stringify(body)} : {}), signal:AbortSignal.timeout(path.split('?')[0]==='/api/library'?60000:15000), cache:'no-store'});
     } catch { throw Error('service_offline'); }
     let result;
     try { result = await response.json(); } catch { throw Error('service_offline'); }
@@ -306,7 +311,7 @@
     const scan = status?.scan || data.scan;
     let content = '';
     if (!credentials) {
-      content = `<p>${t('用小红书确认登录，让 RedBot 只读扫描你自己的收藏。无需上传文件或复制 Cookie。','Confirm sign-in with Xiaohongshu so RedBot can read your own saves. No uploads or copying cookies.')}</p><div class="privacy-note"><strong>${t('这次试用如何保管数据','How this test stores your data')}</strong><p>${t('登录会话和收藏文本由 Ming 的测试服务分开保存，最长 7 天。远程试用会通过 Cloudflare 转发；本机访问不经过它。测试电脑离线时无法同步。断开连接会删除服务端数据。本机笔记和备份仍由你保管。','Ming’s test service stores an isolated sign-in session and saved text for up to 7 days, with remote access via Cloudflare (local access stays local). Sync stops when the test computer is offline. Disconnecting deletes server data; you keep your device notes and backup.')}</p><p>${t('这是浏览器登录连接，并非小红书官方开放的收藏授权。RedBot 不会发帖、点赞、评论或修改你的收藏。','This uses a browser sign-in, not an official favorites OAuth permission. RedBot does not post, like, comment, or change your saves.')}</p></div><form id="connect-form"><label for="invite">${t('试用邀请码','Test invitation code')}</label><input id="invite" value="${esc(invitation)}" autocomplete="off" autocapitalize="none" spellcheck="false" required>${invitation?`<p class="muted">${t('邀请链接已为你填好，确认后连接即可。','Your invitation link filled this in for you.')}</p>`:''}<label class="check-row"><input id="consent" type="checkbox" required><span>${t('我了解以上保管方式，同意连接自己的账号。','I understand this storage arrangement and want to connect my own account.')}</span></label><button class="primary">${t('获取登录码 →','Get sign-in code →')}</button></form>`;
+      content = `<p>${t('用小红书确认登录，让 RedBot 只读扫描你自己的收藏。无需上传文件或复制 Cookie。','Confirm sign-in with Xiaohongshu so RedBot can read your own saves. No uploads or copying cookies.')}</p><div class="privacy-note"><strong>${t('这次试用如何保管数据','How this test stores your data')}</strong><p>${t('扫码后保持登录的凭据，以及读出的正文、评论和视频文字，会在 Ming 的测试电脑上分开保存，最长 7 天。已收到的收藏和你的笔记也会保存在当前浏览器，手机上也是如此。远程读取通过 Cloudflare 转发；测试电脑离线时不能读取新内容，已保存的仍可查看。断开连接会删除测试电脑上这次连接的数据，本机副本仍保留。','Ming’s test computer keeps your sign-in credentials and extracted post, comment and video text separately for up to 7 days. Received saves and your notes also stay in this browser, including on your phone. Remote reads pass through Cloudflare. When the test computer is offline, saved content remains available but new reads stop. Disconnecting removes this connection’s data from the test computer and keeps your device copy.')}</p><p>${t('这是浏览器登录连接，并非小红书官方开放的收藏授权。RedBot 不会发帖、点赞、评论或修改你的收藏。','This uses a browser sign-in, not an official favorites OAuth permission. RedBot does not post, like, comment, or change your saves.')}</p></div><form id="connect-form"><label for="invite">${t('试用邀请码','Test invitation code')}</label><input id="invite" value="${esc(invitation)}" autocomplete="off" autocapitalize="none" spellcheck="false" required>${invitation?`<p class="muted">${t('邀请链接已为你填好，确认后连接即可。','Your invitation link filled this in for you.')}</p>`:''}<label class="check-row"><input id="consent" type="checkbox" required><span>${t('我了解以上保管方式，同意连接自己的账号。','I understand this storage arrangement and want to connect my own account.')}</span></label><button class="primary">${t('获取登录码 →','Get sign-in code →')}</button></form>`;
     } else if (status?.state === 'waiting' && status.qr) {
       content = `<p>${t('打开小红书，使用“扫一扫”，在小红书里确认登录。','Open Xiaohongshu, scan this code, and confirm sign-in there.')}</p><img class="login-qr" src="${esc(status.qr)}" alt="${t('小红书登录二维码','Xiaohongshu sign-in QR code')}"><p class="muted">${t('约 4 分钟内有效，请不要把登录码发给别人。','Valid for about 4 minutes. Do not share this sign-in code.')}</p><details><summary>${t('正在同一部手机上使用？','Using only this phone?')}</summary><p>${t('可先保存二维码，再到小红书“扫一扫”选择相册。是否支持识别登录码取决于小红书版本，目前尚未完成真机验证；如果不支持，需要在电脑或另一台设备显示此页。','You can save the code and try choosing it from the photo library in Xiaohongshu’s scanner. Login-code recognition depends on the app version and has not been verified on a real phone. If unsupported, display this page on a second device.')}</p><a download="RedBot-login.png" href="${esc(status.qr)}">${t('保存登录码','Save sign-in code')}</a></details>`;
     } else if (connected) {
@@ -342,8 +347,10 @@
     if (!credentials || !configValidated || requestActive) return;
     requestActive = true;
     const epoch=readEpoch, snapshotStartedAt=Date.now();
+    let connectionReceived = false;
     try {
       const next=await api('/api/connection');
+      connectionReceived = true;
       if(epoch!==readEpoch)return;
       status=next;statusSnapshot={epoch,startedAt:snapshotStartedAt};offline=false;
       if ((onboarding || initial && isScanning() && !data.items.length) && status.state === 'connected') {
@@ -368,7 +375,7 @@
       }
     } catch(error) {
       // A busy/cooldown response or a rendering exception is not an outage.
-      offline=['service_offline','service_unavailable','connection_config_unavailable'].includes(error.message);
+      offline=!connectionReceived && ['service_offline','service_unavailable','connection_config_unavailable'].includes(error.message);
       if(!offline&&!['busy','scan_cooldown','session_expired'].includes(error.message))console.warn('RedBot refresh did not finish:',error.name);
       $('#account').textContent=accountLabel(); updateProgress();if($('#source-progress')&&detailId)$('#source-progress').innerHTML=readProgress(item(detailId)); if(initial)notify(failure(error));
     }
@@ -510,7 +517,22 @@
       data.annotations[detailId]={...annotation(detailId),note:$('#personal-note').value,category:$('#save-topic').value,...($('#save-collection')?{collections:$('#save-collection').value?[$('#save-collection').value]:[]}: {})};
     }
     if($('#brief-form')&&detailId){const a=annotation(detailId);data.annotations[detailId]={...a,buildBrief:{goal:$('#brief-goal').value,brief:$('#brief-idea').value,target:$('#brief-target').value}};}
-    if(await save())location.reload();
+    if(!await save())return;
+    try {
+      if(typeof navigator!=='undefined' && navigator.serviceWorker) {
+        const registration=await navigator.serviceWorker.getRegistration();
+        if(registration) {
+          await registration.update();
+          const worker=registration.installing||registration.waiting;
+          if(worker && worker.state!=='activated')await new Promise((resolve,reject)=>{
+            const timer=setTimeout(()=>{worker.removeEventListener('statechange',changed);reject(Error('update_pending'));},20000);
+            function changed(){if(worker.state==='activated'||worker.state==='redundant'){clearTimeout(timer);worker.removeEventListener('statechange',changed);worker.state==='activated'?resolve():reject(Error('update_failed'));}}
+            worker.addEventListener('statechange',changed);changed();
+          });
+        }
+      }
+      location.reload();
+    } catch {notify(t('更新还在准备，当前内容已保存。稍后再点一次更新即可。','The update is still being prepared. Your content is saved; try updating again shortly.'));}
   }
   function timecode(value){const n=Math.max(0,Math.floor(Number(value)||0));return Math.floor(n/60)+':'+String(n%60).padStart(2,'0');}
   function videoProgress(){
@@ -641,7 +663,7 @@
     $('#dialog-close').onclick=dismiss;
     $('#dialog').addEventListener('cancel',e=>{e.preventDefault();dismiss();});
     $('#dialog').addEventListener('click',e=>{if(e.target===$('#dialog')){const r=$('#dialog').getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dismiss();}});
-    $('#backup-file').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{if(f.size>45*1024*1024)throw Error();const raw=JSON.parse(await f.text());if(!Array.isArray(raw.items))throw Error();data.items=C.mergeItems(data.items,raw.items).items;data.annotations={...raw.annotations,...data.annotations};const cs=new Map(data.collections.map(c=>[c.id,c]));for(const c of raw.collections||[])if(!cs.has(c.id))cs.set(c.id,c);data.collections=[...cs.values()];if(!data.goalState?.plan&&raw.goalState)data.goalState=C.normalizeGoalState(raw.goalState);const gs=new Map(data.guides.map(g=>[g.id,g]));for(const g of raw.guides||[]){const n=C.normalizeGuide(g);if(n&&!gs.has(n.id))gs.set(n.id,n);}data.guides=[...gs.values()];await save();dismiss();tab='library';render();notify(t('备份已合并，已有笔记保留。','Backup merged. Existing notes are kept.'));}catch{notify(t('无法读取这份备份，请选择有效的 RedBot JSON 备份。','Could not read this backup. Choose a valid RedBot JSON backup.'));}e.target.value='';};
+    $('#backup-file').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{if(f.size>45*1024*1024)throw Error();const raw=JSON.parse(await f.text());if(!Array.isArray(raw.items))throw Error();data.items=C.mergeItems(data.items,raw.items).items;data.annotations={...raw.annotations,...data.annotations};const cs=new Map(data.collections.map(c=>[c.id,c]));for(const c of raw.collections||[])if(!cs.has(c.id))cs.set(c.id,c);data.collections=[...cs.values()];if(!data.goalState?.plan&&raw.goalState)data.goalState=C.normalizeGoalState(raw.goalState);const gs=new Map(data.guides.map(g=>[g.id,g]));for(const g of raw.guides||[]){const n=C.normalizeGuide(g);if(n&&!gs.has(n.id))gs.set(n.id,n);}data.guides=[...gs.values()];data.remoteCursor=null;lastFetch='';await save();dismiss();tab='library';render();notify(t('备份已合并，已有笔记保留。','Backup merged. Existing notes are kept.'));}catch{notify(t('无法读取这份备份，请选择有效的 RedBot JSON 备份。','Could not read this backup. Choose a valid RedBot JSON backup.'));}e.target.value='';};
     resetSearchScope();
     try {data=normalize(await cacheRead()||(!credentials?stored('shelf.library.v1',{}):{}));}catch{}
     // Browsing the saved device copy must not wait for any network request.
