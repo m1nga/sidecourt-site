@@ -43,7 +43,9 @@
 :is(#main-work,#main-preview) .work-primary-actions{margin:18px 0 24px;gap:8px 20px}
 :is(#main-work,#main-preview) .work-heading .button{background:var(--cream);color:var(--plum);border-color:var(--cream)}
 :is(#main-work,#main-preview) .work-primary-actions+ [role=status]:empty{display:none}
-:is(#main-work,#main-preview) .work-heading .work-media{max-width:100%;width:100%;margin:0;align-self:start}
+/* A work keeps its own framing: wide screenshots and portrait art are not square crops. */
+:is(#main-work,#main-preview) .work-heading .work-media{max-width:100%;width:100%;height:auto;aspect-ratio:auto;object-fit:contain;margin:0;align-self:start}
+:is(#main-work,#main-preview) .work-heading .cover-sensitive.work-media img{height:auto;object-fit:contain}
 :is(#main-work,#main-preview) .work-identity-details{margin-top:18px;font-size:.875rem}
 :is(#main-work,#main-preview) .work-identity-details summary{min-height:44px;display:list-item;align-content:center;cursor:pointer}
 :is(#main-work,#main-preview) .work-identity-details .post-identity{margin:0;gap:4px 18px}
@@ -77,6 +79,12 @@
  :is(#main-work,#main-preview) .work-heading-copy{padding:20px}
  :is(#main-work,#main-preview) .work-heading h1{font-size:clamp(2rem,8vw,2.75rem);line-height:1.12}
  :is(#main-work,#main-preview) .work-heading .work-media{max-width:440px}
+ /* Keep the cover near the title, before lengthy descriptions and invitations. */
+ :is(#main-work,#main-preview) .work-heading:not(.work-heading-no-cover)>.work-heading-copy{display:contents}
+ :is(#main-work,#main-preview) .work-heading:not(.work-heading-no-cover) .work-heading-intro{grid-row:1;padding:20px;background:rgba(26,26,26,.36);border-radius:5px}
+ :is(#main-work,#main-preview) .work-heading:not(.work-heading-no-cover)>.work-media{grid-row:2}
+ :is(#main-work,#main-preview) .work-heading:not(.work-heading-no-cover) .work-heading-body{grid-row:3;min-width:0;padding:20px;background:rgba(26,26,26,.36);border-radius:5px}
+ :is(#main-work,#main-preview) .work-heading:not(.work-heading-no-cover) .work-primary-actions{margin-top:0}
  :is(#main-work,#main-preview) .work-reading{padding:0}
  :is(#main-work,#main-preview) .work-reading>section:not(.post-ways):not([hidden]),:is(#main-work,#main-preview) .work-author:not(:empty),:is(#main-work,#main-preview) .work-disclosure{padding:20px}
  :is(#main-work,#main-preview) .post-ways-grid{grid-template-columns:minmax(0,1fr);gap:16px}
