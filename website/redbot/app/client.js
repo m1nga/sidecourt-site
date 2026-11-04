@@ -14,7 +14,8 @@
   let answer = null, working = false, ai = false, aiReady = false, auto = stored('redbot.auto', true);
   let detailId = null, requestActive = false, lastJob = '', lastFetch = '', initial = true;
   let toastTimer, dialogFocus, db;
-  let onboarding = false, offline = false, startedAt = 0;
+  let onboarding = false, offline = false, startedAt = 0, connectionError = '';
+  let bootstrapPending, configValidated = false;
   let invitation = new URLSearchParams(location.hash.slice(1)).get('invite') || '';
   if (invitation) history.replaceState(null, '', location.pathname + location.search);
 
@@ -64,24 +65,71 @@
     else localStorage.removeItem('redbot.connection');
   }
   function apiURL() { return credentials?.api || config.api || ''; }
+  // Only the shipped same-origin configuration may select a remote endpoint.
+  // Never replay a session/connect mutation after a timeout: its result is unknown.
+  async function refreshConnectionConfig() {
+    if (bootstrapPending) return bootstrapPending;
+    bootstrapPending = (async () => {
+      let next;
+      try {
+        if (['127.0.0.1','localhost'].includes(location.hostname)) {
+          const response = await fetch('/api/capabilities', {cache:'no-store', credentials:'omit', redirect:'error', signal:AbortSignal.timeout(5000)});
+          if (response.ok && (await response.json()).redbotConnector === 1) next = {api:location.origin};
+        }
+        if (!next) {
+          const response = await fetch(new URL('connection.json', location.href), {cache:'no-store', credentials:'omit', redirect:'error', signal:AbortSignal.timeout(5000)});
+          if (!response.ok) throw Error();
+          next = await response.json();
+          if (!next || typeof next.api !== 'string' || !/^https:\/\/[a-z0-9.-]+(?::\d+)?$/.test(next.api)) throw Error();
+        }
+      } catch { configValidated = false; throw Error('connection_config_unavailable'); }
+      config = next;
+      configValidated = true;
+      if (credentials && credentials.api !== config.api) rememberConnection({...credentials,api:config.api});
+      connectionError = '';
+    })();
+    try { await bootstrapPending; } finally { bootstrapPending = null; }
+  }
+  function showConnectionError(error) {
+    connectionError = failure(error);
+    const target = $('#connection-error');
+    if (target) { target.textContent = connectionError; target.hidden = false; }
+    else notify(connectionError);
+  }
+  async function recoverExpiredConnection(sessionId) {
+    if (!credentials || credentials.sessionId !== sessionId) return;
+    // Keep this exact account cache, including private notes, as the device copy.
+    await save();
+    if (!credentials || credentials.sessionId !== sessionId) return;
+    offlineKey = 'account:' + sessionId;
+    localStorage.setItem('redbot.offline-key', JSON.stringify(offlineKey));
+    rememberConnection(null);
+    status = null; onboarding = false; offline = false;
+    connectionError = failure(Error('session_expired'));
+    render(); connectionDialog();
+  }
   async function api(path, body) {
-    const root = apiURL();
-    if (!root) throw Error('service_unavailable');
+    const root = apiURL(), requestSession = credentials?.sessionId;
+    if (!configValidated || !root) throw Error('connection_config_unavailable');
     let response;
     try {
       response = await fetch(root + path, {method:body ? 'POST' : 'GET', credentials:'omit', referrerPolicy:'no-referrer', headers:{...(credentials ? {Authorization:'Bearer ' + credentials.token} : {}), ...(body ? {'Content-Type':'application/json'} : {})}, ...(body ? {body:JSON.stringify(body)} : {}), signal:AbortSignal.timeout(15000), cache:'no-store'});
     } catch { throw Error('service_offline'); }
     let result;
     try { result = await response.json(); } catch { throw Error('service_offline'); }
-    if (!response.ok) throw Error(result.error || 'service_unavailable');
+    if (!response.ok) {
+      if (response.status === 401 && result.error === 'session_expired' && requestSession) await recoverExpiredConnection(requestSession);
+      throw Error(result.error || 'service_unavailable');
+    }
     return result;
   }
   function failure(error) {
     const messages = {
-      service_offline:t('暂时联系不上 RedBot 登录服务，尚未取得二维码。请刷新页面后重试；若仍失败，需要恢复测试服务。已有收藏保留。','RedBot’s sign-in service cannot be reached, so no QR code was issued. Refresh and retry; if it persists, the test host needs to be restored. Your saves are kept.'),
+      connection_config_unavailable:t('未能读取连接地址，尚未发起登录。请再次点击获取登录码以重新读取；已有收藏和连接信息保留。','Could not load the connection address. Sign-in has not started. Click Get sign-in code to retry; your saves and connection are kept.'),
+      service_offline:t('暂时联系不上 RedBot 登录服务，尚未取得二维码。可再次点击连接按钮重试；若仍失败，需要恢复测试服务。已有收藏保留。','RedBot’s sign-in service cannot be reached, so no QR code was issued. Click the connection button to retry; if it persists, the test host needs to be restored. Your saves are kept.'),
       invite_required:t('邀请码不正确，请使用收到的试用链接。','Use the invitation link you received.'),
       beta_full:t('目前试用名额已满，请稍后再试。','All test slots are in use. Try again later.'),
-      session_expired:t('这次连接已过期。重新连接后可继续；本机备份仍保留。','This session expired. Reconnect to continue; your device copy is kept.'),
+      session_expired:t('这次连接已过期，请使用邀请码重新连接。本机收藏和笔记已保留，可先导出备份。','This session expired. Use your invitation to reconnect. Your saves and notes are kept on this device; you can export them first.'),
       sign_in_required:t('请在小红书中完成登录确认，再回来继续。','Confirm sign-in in Xiaohongshu, then return here.'),
       wrong_account:t('本次登录的账号与这份收藏库不同。请断开后重新连接，避免混入别人的收藏。','A different account signed in. Disconnect before switching accounts.'),
       scan_cooldown:t('刚刚已扫描，请稍等一分钟再刷新。','Just scanned. Wait a minute before refreshing.'),
@@ -215,27 +263,29 @@
     if (running && connected) content += `<p role="status">${esc(activity())}</p>`;
     if (status?.job?.state==='failed') content += `<p class="error" role="alert">${esc(failure(Error(status.job.error)))}</p>`;
     if (credentials) content += `<p class="muted">${t('本设备已通过邀请验证，有效会话内无需再次输入。','This device has passed the invitation check. You do not need to re-enter it while this session is valid.')}</p><div class="dialog-foot"><button data-action="disconnect" class="quiet danger">${t('断开并删除服务端数据','Disconnect and delete server data')}</button></div>`;
-    modal(`<p class="eyebrow">${t('把收藏接回来','YOUR OWN ACCOUNT')}</p><h2>${t('连接小红书','Connect Xiaohongshu')}</h2><div id="connection-content">${content}</div>`, 'connection');
+    modal(`<p class="eyebrow">${t('把收藏接回来','YOUR OWN ACCOUNT')}</p><h2>${t('连接小红书','Connect Xiaohongshu')}</h2><p id="connection-error" class="error" role="alert" ${connectionError?'':'hidden'}>${esc(connectionError)}</p><div id="connection-content">${content}</div>`, 'connection');
     $('#connect-form')?.addEventListener('submit', async e=>{
       e.preventDefault(); const consent = $('#consent').checked, code = $('#invite').value.trim();
       e.submitter.disabled = true;
       try {
+        invitation = code;
+        await refreshConnectionConfig();
         const session = await api('/api/session', {invite:code,consent});
         const apiRoot = apiURL();
         rememberConnection({...session,api:apiRoot});
         data = normalize({items:[],annotations:{},collections:[],guides:[],goalState:{}});
         goal=''; answer=null; lastFetch=''; onboarding=true; status={state:'needs_sign_in'};
-        await startLogin(); render();
-      } catch(error) { notify(failure(error)); if(e.submitter?.isConnected)e.submitter.disabled=false; }
+        await startLogin({configReady:true}); render();
+      } catch(error) { if(credentials)connectionDialog(); showConnectionError(error); if(e.submitter?.isConnected)e.submitter.disabled=false; }
     });
     $('#auto')?.addEventListener('change',e=>{auto=e.target.checked;localStorage.setItem('redbot.auto',JSON.stringify(auto));});
   }
-  async function startLogin() {
-    try { startedAt=Date.now(); onboarding=true; const retry=status?.canRetryVerification; await api(retry?'/api/verify':'/api/connect',{}); status={...status,job:{kind:retry?'verify':'connect',state:'running'}}; connectionDialog(); await refreshStatus(); }
-    catch(error) { notify(failure(error)); }
+  async function startLogin({configReady = false} = {}) {
+    try { if(!configReady)await refreshConnectionConfig(); startedAt=Date.now(); onboarding=true; const retry=status?.canRetryVerification; await api(retry?'/api/verify':'/api/connect',{}); status={...status,job:{kind:retry?'verify':'connect',state:'running'}}; connectionDialog(); await refreshStatus(); }
+    catch(error) { connectionDialog(); showConnectionError(error); }
   }
   async function refreshStatus() {
-    if (!credentials || requestActive) return;
+    if (!credentials || !configValidated || requestActive) return;
     requestActive = true;
     try {
       status = await api('/api/connection'); offline=false;
@@ -324,7 +374,7 @@
       try {await api('/api/disconnect',{});await save();const offline='offline:'+credentials.sessionId;const base=await database();await new Promise((resolve,reject)=>{const tx=base.transaction('library','readwrite');tx.objectStore('library').put(data,offline);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});offlineKey=offline;localStorage.setItem('redbot.offline-key',JSON.stringify(offline));rememberConnection(null);status=null;dismiss();render();notify(t('已断开，服务端数据已删除。当前副本可先导出；不会混入下一次账号连接。','Disconnected. Server data deleted. Export this offline copy before connecting again.'));}
       catch(error) {notify(failure(error));target.disabled=false;}return;
     }
-    if(action==='retry-status'){await refreshStatus();return;}
+    if(action==='retry-status'){try {await refreshConnectionConfig();await refreshStatus();}catch(error){showConnectionError(error);}return;}
     if(action==='cancel-sync'){target.disabled=true;try{await api('/api/cancel-sync',{});await refreshStatus();}catch(error){notify(failure(error));target.disabled=false;}return;}
     if(action==='home'||action==='library'){tab=action==='home'?'home':'library';dismiss();render();return;}
     if(action==='demo'){if(credentials)return notify(t('连接账号时不混入示例收藏。','Examples stay separate from your connected account.'));const s=window.REDBOT_SEED;data.items=C.mergeItems(data.items,s.items).items;const guides=new Map(data.guides.map(g=>[g.id,g]));s.guides.forEach(g=>guides.set(g.id,g));data.guides=[...guides.values()];save();render();return;}
@@ -359,14 +409,7 @@
     $('#dialog').addEventListener('click',e=>{if(e.target===$('#dialog')){const r=$('#dialog').getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dismiss();}});
     $('#backup-file').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{if(f.size>45*1024*1024)throw Error();const raw=JSON.parse(await f.text());if(!Array.isArray(raw.items))throw Error();data.items=C.mergeItems(data.items,raw.items).items;data.annotations={...raw.annotations,...data.annotations};const cs=new Map(data.collections.map(c=>[c.id,c]));for(const c of raw.collections||[])if(!cs.has(c.id))cs.set(c.id,c);data.collections=[...cs.values()];if(!data.goalState?.plan&&raw.goalState)data.goalState=C.normalizeGoalState(raw.goalState);const gs=new Map(data.guides.map(g=>[g.id,g]));for(const g of raw.guides||[]){const n=C.normalizeGuide(g);if(n&&!gs.has(n.id))gs.set(n.id,n);}data.guides=[...gs.values()];await save();dismiss();tab='library';render();notify(t('备份已合并，已有笔记保留。','Backup merged. Existing notes are kept.'));}catch{notify(t('无法读取这份备份，请选择有效的 RedBot JSON 备份。','Could not read this backup. Choose a valid RedBot JSON backup.'));}e.target.value='';};
     try {data=normalize(await cacheRead()||(!credentials?stored('shelf.library.v1',{}):{}));}catch{}
-    try {const res=await fetch('connection.json',{cache:'no-store'});if(res.ok)config=await res.json();}catch{}
-    // Local operator preview uses this server's API; the hosted page uses only
-    // its shipped endpoint configuration, never a URL supplied in a share link.
-    if (['127.0.0.1','localhost'].includes(location.hostname)) {
-      try {const res=await fetch('/api/capabilities');const c=await res.json();if(c.redbotConnector===1)config.api=location.origin;}catch{}
-    }
-    if(config.api&&!/^https:\/\/[a-z0-9.-]+(?::\d+)?$/.test(config.api)&&!/^http:\/\/127\.0\.0\.1:\d+$/.test(config.api))config.api='';
-    if(credentials&&config.api&&credentials.api!==config.api){rememberConnection({...credentials,api:config.api});}
+    try {await refreshConnectionConfig();} catch(error) {connectionError=failure(error);}
     render();
     if(invitation&&!credentials)connectionDialog();
     if(credentials)await refreshStatus();
