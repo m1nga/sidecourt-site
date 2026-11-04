@@ -169,6 +169,16 @@ existing=[node.text for node in ET.fromstring((out/'sitemap.xml').read_text()).i
 # Discovery directory migration: preserve query/hash, leave all product children untouched.
 (out/'drops/index.html').write_text(redirect_page('/discovery/', True).replace('href="https://sidecourt.space/"','href="https://sidecourt.space/discovery/"'))
 
+# BreakingGap: the approved interactive product page, hosted on the canonical SideCourt domain.
+breakinggap = root / 'breakinggap'
+breakinggap_html = (breakinggap / 'index.html').read_text(encoding='utf-8')
+assert 'https://sidecourt.space/drops/breakinggap/' in breakinggap_html
+assert 'file:///' not in breakinggap_html and '/Users/' not in breakinggap_html
+shutil.copytree(breakinggap, out / 'drops' / 'breakinggap', dirs_exist_ok=True)
+existing=[node.text for node in ET.fromstring((out/'sitemap.xml').read_text()).iter('{http://www.sitemaps.org/schemas/sitemap/0.9}loc')]
+(out/'sitemap.xml').write_text(sitemap_xml(existing+['https://sidecourt.space/drops/breakinggap/']))
+print('BreakingGap published at /drops/breakinggap/.')
+
 # Shared search metadata is applied after all product overlays.
 from seo import finish_search_metadata
 finish_search_metadata(out)

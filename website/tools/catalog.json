@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-03",
+  "updated": "2026-11-05",
   "source_commit": "10df5fb275d6b904ecf8d5ff2c789bd444eb4b35",
   "items": [
     {
@@ -20,6 +20,19 @@
       "source_commit": "4489142e38c9ebffee21f5a7a1214facc97e0798",
       "preview_image": "/tools/previews/redbot-home.jpg",
       "category": "Productivity"
+    },
+    {
+      "slug": "breakinggap",
+      "name": "BreakingGap",
+      "kind": "Interactive demo + skill",
+      "description": "Take a three-minute thinking break while your AI agents work.",
+      "url": "/drops/breakinggap/",
+      "action": "/drops/breakinggap/",
+      "status": "Available",
+      "repository": "https://github.com/m1nga/breakinggap",
+      "bring": "A waiting moment and whatever is on your mind.",
+      "result": "A fresh question to explore, with a starter to take back to your AI agent.",
+      "example": "I have a gap. I feel stuck. Give me a fresh question."
     },
     {
       "slug": "daycup",
