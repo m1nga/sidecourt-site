@@ -477,9 +477,10 @@ button:disabled{opacity:1;cursor:not-allowed;color:#5f5368;background:#e9e1ee;bo
 .flip-front{background:var(--plum);display:grid;place-items:center}
 .flip-front img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;max-width:none}
 .brand-cover{position:absolute;inset:0;display:grid;place-items:center;background:var(--plum)}
-.flip-front .brand-cover img{position:static;width:64%;height:64%;object-fit:contain}
-.flip-front .brand-cover-horizontal img{width:78%;height:auto}
-.flip-front .brand-cover-stacked img{width:58%;height:auto}
+/* Missing covers identify the work; app screenshots retain their original proportions. */
+.work-name-cover{padding:24px;text-align:left;align-content:center;justify-items:start}
+.work-name-cover strong{display:block;max-width:100%;color:var(--cream);font:600 clamp(23px,10cqi,36px)/1.1 Inter,system-ui,sans-serif;letter-spacing:-.045em;overflow-wrap:anywhere;text-wrap:balance}
+.flip-front img.product-preview{object-fit:contain;background:var(--cream)}
 
 .cover-mark{font-size:clamp(56px,42cqi,110px);line-height:1;color:var(--lilac);font-weight:450}
 .need-tag{position:absolute;top:10px;left:10px;z-index:2;max-width:calc(100% - 20px);padding:4px 8px;border-radius:3px;background:var(--lilac);color:var(--ink);font-size:10px;font-weight:700;letter-spacing:.06em;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}

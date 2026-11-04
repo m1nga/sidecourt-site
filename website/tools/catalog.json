@@ -17,7 +17,8 @@
       "bring": "Your invitation and your own Xiaohongshu account, or selected saved text.",
       "result": "Saves appear as they arrive, with useful source text, conditions to check and an editable project prompt.",
       "example": "Check this saved free-tool claim, then help me use its method in my project.",
-      "source_commit": "4489142e38c9ebffee21f5a7a1214facc97e0798"
+      "source_commit": "4489142e38c9ebffee21f5a7a1214facc97e0798",
+      "preview_image": "/tools/previews/redbot-home.jpg"
     },
     {
       "slug": "daycup",
@@ -53,7 +54,8 @@
       "status": "Account and key required",
       "bring": "Selected source text plus the account and key required by EarBrief.",
       "result": "An audio version you can listen to away from the screen.",
-      "example": ""
+      "example": "",
+      "preview_image": "/tools/previews/earbrief-home.jpg"
     },
     {
       "slug": "design-agent",

@@ -1,6 +1,6 @@
-import json,tempfile,unittest,zipfile
+import html,json,tempfile,unittest,zipfile
 from pathlib import Path
-from tools_pages import inject_home_tools,publish_tools
+from tools_pages import inject_home_tools,publish_tools,skill_row
 
 ROOT=Path(__file__).parent
 class ToolsTest(unittest.TestCase):
@@ -11,6 +11,14 @@ class ToolsTest(unittest.TestCase):
    self.assertIn(marker,out)
   self.assertEqual(out.count('id="home-ming-tools"'),1)
   self.assertIn('href="/skills/">SKILLS',out)
+ def test_skill_row_escapes_content_and_searches_useful_context(self):
+  row=skill_row({'name':'A < B','description':'Use "source" & notes.','kind':'Skill','bring':'A portfolio','status':'Legacy','url':'/skills/example/'})
+  self.assertIn('A &lt; B',row)
+  self.assertIn('Use &quot;source&quot; &amp; notes.',row)
+  self.assertIn('a portfolio legacy',row)
+  self.assertIn('Bring: A portfolio',row)
+  self.assertEqual(row.count('<a '),1)
+  self.assertIn('alt="" width="36" height="36"',row)
  def test_catalog_routes_packages_and_no_private_library(self):
   data=json.loads((ROOT/'tools/catalog.json').read_text());self.assertEqual(len(data['items']),20)
   self.assertEqual(len({x['slug'] for x in data['items']}),20)
@@ -36,6 +44,25 @@ class ToolsTest(unittest.TestCase):
    self.assertIn('No match. Try a different task or clear the search.',skills)
    self.assertNotIn('http-equiv="refresh"',products)
    self.assertEqual(products.count('data-entry='),4);self.assertEqual(skills.count('data-entry='),17)
+   for item in data['items']:
+    if item.get('preview_image'):
+     self.assertIn(item['preview_image'],products)
+     self.assertTrue((out/item['preview_image'].lstrip('/')).is_file())
+   listing=skills.split('<ul class="skill-list"',1)[1].split('</ul>',1)[0]
+   self.assertEqual(listing.count('class="skill-row"'),17)
+   self.assertEqual(listing.count('class="skill-ring"'),17)
+   self.assertIn('Invitation-only test',listing)
+   self.assertNotIn('catalog-cover',listing)
+   self.assertNotIn('class="card',listing)
+   self.assertIn('grid-template-columns:36px 220px minmax(0,1fr) auto',skills)
+   self.assertIn('.skill-ring{width:28px;height:28px}',skills)
+   self.assertIn('.skill-list>li[hidden]{display:none}',skills)
+   self.assertIn('<div class="grid">',products)
+   for item in data['items']:
+    if 'install' not in item:continue
+    self.assertIn('href="/skills/'+item['slug']+'/"',listing)
+    self.assertIn(html.escape(item['name']),listing)
+    if item['status']=='Legacy':self.assertIn('Legacy · Reference',skill_row(item))
    for item in data['items']:
     if 'package' not in item:continue
     detail=(out/('skills/'+item['slug']+'/index.html')).read_text()

@@ -1,0 +1,19 @@
+{
+  "purpose": "Public homepage screenshots for existing app catalog cards; not user upload originals or evidence of a signed-in trial.",
+  "sources": [
+    {
+      "file": "redbot-home.jpg",
+      "url": "https://sidecourt.space/drops/redbot/app/",
+      "locale": "English",
+      "account": "signed out",
+      "captured_at_utc": "2026-11-04T15:56:13.328853+00:00"
+    },
+    {
+      "file": "earbrief-home.jpg",
+      "url": "https://earbrief.sidecourt.space/",
+      "locale": "English",
+      "account": "signed out",
+      "captured_at_utc": "2026-11-04T15:56:13.329181+00:00"
+    }
+  ]
+}
