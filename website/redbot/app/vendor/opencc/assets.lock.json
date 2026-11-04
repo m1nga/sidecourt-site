@@ -1,0 +1,26 @@
+{
+  "package": "opencc-js",
+  "version": "1.4.2",
+  "authorSource": "https://github.com/nk2028/opencc-js",
+  "registryTarball": "https://registry.npmjs.org/opencc-js/-/opencc-js-1.4.2.tgz",
+  "integrity": "sha512-EdcspgdROiCCZDM+jZR6Pa670xW+EW2QhctPBQ8gRjg6lrx4IHEl+2s+kt5izk/TkxVRgdWuFgaGkaEdIUfdaw==",
+  "license": "MIT AND Apache-2.0",
+  "files": {
+    "LICENSE": {
+      "bytes": 1080,
+      "sha256": "960f7fc16d8baa126802316a7df9078a383af4fb6bc60033adb28e85c08d5e5e"
+    },
+    "t2cn.js": {
+      "bytes": 109333,
+      "sha256": "5009384a6bdc904babee967a8bb9928e3c92288ec8a89ed036d53257e74cd8ab"
+    },
+    "THIRD_PARTY_LICENSES.md": {
+      "bytes": 10232,
+      "sha256": "42c7dbe71c178fcca97ba945e9ac9ff360fb69bbfea4cb50556f6c65bfa59806"
+    },
+    "Apache-2.0.txt": {
+      "bytes": 9165,
+      "sha256": "b534e465949558eec2597b04f5092b5e161236a68dfbfd04d547592ac3964308"
+    }
+  }
+}

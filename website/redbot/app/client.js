@@ -1,7 +1,7 @@
 /* RedBot account-first web client. User text is never passed through translation. */
 (() => {
   'use strict';
-  const C = ShelfCore, R = RedBotCheck, APP_VERSION = '1.9.2';
+  const C = ShelfCore, R = RedBotCheck, APP_VERSION = '1.9.3';
   const $ = s => document.querySelector(s);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const stored = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } };
@@ -15,6 +15,7 @@
   let detailId = null, requestActive = false, lastJob = '', lastFetch = '', initial = true;
   let toastTimer, dialogFocus, db;
   const reads = new Map();
+  let readEpoch = 0, statusSnapshot = {epoch:0,startedAt:0};
   let latestVersion = '', versionCheckedAt = 0, aiLoadGeneration = 0;
   let onboarding = false, offline = false, startedAt = 0, connectionError = '';
   let bootstrapPending, configValidated = false;
@@ -144,6 +145,7 @@
       service_offline:t('暂时联系不上 RedBot 登录服务，尚未取得二维码。可再次点击连接按钮重试；若仍失败，需要恢复测试服务。已有收藏保留。','RedBot’s sign-in service cannot be reached, so no QR code was issued. Click the connection button to retry; if it persists, the test host needs to be restored. Your saves are kept.'),
       invite_required:t('邀请码不正确，请使用收到的试用链接。','Use the invitation link you received.'),
       beta_full:t('目前试用名额已满，请稍后再试。','All test slots are in use. Try again later.'),
+      service_restarted:t('服务重启中断了这次读取。已有内容已保留，可手动重试。','A service restart interrupted this read. Existing content is kept. Retry manually.'),
       session_expired:t('这次连接已过期，请使用邀请码重新连接。本机收藏和笔记已保留，可先导出备份。','This session expired. Use your invitation to reconnect. Your saves and notes are kept on this device; you can export them first.'),
       sign_in_required:t('请在小红书中完成登录确认，再回来继续。','Confirm sign-in in Xiaohongshu, then return here.'),
       wrong_account:t('本次登录的账号与这份收藏库不同。请断开后重新连接，避免混入别人的收藏。','A different account signed in. Disconnect before switching accounts.'),
@@ -326,8 +328,11 @@
   async function refreshStatus() {
     if (!credentials || !configValidated || requestActive) return;
     requestActive = true;
+    const epoch=readEpoch, snapshotStartedAt=Date.now();
     try {
-      status = await api('/api/connection'); offline=false;
+      const next=await api('/api/connection');
+      if(epoch!==readEpoch)return;
+      status=next;statusSnapshot={epoch,startedAt:snapshotStartedAt};offline=false;
       if ((onboarding || initial && isScanning() && !data.items.length) && status.state === 'connected') {
         onboarding=false; tab='library';
         if ($('#dialog').open && $('#dialog').dataset.kind==='connection') dismiss();
@@ -335,7 +340,7 @@
       }
       const stamp = String(status.revision ?? '') + ':' + status.scan?.at + ':' + status.scan?.readCount + ':' + (status.job?.state==='done'?status.job.id:'');
       if (stamp !== lastFetch && (status.revision !== undefined || status.scan || ['read','video'].includes(status.job?.kind)&&['done','failed','cancelled'].includes(status.job.state))) {
-        await loadLibrary(); lastFetch = stamp;
+        await loadLibrary();if(epoch!==readEpoch)return;lastFetch = stamp;
       }
       await reconcileRead();
       if(status.job?.state==='failed' && status.job.id!==lastJob) {if(!['read','video'].includes(status.job.kind))notify(failure(Error(status.job.error)));lastJob=status.job.id;}
@@ -371,8 +376,10 @@
     if(!detailId || !selected(detailId))return;
     const fields=['personal-note','save-topic','save-collection'].map(id=>({id,value:$('#'+id)?.value}));
     const scroll=$('#dialog').scrollTop, focus=document.activeElement?.id;
+    const expanded=[...document.querySelectorAll('#dialog-body details')].filter(d=>d.open).map(d=>d.querySelector('summary')?.textContent);
     detail(detailId,{refresh:true});
     fields.forEach(f=>{if(f.value!==undefined&&$('#'+f.id))$('#'+f.id).value=f.value;});
+    document.querySelectorAll('#dialog-body details').forEach(d=>{if(expanded.includes(d.querySelector('summary')?.textContent))d.open=true;});
     if(focus&&$('#'+focus))$('#'+focus).focus({preventScroll:true});
     $('#dialog').scrollTop=scroll;
   }
@@ -390,20 +397,20 @@
     let r=reads.get(id);
     if(r&&!retry){if(briefAfter)r.briefAfter=true;return;}
     if(r&&['queued','starting','running'].includes(r.state))return;
-    r={state:'queued',briefAfter,jobId:'',error:''};reads.set(id,r);refreshDetail();
+    r={state:'queued',briefAfter,jobId:'',error:'',baseline:readOutcome(x)};reads.set(id,r);refreshDetail();
     await startSelectedRead(id,r);
   }
   async function startSelectedRead(id,r) {
     if(!selected(id)||reads.get(id)!==r||r.state!=='queued')return;
     if(status?.job?.state==='running') {
-      if(status.job.targetId===id&&status.job.kind===(item(id).type==='video'?'video':'read')){r.state='running';r.jobId=status.job.id;refreshDetail();}
+      if(status.job.targetId===id&&status.job.kind===(item(id).type==='video'?'video':'read')){r.state='running';r.jobId=status.job.id;r.epoch=readEpoch;r.acceptedAt=statusSnapshot.startedAt;r.requestStartedAt=Date.parse(status.job.startedAt)||Date.now();refreshDetail();}
       return;
     }
-    r.state='starting';refreshDetail();
+    r.state='starting';r.baseline=readOutcome(item(id));r.requestStartedAt=Date.now();refreshDetail();
     try {
       const result=await api(item(id).type==='video'?'/api/video':'/api/read',{id});
       const job=result.job||result;
-      r.state='running';r.jobId=job.id||result.jobId||'';
+      r.state='running';r.jobId=job.id||result.jobId||'';r.acceptedAt=Date.now();r.epoch=++readEpoch;
       status={...status,job:{...job,id:r.jobId,kind:item(id).type==='video'?'video':'read',state:'running',targetId:id}};
       refreshDetail();
     } catch(error) {
@@ -412,16 +419,59 @@
       refreshDetail();
     }
   }
-  async function reconcileRead() {
+  function readOutcome(x) {
+    return JSON.stringify([x.contentReadStatus,x.contentReadAttemptedAt,x.contentReadAt,x.contentReadError?.code,x.contentReadError?.at,x.videoAnalysis?.readAt,x.comments?.readAt,x.coverage]);
+  }
+  function interruptedRead(r) {
+    r.state='interrupted';r.error=t('这次读取已中断，或结果无法确认。已有内容已保留；可以手动重试。','This read was interrupted or its result could not be confirmed. Existing content is kept. You can retry manually.');
+  }
+  function currentAttemptOutcome(x,r) {
+    const state=x?.contentReadStatus;
+    if(!['ready','empty','failed','cancelled'].includes(state)||readOutcome(x)===r.baseline)return null;
+    const since=Math.floor(r.requestStartedAt/1000)*1000,attempt=Date.parse(x.contentReadAttemptedAt),readAt=Date.parse(x.contentReadAt);
+    if(!Number.isFinite(since)||!Number.isFinite(attempt)||attempt<since)return null;
+    if(['failed','cancelled'].includes(state))return Date.parse(x.contentReadError?.at)>r.acceptedAt?state:null;
+    if(!Number.isFinite(readAt)||readAt<=r.acceptedAt)return null;
+    if(state==='ready'&&x.type==='video'&&!(Date.parse(x.videoAnalysis?.readAt)>r.acceptedAt||Date.parse(x.comments?.readAt)>r.acceptedAt))return null;
+    return state;
+  }
+  async function reconcileRead(snapshot=statusSnapshot) {
     const id=detailId,r=reads.get(id);if(!r||!selected(id))return;
+    if(r.epoch!==undefined&&(snapshot.epoch!==r.epoch||snapshot.startedAt<r.acceptedAt))return;
     const job=status?.job;
     if(r.state==='queued'){await startSelectedRead(id,r);return;}
-    if(r.state!=='running'||job?.targetId!==id||r.jobId&&job.id!==r.jobId||!['done','failed','cancelled'].includes(job.state))return;
-    r.state=job.state;
-    if(job.state!=='done')r.error=job.state==='cancelled'?t('读取已取消。可在准备好后重试。','Reading cancelled. Retry when you are ready.'):failure(Error(job.error));
-    else if(!readable(item(id)))r.error=t('这次没有取得可用内容。可以重试，或打开原文查看。','No usable content was returned. Retry or open the original.');
+    if(r.state!=='running')return;
+    const matching=job?.targetId===id&&(!r.jobId||job.id===r.jobId);
+    if(matching&&job.state==='running')return;
+    if(matching&&['done','failed','cancelled'].includes(job.state)) {
+      r.state=job.state;
+      if(job.state!=='done')r.error=job.state==='cancelled'?t('读取已取消。可在准备好后重试。','Reading cancelled. Retry when you are ready.'):failure(Error(job.error));
+      else if(!readable(item(id)))r.error=t('这次没有取得可用内容。可以重试，或打开原文查看。','No usable content was returned. Retry or open the original.');
+    } else {
+      // The single job slot may have been lost on restart or replaced after completion.
+      // Read only: never replay an accepted mutation to discover its outcome.
+      try {
+        await loadLibrary();
+        if(reads.get(id)!==r||!selected(id)||snapshot.epoch!==readEpoch)return;
+        const x=item(id),outcome=currentAttemptOutcome(x,r);
+        if(outcome==='ready'&&readable(x)){r.state='done';r.error='';}
+        else if(outcome==='failed'||outcome==='cancelled'){r.state=outcome;r.error=outcome==='cancelled'?t('读取已取消。可在准备好后重试。','Reading cancelled. Retry when you are ready.'):x.contentReadError?.code==='service_restarted'?t('服务重启中断了这次读取。已有内容已保留，可手动重试。','A service restart interrupted this read. Existing content is kept. Retry manually.'):failure(Error(x.contentReadError?.code||'source_unavailable'));}
+        else if(outcome==='empty'){r.state='empty';r.error=t('这次没有取得可用内容。可以重试，或打开原文查看。','No usable content was returned. Retry or open the original.');}
+        else interruptedRead(r);
+      } catch {if(reads.get(id)===r&&selected(id))interruptedRead(r);}
+    }
     refreshDetail();
-    if(job.state==='done'&&!r.error&&r.briefAfter&&selected(id))brief(id);
+    if(r.state==='done'&&!r.error&&r.briefAfter&&selected(id))brief(id);
+  }
+  async function recoverCancelledRead() {
+    const id=detailId,r=reads.get(id),epoch=readEpoch,startedAt=Date.now();if(!r)return;
+    try {
+      const next=await api('/api/connection');
+      if(epoch!==readEpoch||reads.get(id)!==r||!selected(id))return;
+      status=next;statusSnapshot={epoch,startedAt};
+      if(next.job?.targetId===id&&next.job.id===r.jobId&&['done','failed','cancelled'].includes(next.job.state)){await loadLibrary();if(epoch!==readEpoch)return;}
+      await reconcileRead(statusSnapshot);
+    } catch {if(reads.get(id)===r&&selected(id)){interruptedRead(r);refreshDetail();}}
   }
   function renderVersion() {
     for(const selector of ['#app-update','#dialog-update']) {
@@ -459,15 +509,24 @@
     const v=x.videoAnalysis,transcript=v?.transcript||[],frames=v?.frames||[];
     const audioNames={transcribed:t('已转录','Transcribed'),no_speech_detected:t('未检测到语音','No speech detected')};
     const frameNames={sampled_ocr:t('已均匀采样并读取画面文字','Uniform samples read with OCR'),ocr_setup_required:t('画面文字组件尚未准备好','On-screen text reader needs setup')};
-    return `<section class="video-reading"><h3>${t('视频内容','Video content')}</h3><p>${t('按需读取语音与少量画面文字采样，不是完整视觉理解，也不鉴定真假。没有云端模型 token 账单，但会使用测试服务电脑的算力；目前限 10 分钟、100 MB 以内。','Reads speech and sampled on-screen text on request. This is not full visual understanding or a truth check. No cloud-model token bill; processing uses the test host computer. Limit: 10 minutes and 100 MB.')}</p>${v?`<p class="coverage-note">${t(v.complete?'本次处理完成；覆盖范围仍仅限下列语音与采样。':'本次只得到部分结果，不能视为读完视频。',v.complete?'Processing completed; coverage is limited to speech and samples below.':'Only partial results are available; the video has not been fully read.')} ${v.cached?t('复用相同版本的本机结果。','Reused a local result for the same version.'):''}</p><p>${t('语音：','Audio: ')}${esc(audioNames[v.coverage?.audio]||t('未完成','Not completed'))} · ${t('画面文字：','On-screen text: ')}${esc(frameNames[v.coverage?.frames]||t('未完成','Not completed'))}</p>${v.lastRefreshError?.retainedPrevious?`<p class="warning">${t('最近一次重新读取失败；下方保留上次成功结果，并非这次的新结果。','The latest refresh failed. Results below are from the previous successful read.')} ${esc(failure(Error(v.lastRefreshError.code)))}</p>`:''}${v.error?`<p class="warning">${esc(failure(Error(v.error)))}</p>`:''}${transcript.length?`<details open><summary>${t('带时间的语音转录','Timestamped transcript')}</summary><p class="coverage-note">${t('自动转录可能听错，请对照画面文字或原视频核对。','Automatic transcripts may mishear speech. Check against on-screen text or the original video.')}</p>${transcript.map(t=>`<p><time>${timecode(t.start)}–${timecode(t.end)}</time> ${esc(t.text)}</p>`).join('')}</details>`:''}${frames.length?`<details><summary>${t('采样画面中的文字','Text from sampled frames')} (${frames.length})</summary>${frames.map(f=>`<p><time>${timecode(f.at)}</time> ${esc((f.text||[]).map(t=>t.text).join(' ')||t('此采样未读出文字','No text read in this sample'))}</p>`).join('')}</details>`:''}`:''}</section>`;
+    return `<section class="video-reading"><h3>${t('视频内容','Video content')}</h3><p>${t('按需读取语音与少量画面文字采样，不是完整视觉理解，也不鉴定真假。没有云端模型 token 账单，但会使用测试服务电脑的算力；目前限 10 分钟、100 MB 以内。','Reads speech and sampled on-screen text on request. This is not full visual understanding or a truth check. No cloud-model token bill; processing uses the test host computer. Limit: 10 minutes and 100 MB.')}</p>${v?`<p class="coverage-note">${t(v.complete?'本次处理完成；覆盖范围仍仅限下列语音与采样。':'本次只得到部分结果，不能视为读完视频。',v.complete?'Processing completed; coverage is limited to speech and samples below.':'Only partial results are available; the video has not been fully read.')} ${v.cached?t('复用相同版本的本机结果。','Reused a local result for the same version.'):''}</p><p>${t('语音：','Audio: ')}${esc(audioNames[v.coverage?.audio]||t('未完成','Not completed'))} · ${t('画面文字：','On-screen text: ')}${esc(frameNames[v.coverage?.frames]||t('未完成','Not completed'))}</p>${v.lastRefreshError?.retainedPrevious?`<p class="warning">${t('最近一次重新读取失败；下方保留上次成功结果，并非这次的新结果。','The latest refresh failed. Results below are from the previous successful read.')} ${esc(failure(Error(v.lastRefreshError.code)))}</p>`:''}${v.error?`<p class="warning">${esc(failure(Error(v.error)))}</p>`:''}${transcript.length?`<details><summary>${t('原始语音转录','Timestamped transcript')}</summary><p class="coverage-note">${t('自动转录可能听错，请对照画面文字或原视频核对。','Automatic transcripts may mishear speech. Check against on-screen text or the original video.')}</p>${transcript.map(t=>`<p><time>${timecode(t.start)}–${timecode(t.end)}</time> ${esc(t.text)}</p>`).join('')}</details>`:''}${frames.length?`<details><summary>${t('采样画面中的文字','Text from sampled frames')} (${frames.length})</summary>${frames.map(f=>`<p><time>${timecode(f.at)}</time> ${esc((f.text||[]).map(t=>t.text).join(' ')||t('此采样未读出文字','No text read in this sample'))}</p>`).join('')}</details>`:''}`:''}</section>`;
   }
   function detail(id,{refresh=false}={}) {
     const x=item(id);if(!x)return;detailId=id;
-    if(!reads.has(id)&&['failed','cancelled','empty'].includes(x.contentReadStatus)&&x.type!=='video')reads.set(id,{state:x.contentReadStatus,error:x.contentReadStatus==='empty'?t('这次没有取得可用正文。可以重试或打开原文。','No usable text was returned. Retry or open the original.'):failure(Error(x.contentReadError?.code||'source_unavailable'))});
+    if(!reads.has(id)&&['failed','cancelled','empty'].includes(x.contentReadStatus))reads.set(id,{state:x.contentReadStatus,error:x.contentReadStatus==='empty'?t('这次没有取得可用正文。可以重试或打开原文。','No usable text was returned. Retry or open the original.'):failure(Error(x.contentReadError?.code||'source_unavailable'))});
     if(!reads.has(id)&&x.type==='video'&&x.videoAnalysis&&!readable(x))reads.set(id,{state:'failed',error:failure(Error(x.videoAnalysis.error||'source_unavailable'))});
     const a=annotation(id), report=R.scan(x), take=R.shortTake(x);
     const cueNames={free:t('“免费”的范围','What “free” includes'),cost:t('价格或使用条件','Cost or access conditions'),promotion:t('推广或引流线索','Promotion or contact gate'),promise:t('需要验证的承诺','A promise to verify'),license:t('复用与授权条件','Reuse terms')};
-    modal(`<button id="dialog-update" data-action="update-app" hidden></button><div class="detail-head"><p class="eyebrow">${esc(label(a.category||x.category))}</p><h2>${esc(x.title)}</h2><p class="muted">${esc(x.author)}</p></div><section><h3>${t('先看重点','The short version')}</h3>${take.lead?`<blockquote>${esc(take.lead)}</blockquote>${take.points.map(p=>`<p><strong>${esc(p.label.startsWith('Original author comment')?t('原作者评论（首屏，未经独立核实）','Original author comment (first page, unverified claim)'):p.label)}</strong> ${esc(p.text)}</p>`).join('')}`:`<p>${t('还没有读到正文。先读取这篇，或打开原文。','No source text yet. Read this post, or open the original.')}</p>`}<p class="coverage-note">${t('这里是已保存文字的摘录，不是新的 AI 总结。'+(x.comments?'评论范围见下方；':'未读取评论；')+'没有转录的视频不代表已看过。','This extracts saved text, not a new AI summary. '+(x.comments?'Comment coverage is shown below; ':'Comments are unread; ')+'a video without a transcript has not been watched.')}</p><div class="actions"><div id="source-progress">${readProgress(x)}</div><a class="button" href="${esc(R.safeLink(x.url))}" target="_blank" rel="noopener noreferrer">${t('打开原文 ↗','Open original ↗')}</a></div></section>${commentsHTML(x)}${videoHTML(x)}${readable(x)?`<section><h3>${t('免费、广告、收费？先看条件。','Free, paid, or promoted? Check the terms.')}</h3><p class="muted">${t('这些是原文中的线索，不是“真假鉴定”。价格和效果还需到官方来源核实。','These are cues in the source, not a fraud verdict. Verify prices and behavior with primary sources.')}</p>${report.signals.length?report.signals.map(s=>`<details class="cue"><summary>${cueNames[s.id]||esc(s.label)}</summary><blockquote>${esc(s.excerpt)}</blockquote></details>`).join(''):`<p>${t(report.readable?'已保存的文字中没有明显线索，但不代表免费或可靠。':'只有标题，暂时无法检查。',report.readable?'No obvious wording cues; this does not establish that it is free or trustworthy.':'Only a title is available; the claims cannot be checked yet.')}</p>`}${report.projects.length?`<button data-action="repo-check" data-id="${esc(id)}">${t('核对 GitHub 项目信息','Check GitHub project facts')}</button><div id="repo-results">${repoHTML(a.projectChecks||[])}</div>`:''}</section><section><h3>${t('用到自己的项目里','Use it in your project')}</h3><p>${t('把方法和待核实的条件，整理为 Codex / Claude Code 可用的指令。','Turn the method and unresolved conditions into a brief for Codex / Claude Code.')}</p><button class="primary" data-action="brief" data-id="${esc(id)}">${t('整理执行指令 →','Make a build brief →')}</button></section>`:''}<details class="full-source"><summary>${t('展开已保存的完整文字','Read all saved text')}</summary><p class="prewrap">${esc(sourceText(x))||t('尚无正文。','No source text.')}</p></details><section><label for="personal-note">${t('留给自己的笔记','A note to yourself')}</label><textarea id="personal-note" rows="3">${esc(a.note||'')}</textarea><label for="save-topic">${t('主题','Topic')}</label><select id="save-topic">${C.TOPICS.map(c=>`<option ${c===(a.category||x.category)?'selected':''} value="${esc(c)}">${esc(label(c))}</option>`).join('')}</select>${data.collections.length?`<label for="save-collection">${t('加入合集','Collection')}</label><select id="save-collection"><option value="">${t('不放入合集','No collection')}</option>${data.collections.map(c=>`<option value="${esc(c.id)}" ${(a.collections||[]).includes(c.id)?'selected':''}>${esc(c.name)}</option>`).join('')}</select>`:''}<div class="actions"><button data-action="note" data-id="${esc(id)}">${t('保存笔记','Save note')}</button><button data-action="read-mark" data-id="${esc(id)}">${a.read?t('标为未读','Mark unread'):t('标为已读','Mark read')}</button><button data-action="archive" data-id="${esc(id)}">${a.archived?t('取消归档','Unarchive'):t('归档','Archive')}</button><button data-action="trash" data-id="${esc(id)}" class="quiet">${a.trashed?t('移回收藏','Restore'):t('移入回收站','Move to trash')}</button></div></section>`, 'detail');
+    modal(`<button id="dialog-update" data-action="update-app" hidden></button>
+      <div class="detail-head"><p class="eyebrow">${esc(label(a.category||x.category))}</p><h2>${esc(x.title)}</h2><p class="muted">${esc(x.author)}</p></div>
+      <section class="useful-summary"><h3>${t('重点','The useful part')}</h3>
+        ${take.lead?`<p class="summary-lead">${esc(take.lead)}</p>${take.points.length?`<ul>${take.points.map(p=>`<li>${esc(p.text)}</li>`).join('')}</ul>`:''}<p class="source-caption">${t(take.sourceKind==='author_method'?'根据原作者的文字整理':take.sourceKind==='transcript'?'根据自动转录提取，请核对原文':'根据已读取的文字整理',take.sourceKind==='author_method'?'From the author’s written method':take.sourceKind==='transcript'?'From automatic transcription; check the source':'From the saved source text')}</p>`:`<p>${t('正在准备这篇的内容。','Preparing this save.')}</p>`}
+        <div id="source-progress">${readProgress(x)}</div>
+        ${readable(x)?`<button class="primary" data-action="brief" data-id="${esc(id)}">${t('生成可用指令 →','Make a useful prompt →')}</button>`:''}
+      </section>
+      ${readable(x)&&report.signals.length?`<details class="detail-secondary"><summary>${t('使用前确认','Before you use it')} · ${report.signals.map(s=>cueNames[s.id]||s.label).join(' / ')}</summary><p class="muted">${t('来自原文的提醒，仍需核实。','Source cues to verify.')}</p>${report.signals.map(s=>`<p><strong>${cueNames[s.id]||esc(s.label)}</strong></p><blockquote>${esc(window.RedBotText?.simplify(s.excerpt)||s.excerpt)}</blockquote>`).join('')}${report.projects.length?`<button data-action="repo-check" data-id="${esc(id)}">${t('核对项目信息','Check project details')}</button><div id="repo-results">${repoHTML(a.projectChecks||[])}</div>`:''}</details>`:''}
+      <details class="detail-secondary source-material"><summary>${t('查看原文与读取范围','Source and reading coverage')}</summary><a class="button" href="${esc(R.safeLink(x.url))}" target="_blank" rel="noopener noreferrer">${t('打开原文 ↗','Open original ↗')}</a>${commentsHTML(x)}${videoHTML(x)}<details class="full-source"><summary>${t('全部已保存文字','All saved text')}</summary><p class="prewrap">${esc(sourceText(x))||t('尚无正文。','No source text.')}</p></details></details>
+      <details class="detail-secondary"><summary>${t('我的笔记与整理','My notes and organization')}</summary><label for="personal-note">${t('留给自己的笔记','A note to yourself')}</label><textarea id="personal-note" rows="3">${esc(a.note||'')}</textarea><label for="save-topic">${t('主题','Topic')}</label><select id="save-topic">${C.TOPICS.map(c=>`<option ${c===(a.category||x.category)?'selected':''} value="${esc(c)}">${esc(label(c))}</option>`).join('')}</select>${data.collections.length?`<label for="save-collection">${t('加入合集','Collection')}</label><select id="save-collection"><option value="">${t('不放入合集','No collection')}</option>${data.collections.map(c=>`<option value="${esc(c.id)}" ${(a.collections||[]).includes(c.id)?'selected':''}>${esc(c.name)}</option>`).join('')}</select>`:''}<div class="actions"><button data-action="note" data-id="${esc(id)}">${t('保存笔记','Save note')}</button><button data-action="read-mark" data-id="${esc(id)}">${a.read?t('标为未读','Mark unread'):t('标为已读','Mark read')}</button><button data-action="archive" data-id="${esc(id)}">${a.archived?t('取消归档','Unarchive'):t('归档','Archive')}</button><button data-action="trash" data-id="${esc(id)}" class="quiet">${a.trashed?t('移回收藏','Restore'):t('移入回收站','Move to trash')}</button></div></details>`, 'detail');
     renderVersion();
     if(!refresh&&credentials&&status?.state==='connected'&&/^[a-f0-9]{24}$/.test(id)&&!readable(x))void requestRead(id);
   }
@@ -476,9 +535,12 @@
   }
   function brief(id) {
     const x=item(id),a=annotation(id),d=a.buildBrief||{};if(!x)return;
+    const legacyTranscript=(d.brief?.match(/\[\d+(?:\.\d+)?(?:[–-]\d+(?:\.\d+)?)?s\]/g)||[]).length>1;
+    const methodDraft=legacyTranscript?R.idea(x):(d.brief||R.idea(x));
+    const previousDraft=d.previousBrief||(legacyTranscript?d.brief:'');
     if(!readable(x)){detail(id);return requestRead(id,{briefAfter:true});}
-    modal(`<p class="eyebrow">${t('从收藏，到行动','FROM SAVE TO ACTION')}</p><h2>${t('拿去用的指令','A brief you can use')}</h2><p>${esc(x.title)}</p><form id="brief-form"><label for="brief-idea">${t('保留的方法或概念（可修改）','Useful method or concept (editable)')}</label><textarea id="brief-idea" rows="5">${esc(d.brief||R.idea(x))}</textarea><label for="brief-goal">${t('你想用它做什么','Your goal')}</label><textarea id="brief-goal" rows="2" required>${esc(d.goal||goal)}</textarea><label for="brief-target">${t('交给哪个工具','Use in')}</label><select id="brief-target"><option>Codex</option><option ${d.target==='Claude Code'?'selected':''}>Claude Code</option></select>${a.note?`<label class="check-row"><input id="include-note" type="checkbox"><span>${t('同时加入我这篇的个人笔记','Include my personal note for this save')}</span></label>`:''}<p class="muted">${t('只包含这一篇。默认不授权花钱；先核实条件，再适配当前项目。生成指令不代表工具已经执行。','Includes only this save. No spending by default; verify conditions before adapting your project. Creating a brief does not execute it.')}</p><button class="primary">${t('生成指令','Create brief')}</button></form><section id="brief-result" hidden><label for="brief-output">${t('检查后复制到工具','Review before using')}</label><textarea id="brief-output" rows="12" readonly></textarea><div class="actions"><button data-action="copy-brief">${t('复制指令','Copy brief')}</button><button data-action="download-brief">${t('下载文本','Download text')}</button></div></section>`, 'brief');
-    $('#brief-form').onsubmit=e=>{e.preventDefault();const fields={goal:$('#brief-goal').value,brief:$('#brief-idea').value,target:$('#brief-target').value};data.annotations[id]={...a,buildBrief:fields};save();$('#brief-output').value=R.createPrompt(x,{...fields,language:lang,checks:a.projectChecks||[],personalNote:$('#include-note')?.checked?a.note:''});$('#brief-result').hidden=false;};
+    modal(`<h2>${t('拿去用','Put it to work')}</h2><p class="muted">${esc(x.title)}</p><form id="brief-form"><label for="brief-goal">${t('你想用它做什么？','What do you want to do?')}</label><textarea id="brief-goal" rows="2" required placeholder="${t('写下你想解决的问题','Describe the problem you want to solve')}">${esc(d.goal||goal)}</textarea><label for="brief-target">${t('交给','Use in')}</label><select id="brief-target"><option>Codex</option><option ${d.target==='Claude Code'?'selected':''}>Claude Code</option></select><details class="brief-method"><summary>${t('参考的方法 · 可修改','Reference method · editable')}</summary><label for="brief-idea" class="sr-only">${t('参考的方法','Reference method')}</label><textarea id="brief-idea" rows="5">${esc(window.RedBotText?.simplify(methodDraft)||methodDraft)}</textarea></details>${previousDraft?`<details class="brief-method"><summary>${t('查看之前的草稿','Previous draft')}</summary><p class="prewrap">${esc(previousDraft)}</p></details>`:''}${a.note?`<label class="check-row"><input id="include-note" type="checkbox"><span>${t('加入我的笔记','Include my note')}</span></label>`:''}<button class="primary">${t('生成指令','Create prompt')}</button></form><section id="brief-result" hidden><label for="brief-output">${t('复制后交给工具','Copy this to your tool')}</label><textarea id="brief-output" rows="12" readonly></textarea><div class="actions"><button class="primary" data-action="copy-brief">${t('复制指令','Copy prompt')}</button><button data-action="download-brief">${t('下载文本','Download text')}</button></div></section>`, 'brief');
+    $('#brief-form').onsubmit=e=>{e.preventDefault();const fields={goal:$('#brief-goal').value,brief:$('#brief-idea').value,target:$('#brief-target').value};data.annotations[id]={...a,buildBrief:{...d,...fields,...(previousDraft?{previousBrief:previousDraft}:{})}};save();$('#brief-output').value=R.createPrompt(x,{...fields,language:lang,checks:a.projectChecks||[],personalNote:$('#include-note')?.checked?a.note:''});$('#brief-result').hidden=false;};
   }
   function settings() {
     modal(`<h2>${t('设置与我的数据','Settings and my data')}</h2><p>RedBot v${APP_VERSION}</p><button id="dialog-update" data-action="update-app" ${latestVersion?'':'hidden'}>${t('有新版本，保存并刷新','Update available — save and reload')}</button><p>${t('个人笔记和计划保存在这个浏览器。换设备前，先导出备份。','Your notes and plans stay in this browser. Export a backup before switching devices.')}</p><div class="setting"><span>${t('导出当前收藏、笔记与计划','Export this library, notes and plan')}</span><button data-action="export">${t('导出','Export')}</button></div><div class="setting"><span>${t('从 RedBot 备份恢复','Restore a RedBot backup')}</span><button data-action="import">${t('恢复备份','Restore')}</button></div><div class="setting"><span>${t('原有设备收藏与当前账号分别保管','Device saves stay separate from account saves')}</span><button data-action="device-copy">${t('查看设备副本','Device copy')}</button></div><div class="setting"><span>${t('添加一个链接（备用入口）','Add a link (optional)')}</span><button data-action="add">${t('添加','Add')}</button></div><p class="muted">${t('这里的归档、回收站和合集只整理 RedBot 副本，不会改动小红书。','Archiving, trash and collections only organize your RedBot copy. Xiaohongshu is unchanged.')}</p>`, 'settings');
@@ -520,7 +582,7 @@
     if(action==='skip'){const key=C.hash(goal.toLowerCase());data.goalState.skips[key]=[...new Set([...(data.goalState.skips[key]||[]),answer.guide?.id||answer.source?.id||''])];choice='';save();return findStart();}
     if(action==='favorite'||action==='read-mark'||action==='archive'||action==='trash'){const key={favorite:'favorite','read-mark':'read',archive:'archived',trash:'trashed'}[action];data.annotations[id]={...a,[key]:!a[key]};save();render();if($('#dialog').open)detail(id);return;}
     if(action==='detail')return detail(id);
-    if(action==='cancel-video'||action==='cancel-read'){target.disabled=true;try{await api(action==='cancel-video'?'/api/cancel-video':'/api/cancel-read',{});await refreshStatus();}catch(error){const r=reads.get(detailId);if(r)r.error=failure(error);refreshDetail();}return;}
+    if(action==='cancel-video'||action==='cancel-read'){target.disabled=true;try{await api(action==='cancel-video'?'/api/cancel-video':'/api/cancel-read',{});await refreshStatus();}catch(error){if(['no_read_running','no_video_running'].includes(error.message)){await recoverCancelledRead();return;}const r=reads.get(detailId);if(r)r.error=failure(error);refreshDetail();}return;}
     if(action==='video'){target.disabled=true;try{await api('/api/video',{id});videoStartedAt=Date.now();status={...status,job:{kind:'video',state:'running',startedAt:new Date().toISOString()}};if($('#video-progress'))$('#video-progress').innerHTML=videoProgress();$('#account').textContent=activity();}catch(error){notify(failure(error));target.disabled=false;}return;}
     if(action==='read')return requestRead(id,{retry:true});
     if(action==='update-app')return reloadUpdatedApp();
