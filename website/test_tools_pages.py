@@ -20,8 +20,8 @@ class ToolsTest(unittest.TestCase):
   self.assertEqual(row.count('<a '),1)
   self.assertIn('alt="" width="36" height="36"',row)
  def test_catalog_routes_packages_and_no_private_library(self):
-  data=json.loads((ROOT/'tools/catalog.json').read_text());self.assertEqual(len(data['items']),20)
-  self.assertEqual(len({x['slug'] for x in data['items']}),20)
+  data=json.loads((ROOT/'tools/catalog.json').read_text());self.assertEqual(len(data['items']),21)
+  self.assertEqual(len({x['slug'] for x in data['items']}),21)
   with tempfile.TemporaryDirectory() as tmp:
    out=Path(tmp);urls=publish_tools(ROOT,out)
    self.assertEqual(len(urls),22)
@@ -44,7 +44,7 @@ class ToolsTest(unittest.TestCase):
    self.assertIn('id="tool-search" type="search"',skills)
    self.assertIn('No match. Try a different task or clear the search.',skills)
    self.assertNotIn('http-equiv="refresh"',products)
-   self.assertEqual(products.count('data-entry='),4);self.assertEqual(skills.count('data-entry='),17)
+   self.assertEqual(products.count('data-entry='),5);self.assertEqual(skills.count('data-entry='),17)
    for category in SKILL_CATEGORIES:
     self.assertIn('data-skill-category="'+category+'"',skills)
    for item in data['items']:
