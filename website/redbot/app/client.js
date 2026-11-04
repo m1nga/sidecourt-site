@@ -1,7 +1,7 @@
 /* RedBot account-first web client. User text is never passed through translation. */
 (() => {
   'use strict';
-  const C = ShelfCore, R = RedBotCheck, APP_VERSION = '1.9.6';
+  const C = ShelfCore, R = RedBotCheck, APP_VERSION = '1.9.7';
   const $ = s => document.querySelector(s);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const stored = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } };
@@ -13,6 +13,7 @@
   let tab = 'home', goal = '', choice = '', query = '', filter = 'all', topic = '', collection = '', sort = 'position', limit = 60;
   let answer = null, working = false, ai = stored('redbot.semantic', false), aiReady = false, auto = stored('redbot.auto', true);
   let detailId = null, requestActive = false, lastJob = '', lastFetch = '', initial = true;
+  let libraryPage = null;
   let toastTimer, dialogFocus, db;
   const reads = new Map();
   let readEpoch = 0, statusSnapshot = {epoch:0,startedAt:0};
@@ -57,21 +58,26 @@
   }
   async function loadLibrary() {
     const scope = libraryKey(), cursor = data.remoteCursor;
-    const fresh = await api('/api/library' + (cursor ? '?cursor=' + encodeURIComponent(cursor) : ''));
+    const page = libraryPage?.scope === scope ? libraryPage.next : null;
+    const fresh = await api('/api/library?paged=1' + (cursor ? '&cursor=' + encodeURIComponent(cursor) : '') + (page ? '&page=' + encodeURIComponent(page) : ''));
     if (scope !== libraryKey()) return;
+    const complete = !fresh.next;
+    libraryPage = complete ? null : {scope,next:fresh.next};
+    const nextCursor = complete ? (typeof fresh.cursor === 'string' ? fresh.cursor : null) : data.remoteCursor;
     const changed = (fresh.items || []).length > 0;
-    const persist = changed || data.remoteCursor !== fresh.cursor || JSON.stringify(data.scan) !== JSON.stringify(fresh.scan);
+    const persist = changed || data.remoteCursor !== nextCursor || JSON.stringify(data.scan) !== JSON.stringify(fresh.scan);
     if (changed) data.items = C.mergeItems(data.items, fresh.items).items;
     data.scan = fresh.scan;
-    data.remoteCursor = typeof fresh.cursor === 'string' ? fresh.cursor : null;
+    data.remoteCursor = nextCursor;
     if (persist) await save();
     if (tab === 'library' && $('#cards')) { if (changed) cards(); updateProgress(); }
     else if (tab === 'home' && $('#goal-form')) updateProgress();
     else render();
     refreshDetail();
+    return complete;
   }
   function cancelSearch(){searchGeneration++;window.RedBotAI?.cancel();working=false;searchProgress='';}
-  function resetSearchScope(){reads.clear();cancelSearch();window.RedBotAI?.setScope(libraryKey());answer=null;searchCoverage=null;}
+  function resetSearchScope(){libraryPage=null;reads.clear();cancelSearch();window.RedBotAI?.setScope(libraryKey());answer=null;searchCoverage=null;}
   function coverageText(c){if(!c)return '';return c.complete?t('已检索全部 '+c.rows+' 条收藏与方法，共 '+c.indexedChunks+' 个文字片段；复用 '+c.cacheHits+' 个缓存片段。','Searched all '+c.rows+' saves and methods, '+c.indexedChunks+' text chunks; '+c.cacheHits+' cached chunks reused.')+(c.persistentCache?'':t(' 本次缓存未能保存，刷新后可能需要重新计算。',' Cache could not be saved; a reload may recompute it.')):t('正在检索 '+c.rows+' / '+c.totalRows+' 条；已处理 '+c.indexedChunks+' 个文字片段。','Searching '+c.rows+' / '+c.totalRows+' entries; '+c.indexedChunks+' text chunks processed.');}
   function searchStatus(){return `<div id="search-status" role="status" aria-live="polite"><p>${esc(searchProgress||coverageText(searchCoverage))}</p>${working?`<button type="button" data-action="cancel-search">${t('取消查找','Cancel search')}</button>`:''}</div>`;}
   function requirementsHTML(result){
@@ -232,6 +238,7 @@
   function scanLine() {
     const scan = status?.scan || data.scan;
     if (offline && credentials) return `<aside class="scan-panel warning" role="status"><strong>${t('暂时联系不上同步服务','Sync service is unavailable')}</strong><p>${t('已到达的收藏可以继续查看。恢复连接后再更新。','You can keep browsing saves already received. Updates will resume when the service returns.')}</p><button data-action="retry-status">${t('重新连接','Retry connection')}</button></aside>`;
+    if (libraryPage && credentials && !isScanning()) return `<aside class="scan-panel" role="status"><strong>${t('正在接收收藏内容','Receiving your saved content')}</strong><p>${t('已保存的内容可以先看，其余内容会陆续到达。','You can use content already saved. The rest will appear as it arrives.')}</p></aside>`;
     if (credentials && status?.state !== 'connected' && status?.job?.state === 'failed') return `<aside class="scan-panel warning" role="status"><strong>${t('连接需要恢复，已有收藏仍在','Restore the connection; your saves are kept')}</strong><p>${esc(failure(Error(status.job.error)))}</p><button data-action="connection">${t('恢复连接','Restore connection')}</button></aside>`;
     if (isScanning()) return `<aside class="scan-panel" role="status" aria-live="polite"><div class="scan-title"><span class="scan-pulse" aria-hidden="true"></span><strong>${t('收藏正在陆续到达','Your saves are arriving')}</strong><span>${elapsed()}</span></div><p>${t('本次已找到','Found this scan:')} <b>${status.progress?.seen ?? scan?.seen ?? 0}</b> ${t('条 · 已到达的可以先看，不用等全部完成。','saves · You can browse them while the rest arrive.')}</p><div class="scan-track" aria-hidden="true"></div><button data-action="cancel-sync">${t('先停在这里','Stop for now')}</button></aside>`;
     if (!scan) return '';
@@ -360,7 +367,7 @@
       }
       const stamp = String(status.revision ?? '') + ':' + status.scan?.at + ':' + status.scan?.readCount + ':' + (status.job?.state==='done'?status.job.id:'');
       if (stamp !== lastFetch && (status.revision !== undefined || status.scan || ['read','video'].includes(status.job?.kind)&&['done','failed','cancelled'].includes(status.job.state))) {
-        await loadLibrary();if(epoch!==readEpoch)return;lastFetch = stamp;
+        const complete=await loadLibrary();if(epoch!==readEpoch)return;if(complete)lastFetch = stamp;
       }
       await reconcileRead();
       if(status.job?.state==='failed' && status.job.id!==lastJob) {if(!['read','video'].includes(status.job.kind))notify(failure(Error(status.job.error)));lastJob=status.job.id;}
@@ -663,7 +670,7 @@
     $('#dialog-close').onclick=dismiss;
     $('#dialog').addEventListener('cancel',e=>{e.preventDefault();dismiss();});
     $('#dialog').addEventListener('click',e=>{if(e.target===$('#dialog')){const r=$('#dialog').getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dismiss();}});
-    $('#backup-file').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{if(f.size>45*1024*1024)throw Error();const raw=JSON.parse(await f.text());if(!Array.isArray(raw.items))throw Error();data.items=C.mergeItems(data.items,raw.items).items;data.annotations={...raw.annotations,...data.annotations};const cs=new Map(data.collections.map(c=>[c.id,c]));for(const c of raw.collections||[])if(!cs.has(c.id))cs.set(c.id,c);data.collections=[...cs.values()];if(!data.goalState?.plan&&raw.goalState)data.goalState=C.normalizeGoalState(raw.goalState);const gs=new Map(data.guides.map(g=>[g.id,g]));for(const g of raw.guides||[]){const n=C.normalizeGuide(g);if(n&&!gs.has(n.id))gs.set(n.id,n);}data.guides=[...gs.values()];data.remoteCursor=null;lastFetch='';await save();dismiss();tab='library';render();notify(t('备份已合并，已有笔记保留。','Backup merged. Existing notes are kept.'));}catch{notify(t('无法读取这份备份，请选择有效的 RedBot JSON 备份。','Could not read this backup. Choose a valid RedBot JSON backup.'));}e.target.value='';};
+    $('#backup-file').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{if(f.size>45*1024*1024)throw Error();const raw=JSON.parse(await f.text());if(!Array.isArray(raw.items))throw Error();data.items=C.mergeItems(data.items,raw.items).items;data.annotations={...raw.annotations,...data.annotations};const cs=new Map(data.collections.map(c=>[c.id,c]));for(const c of raw.collections||[])if(!cs.has(c.id))cs.set(c.id,c);data.collections=[...cs.values()];if(!data.goalState?.plan&&raw.goalState)data.goalState=C.normalizeGoalState(raw.goalState);const gs=new Map(data.guides.map(g=>[g.id,g]));for(const g of raw.guides||[]){const n=C.normalizeGuide(g);if(n&&!gs.has(n.id))gs.set(n.id,n);}data.guides=[...gs.values()];data.remoteCursor=null;libraryPage=null;lastFetch='';await save();dismiss();tab='library';render();notify(t('备份已合并，已有笔记保留。','Backup merged. Existing notes are kept.'));}catch{notify(t('无法读取这份备份，请选择有效的 RedBot JSON 备份。','Could not read this backup. Choose a valid RedBot JSON backup.'));}e.target.value='';};
     resetSearchScope();
     try {data=normalize(await cacheRead()||(!credentials?stored('shelf.library.v1',{}):{}));}catch{}
     // Browsing the saved device copy must not wait for any network request.
@@ -675,7 +682,7 @@
     // This is the product's foreground refresh, not an always-on task/daemon.
     const poll = async () => {
       if (!document.hidden && credentials) await refreshStatus();
-      setTimeout(poll,status?.job?.state==='running'||status?.state==='waiting'?1500:7000);
+      setTimeout(poll,libraryPage?100:status?.job?.state==='running'||status?.state==='waiting'?1500:7000);
     };
     setTimeout(poll,1500);
     document.addEventListener('visibilitychange',()=>{if(!document.hidden){void checkVersion();if(credentials)refreshStatus();}});
