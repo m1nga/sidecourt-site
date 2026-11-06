@@ -1,7 +1,7 @@
 /* RedBot saved-content client. User text is never passed through translation. */
 (() => {
   'use strict';
-  const C = ShelfCore, R = RedBotCheck, Q = RedBotQuick, APP_VERSION = '1.12.0';
+  const C = ShelfCore, R = RedBotCheck, Q = RedBotQuick, APP_VERSION = '1.12.1';
   const $ = s => document.querySelector(s);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const stored = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } };
@@ -13,7 +13,7 @@
   let tab = 'home', goal = '', choice = '', query = '', filter = 'all', topic = '', collection = '', sort = 'position', limit = 60;
   let answer = null, working = false, ai = stored('redbot.semantic', false), aiReady = false, auto = stored('redbot.auto', true);
   let detailId = null, requestActive = false, lastJob = '', lastFetch = '', initial = true;
-  let libraryPage = null, recentPending = true;
+  let libraryPage = null, recentPending = true, pollSoon = () => {};
   let toastTimer, dialogFocus, db;
   const reads = new Map();
   let readEpoch = 0, statusSnapshot = {epoch:0,startedAt:0};
@@ -227,6 +227,7 @@
       if (response.status === 401 && result.error === 'session_expired' && requestSession) await recoverExpiredConnection(requestSession);
       throw Error(result.error || 'service_unavailable');
     }
+    if(body && requestSession===credentials?.sessionId && typeof pollSoon==='function')pollSoon();
     return result;
   }
   function failure(error) {
@@ -537,7 +538,7 @@
   }
   async function refreshRecent() {
     if(!credentials)return connectionDialog();
-    const scope=libraryKey();
+    const scope=libraryKey();if(typeof pollSoon==='function')pollSoon();
     try{const result=await api('/api/recent',{});if(scope!==libraryKey())return;recentPending=false;if(!result.cached)status={...status,job:{id:result.jobId,kind:'recent',state:'running',startedAt:new Date().toISOString()}};updateProgress();}
     catch(error){if(error.message==='busy')recentPending=true;else{recentPending=false;notify(failure(error));}}
   }
@@ -594,7 +595,7 @@
       else if(status.readingQueue?.state==='running'&&!r.priorityRequested){r.priorityRequested=true;try{await api('/api/prioritize-read',{id});}catch(error){r.error=failure(error);refreshDetail();}}
       return;
     }
-    r.state='starting';r.baseline=readOutcome(item(id));r.requestStartedAt=Date.now();refreshDetail();
+    r.state='starting';r.baseline=readOutcome(item(id));r.requestStartedAt=Date.now();refreshDetail();if(typeof pollSoon==='function')pollSoon();
     try {
       const result=await api('/api/quick-read',{id});
       const job=result.job||result;
@@ -749,7 +750,7 @@
   async function requestInsight(id,goalValue=null,note=''){
     if(!credentials)return notify(t('连接账号后可使用内容理解。','Connect your account to use understanding.'));
     const scope=libraryKey(),kind=goalValue===null?'insight':'assistant',requestId=crypto.randomUUID(),startedAt=Date.now();
-    intelligence.set(id,{state:'running',kind,targetId:id,phase:'queued',requestId,startedAt});refreshIntelligence();
+    intelligence.set(id,{state:'running',kind,targetId:id,phase:'queued',requestId,startedAt});refreshIntelligence();if(typeof pollSoon==='function')pollSoon();
     try{
       const job=await api(kind==='insight'?'/api/insight':'/api/assistant',{id,requestId,...(goalValue===null?{fast:true}:{goal:goalValue,note})});
       if(scope!==libraryKey())return;
@@ -888,16 +889,25 @@
     void checkVersion();
     if(invitation&&!credentials)connectionDialog();
     if(credentials)await refreshStatus();
-    // This is the product's foreground refresh, not an always-on task/daemon.
+    // One foreground timer. A user action must wake an idle 30-second poll.
+    let pollTimer=null,polling=false;
     const poll = async () => {
-      if (!document.hidden && credentials){
-        if((!configValidated||offline)&&Date.now()-configCheckedAt>15000){try{await refreshConnectionConfig();}catch{}}
-        await refreshStatus();
+      if(polling)return;
+      polling=true;
+      try {
+        if (!document.hidden && credentials){
+          if((!configValidated||offline)&&Date.now()-configCheckedAt>15000){try{await refreshConnectionConfig();}catch{}}
+          await refreshStatus();
+        }
+      } finally {
+        polling=false;clearTimeout(pollTimer);
+        const pending=Array.from(intelligence.values()).some(j=>j.state==='running')||Array.from(reads.values()).some(r=>['queued','starting','running'].includes(r.state));
+        pollTimer=setTimeout(poll,libraryPage?100:pending||status?.job?.state==='running'||status?.aiJob?.state==='running'||status?.state==='waiting'?800:30000);
       }
-      setTimeout(poll,libraryPage?100:status?.job?.state==='running'||status?.aiJob?.state==='running'||status?.state==='waiting'?800:30000);
     };
-    setTimeout(poll,1500);
-    document.addEventListener('visibilitychange',()=>{if(!document.hidden){void checkVersion();if(credentials){recentPending=true;refreshStatus();}}});
+    pollSoon=()=>{clearTimeout(pollTimer);pollTimer=setTimeout(poll,100);};
+    pollSoon();
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden){void checkVersion();if(credentials){recentPending=true;pollSoon();}}});
     window.addEventListener('hashchange',()=>{
       const code=new URLSearchParams(location.hash.slice(1)).get('invite');
       if(code){invitation=code;history.replaceState(null,'',location.pathname+location.search);if(!credentials)connectionDialog();}
