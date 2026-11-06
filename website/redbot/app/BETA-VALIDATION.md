@@ -1,3 +1,15 @@
+# RedBot 1.12.0: recent saves first
+
+Opening or returning to the app and Refresh latest check the source’s first observed favorites page separately from the uncapped Scan all saves action. The homepage exposes three recent saves. Existing text and personal annotations remain usable while updates arrive.
+
+Opening an unread save first reads its text and returned comments. A short local Qwen request produces an overview and up to two source-supported methods. Video speech/OCR remains an explicit action; a caption never claims full-video coverage. Sources over 6,000 characters retain the complete chunked path. Missing methods remain missing. The entire library is not preprocessed.
+
+Two real-source trials on 2026-11-07, using an isolated copy of the owner’s authorized account, returned the recent source page in 4.3–6.6 seconds after verification. Selected text plus short understanding took 3.4 seconds for a 309-character video caption and 5.7 seconds for a 1,018-character text post. Fresh identity verification added 5.4–5.7 seconds. These are two host-side measurements, not a phone-network SLA or full-video timing. Host availability and source conditions still matter.
+
+Regression fixtures cover preservation of full-scan provenance, old saves and notes, changed-cookie identity rejection, deduplication, selected-video text without media processing, AI failure retaining text, evidence requirements, long-source fallback, late account responses and refresh metadata. The adapter patch applies to the pinned existing source; account cookies and private trials are excluded from releases.
+
+--- Previous validation ---
+
 # RedBot1.7 — invitation-only account test
 
 Checked 2026-11-03. Builder-operated checks, with one user-confirmed native sign-in; not independent research, all-account coverage or production readiness.
