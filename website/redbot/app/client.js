@@ -1,7 +1,7 @@
 /* RedBot account-first web client. User text is never passed through translation. */
 (() => {
   'use strict';
-  const C = ShelfCore, R = RedBotCheck, APP_VERSION = '1.10.3';
+  const C = ShelfCore, R = RedBotCheck, APP_VERSION = '1.10.4';
   const $ = s => document.querySelector(s);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const stored = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } };
@@ -639,7 +639,7 @@
   function videoHTML(x){
     if(x.type!=='video'&&!x.videoAnalysis)return '';
     const v=x.videoAnalysis,transcript=v?.transcript||[],frames=v?.frames||[];
-    const audioNames={transcribed:t('已转录','Transcribed'),no_speech_detected:t('未检测到语音','No speech detected')};
+    const audioNames={transcribed:t('已转录','Transcribed'),no_speech_detected:t('未检测到语音','No speech detected'),no_audio_track:t('视频没有音轨','Video has no audio track')};
     const frameNames={sampled_ocr:t('已均匀采样并读取画面文字','Uniform samples read with OCR'),ocr_setup_required:t('画面文字组件尚未准备好','On-screen text reader needs setup')};
     return `<section class="video-reading"><h3>${t('视频内容','Video content')}</h3><p>${t('按需读取语音与少量画面文字采样，不是完整视觉理解，也不鉴定真假。没有云端模型 token 账单，但会使用测试服务电脑的算力；长视频会分段处理。','Reads speech and sampled on-screen text on request. This is not full visual understanding or a truth check. No cloud-model token bill; processing uses the test host computer. Long videos are processed in chunks.')}</p>${v?`<p class="coverage-note">${t(v.complete?'本次处理完成；覆盖范围仍仅限下列语音与采样。':'本次只得到部分结果，不能视为读完视频。',v.complete?'Processing completed; coverage is limited to speech and samples below.':'Only partial results are available; the video has not been fully read.')} ${v.cached?t('复用相同版本的本机结果。','Reused a local result for the same version.'):''}</p><p>${t('语音：','Audio: ')}${esc(audioNames[v.coverage?.audio]||t('未完成','Not completed'))} · ${t('画面文字：','On-screen text: ')}${esc(frameNames[v.coverage?.frames]||t('未完成','Not completed'))}</p>${v.lastRefreshError?.retainedPrevious?`<p class="warning">${t('最近一次重新读取失败；下方保留上次成功结果，并非这次的新结果。','The latest refresh failed. Results below are from the previous successful read.')} ${esc(failure(Error(v.lastRefreshError.code)))}</p>`:''}${v.error?`<p class="warning">${esc(failure(Error(v.error)))}</p>`:''}${transcript.length?`<details><summary>${t('原始语音转录','Timestamped transcript')}</summary><p class="coverage-note">${t('自动转录可能听错，请对照画面文字或原视频核对。','Automatic transcripts may mishear speech. Check against on-screen text or the original video.')}</p>${transcript.map(t=>`<p><time>${timecode(t.start)}–${timecode(t.end)}</time> ${esc(t.text)}</p>`).join('')}</details>`:''}${frames.length?`<details><summary>${t('采样画面中的文字','Text from sampled frames')} (${frames.length})</summary>${frames.map(f=>`<p><time>${timecode(f.at)}</time> ${esc((f.text||[]).map(t=>t.text).join(' ')||t('此采样未读出文字','No text read in this sample'))}</p>`).join('')}</details>`:''}`:''}</section>`;
   }

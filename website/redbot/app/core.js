@@ -11,7 +11,7 @@ function normalizeVideoAnalysis(x){
  if(!x||typeof x!=='object')return null;
  const number=v=>Number.isFinite(Number(v))&&Number(v)>=0?Number(v):0;
  const text=v=>clean(v).slice(0,4000);
- const audio=['transcribed','no_speech_detected','video_tool_failed'],frames=['sampled_ocr','ocr_setup_required','video_tool_failed'];
+ const audio=['transcribed','no_speech_detected','no_audio_track','video_tool_failed'],frames=['sampled_ocr','ocr_setup_required','video_tool_failed'];
  return {pipeline:text(x.pipeline),durationSeconds:number(x.durationSeconds),localCompute:true,cloudCalls:0,visualUnderstanding:false,
   transcript:(Array.isArray(x.transcript)?x.transcript:[]).slice(0,20000).filter(v=>v&&typeof v.text==='string').map(v=>({start:number(v.start),end:number(v.end),text:text(v.text)})),
   frames:(Array.isArray(x.frames)?x.frames:[]).slice(0,12).filter(v=>v&&typeof v==='object').map(v=>({at:number(v.at),text:Array.isArray(v.text)?v.text.slice(0,200).filter(t=>t&&typeof t.text==='string').map(t=>({text:text(t.text),confidence:Math.min(1,number(t.confidence))})):null})),
