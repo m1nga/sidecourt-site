@@ -1,7 +1,7 @@
 /* RedBot account-first web client. User text is never passed through translation. */
 (() => {
   'use strict';
-  const C = ShelfCore, R = RedBotCheck, APP_VERSION = '1.10.0';
+  const C = ShelfCore, R = RedBotCheck, APP_VERSION = '1.10.1';
   const $ = s => document.querySelector(s);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const stored = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } };
@@ -336,7 +336,7 @@
     const q=status?.readingQueue, finished=data.items.filter(x=>x.type==='video'?x.videoAnalysis?.complete:['ready','empty'].includes(x.contentReadStatus)&&x.contentReadAt).length;
     const running=q?.state==='running', paused=q?.state==='paused', unread=data.items.length-finished;
     const title=running?t('正在读取全部收藏','Reading all saves'):paused?t(q.currentId?'当前这篇读完后暂停':'读取已暂停',q.currentId?'Finishing this save, then pausing':'Reading paused'):t(unread?'让收藏里的内容也能被找到':'全部收藏内容已读取',unread?'Make the content inside your saves searchable':'All saved content has been read');
-    const message=running||paused?t(`已读 ${q.done} / ${q.total} 条，剩余 ${q.remaining} 条。`,`Read ${q.done} / ${q.total}; ${q.remaining} remaining.`):t(`已读 ${finished} / ${data.items.length} 条。${unread?'正文和视频会逐篇读取，读好一篇就能用。':'现在可以直接搜索和查看。'}`,`Read ${finished} / ${data.items.length}. ${unread?'Post text and videos become available one at a time.':'Ready to search and browse.'}`);
+    const message=running||paused?t(`已读 ${finished} / ${data.items.length} 条，待完成 ${unread} 条。`,`Read ${finished} / ${data.items.length}; ${unread} still to complete.`):t(`已读 ${finished} / ${data.items.length} 条。${unread?'正文和视频会逐篇读取，读好一篇就能用。':'现在可以直接搜索和查看。'}`,`Read ${finished} / ${data.items.length}. ${unread?'Post text and videos become available one at a time.':'Ready to search and browse.'}`);
     return `<aside class="scan-panel content-reading" role="status"><strong>${title}</strong><p>${message}${q?.failed?t(` ${q.failed} 条需要重试。`,` ${q.failed} need another attempt.`):''}</p>${running?`<button data-action="pause-reading">${t('暂停读取','Pause reading')}</button>`:`${unread>(q?.failed||0)?`<button data-action="read-all" ${paused&&q.currentId?'disabled':''}>${t(paused?'继续读取':'读取全部内容',paused?'Continue reading':'Read all content')}</button>`:''}${q?.failed?` <button data-action="retry-all">${t('重试未读成功的','Retry unsuccessful reads')}</button>`:''}`}</aside>`;
   }
   function renderHome() {
