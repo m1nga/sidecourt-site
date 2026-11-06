@@ -1,7 +1,7 @@
 /* RedBot saved-content client. User text is never passed through translation. */
 (() => {
   'use strict';
-  const C = ShelfCore, R = RedBotCheck, Q = RedBotQuick, APP_VERSION = '1.11.0';
+  const C = ShelfCore, R = RedBotCheck, Q = RedBotQuick, APP_VERSION = '1.11.1';
   const $ = s => document.querySelector(s);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const stored = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } };
@@ -393,11 +393,21 @@
     if(['running','failed'].includes(intelligence.get(x.id)?.state)||[...intelligence.values()].some(j=>j.state==='running'))return;
     void requestInsight(x.id);
   }
+  async function copyText(value) {
+    const focused=document.activeElement, field=document.createElement('textarea');
+    field.value=value;field.readOnly=true;field.tabIndex=-1;
+    field.style.cssText='position:fixed;top:0;left:-9999px;opacity:0;font-size:16px';
+    let copied=false;
+    try{document.body.appendChild(field);field.focus({preventScroll:true});field.select();field.setSelectionRange(0,value.length);copied=document.execCommand?.('copy')===true;}
+    catch{}
+    finally{field.remove();focused?.focus?.({preventScroll:true});}
+    if(!copied)await navigator.clipboard.writeText(value);
+  }
   async function copyQuickAnswer(id) {
     const x=item(id);if(!x)return;
     const value=Q.handoff(x,goal,lang);
-    try{await navigator.clipboard.writeText(value);notify(t('已复制。粘贴到 Codex 或你常用的 AI，即可继续。','Copied. Paste into Codex or your usual AI to continue.'));}
-    catch{modal(`<h2>${t('复制给 AI','Copy for AI')}</h2><textarea id="quick-output" rows="10" readonly>${esc(value)}</textarea><button data-action="quick-download" data-id="${esc(id)}">${t('下载文本','Download text')}</button>`,'quick-copy');}
+    try{await copyText(value);notify(t('已复制。粘贴到 Codex 或你常用的 AI，即可继续。','Copied. Paste into Codex or your usual AI to continue.'));}
+    catch{modal(`<h2>${t('复制给 AI','Copy for AI')}</h2><p>${t('浏览器暂不允许自动复制。请复制下面已选中的文字，或下载文本。','This browser blocked automatic copying. Copy the selected text below, or download it.')}</p><textarea id="quick-output" rows="10" readonly>${esc(value)}</textarea><button data-action="quick-download" data-id="${esc(id)}">${t('下载文本','Download text')}</button>`,'quick-copy');$('#quick-output').focus();$('#quick-output').select();}
   }
   async function findStart(event) {
     event?.preventDefault(); goal = $('#goal')?.value.trim() || goal.trim();
@@ -822,7 +832,7 @@
     if(action==='sidecourt')return accountDialog();
     if(action==='account-check')return checkAccount({resume:true});
     if(action==='account-bind')return bindAccount();
-    if(action==='copy-brief'){try{await navigator.clipboard.writeText($('#brief-output').value);notify(t('已复制，可粘贴到项目里的工具。','Copied. Paste it into your assistant with the project open.'));}catch{notify(t('复制失败，可以下载文本。','Copy failed. Download the text instead.'));}return;}
+    if(action==='copy-brief'){try{await copyText($('#brief-output').value);notify(t('已复制，可粘贴到项目里的工具。','Copied. Paste it into your assistant with the project open.'));}catch{notify(t('复制失败，可以下载文本。','Copy failed. Download the text instead.'));}return;}
     if(action==='download-brief')return download($('#brief-output').value,'RedBot-build-brief.txt');
     if(action==='settings')return settings();
     if(action==='organize')return organize();
