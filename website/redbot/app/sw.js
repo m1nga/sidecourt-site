@@ -1,5 +1,5 @@
-const CACHE='redbot-shell-1.9.8';
-const FILES=['./','./index.html','./client.js','./client.css','./check.js','./text.js','./vendor/opencc/t2cn.js','./core.js','./ai.js','./ai-worker.js','./semantic-engine.mjs','./demo.js','./icon.svg','./manifest.webmanifest'];
+const CACHE='redbot-shell-1.10.0';
+const FILES=['./','./index.html','./client.js','./vendor/sidecourt-auth.js','./client.css','./check.js','./text.js','./vendor/opencc/t2cn.js','./core.js','./ai.js','./ai-worker.js','./semantic-engine.mjs','./demo.js','./icon.svg','./manifest.webmanifest'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES.map(f=>new Request(new URL(f,registration.scope),{cache:'reload'}))).then(()=>self.skipWaiting()))));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k.startsWith('redbot-shell-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',e=>{const u=new URL(e.request.url);if(u.origin!==location.origin||e.request.method!=='GET')return;

@@ -1,0 +1,9 @@
+{
+  "file": "sidecourt-auth.js",
+  "bytes": 223170,
+  "sha256": "290fce37022a74100b9a299b4b5cbed04c60c84c683f69b0b56fbcdc6bb40aaa",
+  "supabaseJs": "2.116.0",
+  "esbuild": "0.28.2",
+  "source": "web-build/account-entry.js",
+  "lock": "web-build/package-lock.json"
+}
