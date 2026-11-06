@@ -1,7 +1,7 @@
-/* RedBot account-first web client. User text is never passed through translation. */
+/* RedBot saved-content client. User text is never passed through translation. */
 (() => {
   'use strict';
-  const C = ShelfCore, R = RedBotCheck, APP_VERSION = '1.10.4';
+  const C = ShelfCore, R = RedBotCheck, Q = RedBotQuick, APP_VERSION = '1.11.0';
   const $ = s => document.querySelector(s);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const stored = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } };
@@ -20,7 +20,7 @@
   let latestVersion = '', versionCheckedAt = 0, aiLoadGeneration = 0;
   let onboarding = false, offline = false, startedAt = 0, connectionError = '';
   let bootstrapPending, configValidated = false, configCheckedAt=0;
-  let sidecourtSession=null, accountPending=false;
+  let sidecourtSession=null, accountPending=false, ideaLimit=3;
   const intelligence=new Map(), consumedJobs=new Set();
   let searchGeneration=0, searchProgress='', searchCoverage=null, videoStartedAt=0;
   let invitation = new URLSearchParams(location.hash.slice(1)).get('invite') || '';
@@ -70,10 +70,11 @@
     const persist = changed || data.remoteCursor !== nextCursor || JSON.stringify(data.scan) !== JSON.stringify(fresh.scan);
     if (changed) {
       data.items = C.mergeItems(data.items, fresh.items).items;
-      cancelSearch(); answer=null; searchCoverage=null;
+      const previousAnswer=answer;cancelSearch(); answer=null; searchCoverage=null;
+      if(previousAnswer&&tab==='home'&&typeof goal==='string'&&goal.trim())answer=ideaAnswer(previousAnswer,true);
       if ($('#answer')) $('#answer').innerHTML='';
       if ($('#search-status')) $('#search-status').outerHTML=searchStatus();
-      const submit=$('#goal-form button');if(submit){submit.disabled=false;submit.textContent=t('帮我找个起点 →','Find a starting point →');}
+      const submit=$('#goal-form button');if(submit){submit.disabled=false;submit.textContent=t('找内容和方法 →','Find ideas and methods →');}
     }
     data.scan = fresh.scan;
     data.remoteCursor = nextCursor;
@@ -82,6 +83,7 @@
     else if (tab === 'home' && $('#goal-form')) updateProgress();
     else render();
     refreshDetail();
+    if(tab==='home'&&answer)refreshQuickAnswer();
     return complete;
   }
   function cancelSearch(){searchGeneration++;window.RedBotAI?.cancel();working=false;searchProgress='';}
@@ -101,7 +103,9 @@
     else localStorage.removeItem('redbot.connection');
   }
   function apiURL() { return credentials?.api || config.api || ''; }
+  function usesSideCourtAccount() { return config.sidecourtAuth === true || !!credentials?.accountUser; }
   function accountDialog(){
+    if(!usesSideCourtAccount())return connectionDialog();
     const who=sidecourtSession?.user;
     modal(`<h2>${t('一个 SideCourt 账号，就够了','One SideCourt account')}</h2>${who?`<p>${esc(who.email||t('你已登录 SideCourt','Signed in to SideCourt'))}</p>${credentials&&!credentials.accountUser?`<p>${t('将当前的小红书连接关联到这个账号，换设备时就能找回这份收藏。','Link this Xiaohongshu connection to find your saves on another device.')}</p><button class="primary" data-action="account-bind">${t('关联当前收藏','Link this library')}</button>`:`<p>${t('继续使用同一账号的 RedBot 收藏。','Continue with your RedBot library.')}</p><button class="primary" data-action="account-check">${t('继续 →','Continue →')}</button>`}`:`<p>${t('使用 SideCourt 的账号登录或注册。完成后回到这里，不需要再注册 RedBot。','Sign in or join SideCourt. Return here afterwards; no separate RedBot registration is needed.')}</p><a class="button primary" href="https://sidecourt.space/sign-in" target="_blank" rel="noopener noreferrer">${t('去 SideCourt 登录 / 注册 ↗','Sign in / join SideCourt ↗')}</a><button data-action="account-check">${t('我已登录，继续','I have signed in — continue')}</button>`}<p id="account-error" class="error" role="alert"></p>`, 'sidecourt');
   }
@@ -114,6 +118,13 @@
     if($('#sc-account'))$('#sc-account').textContent=session?t('SideCourt 账号','SideCourt account'):t('登录','Sign in');
   }
   async function initAccount(){
+    $('#sc-account').hidden=!usesSideCourtAccount();
+    if(!usesSideCourtAccount()){sidecourtSession=null;return;}
+    // Load the optional legacy identity integration only for a configured host or
+    // an already-linked library. Standalone visitors never read a SideCourt login.
+    if(!window.RedBotAccount){
+      try{await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='vendor/sidecourt-auth.js?v=2.116.0';script.onload=resolve;script.onerror=reject;document.head.appendChild(script);});}catch{return;}
+    }
     if(!window.RedBotAccount)return;
     try{await accountChanged(await RedBotAccount.session());}catch{}
     RedBotAccount.onChange(async(event,session)=>{
@@ -202,11 +213,11 @@
   }
   async function api(path, body) {
     const root = apiURL(), requestSession = credentials?.sessionId;
-    if(window.RedBotAccount){try{sidecourtSession=await RedBotAccount.session();}catch{}}
+    if(usesSideCourtAccount()&&window.RedBotAccount){try{sidecourtSession=await RedBotAccount.session();}catch{}}
     if (!configValidated || !root) throw Error('connection_config_unavailable');
     let response;
     try {
-      response = await fetch(root + path, {method:body ? 'POST' : 'GET', credentials:'omit', referrerPolicy:'no-referrer', headers:{...(credentials ? {Authorization:'Bearer ' + credentials.token} : {}), ...(sidecourtSession?.access_token?{'X-SideCourt-Token':sidecourtSession.access_token}:{}), ...(body ? {'Content-Type':'application/json'} : {})}, ...(body ? {body:JSON.stringify(body)} : {}), signal:AbortSignal.timeout(path.split('?')[0]==='/api/library'?60000:15000), cache:'no-store'});
+      response = await fetch(root + path, {method:body ? 'POST' : 'GET', credentials:'omit', referrerPolicy:'no-referrer', headers:{...(credentials ? {Authorization:'Bearer ' + credentials.token} : {}), ...(usesSideCourtAccount()&&sidecourtSession?.access_token?{'X-SideCourt-Token':sidecourtSession.access_token}:{}), ...(body ? {'Content-Type':'application/json'} : {})}, ...(body ? {body:JSON.stringify(body)} : {}), signal:AbortSignal.timeout(path.split('?')[0]==='/api/library'?60000:15000), cache:'no-store'});
     } catch { throw Error('service_offline'); }
     let result;
     try { result = await response.json(); } catch { throw Error('service_offline'); }
@@ -306,7 +317,7 @@
     $('#settings').ariaLabel = t('设置与备份','Settings and backups');
     $('#foot-copy').textContent = t('收藏是为了用上的。','Saved for a reason.') + ' · v' + APP_VERSION;
     renderVersion();
-    $('#sidecourt-link').textContent = t('SideCourt 上的小工具 ↗','A small tool on SideCourt ↗');
+    $('#sidecourt-link').textContent = t('在 SideCourt 发现更多作品 ↗','Discover more work on SideCourt ↗');
     if (tab === 'home') renderHome(); else renderLibrary();
   }
   function isScanning() { return status?.job?.state === 'running' && status.job.kind === 'scan'; }
@@ -328,9 +339,14 @@
   }
   function updateProgress() {
     const region = $('#scan-progress');
-    if (region) region.innerHTML = scanLine() + readingLine();
+    if (region) region.innerHTML = progressHTML();
     const refresh = $('.library-heading [data-action="sync"]');
     if (refresh) refresh.disabled = status?.job?.state === 'running';
+  }
+  function progressHTML() {
+    const ready=data.items.length&&data.items.every(x=>x.type==='video'?x.videoAnalysis?.complete:['ready','empty'].includes(x.contentReadStatus)&&x.contentReadAt);
+    if(tab==='home'&&ready&&status?.state==='connected'&&!offline&&status?.job?.state!=='running')return `<p class="sync-line">${t('收藏已就绪','Your saves are ready')}<button data-action="sync">${t('更新收藏','Refresh saves')} ↻</button></p>`;
+    return scanLine()+readingLine();
   }
   function readingLine() {
     if(!credentials || !data.items.length)return '';
@@ -342,26 +358,55 @@
   }
   function renderHome() {
     const has = data.items.some(x=>!annotation(x.id).trashed);
-    $('#main').innerHTML = `<section class="intro ${has?'compact':''}"><p class="eyebrow">${t('少找一会儿，多用一点。','LESS SEARCHING. MORE DOING.')}</p><h1>${has?t('今天，想做点什么？','What do you want to do?'):t('好东西收藏了，<br>然后呢？','You saved something good.<br>What next?')}</h1><p class="lead">${has?t('说说你现在的问题。从自己的收藏里，找一个有用的起点。','Describe your goal. Find a useful starting point in your own saves.'):t('连接小红书，把收藏找回来。需要时，知道看哪篇、信什么、怎么用。','Connect Xiaohongshu. Find the save you need, check the claims, and put the idea to use.')}</p></section>
-    ${has?`<form id="goal-form" class="goal-form"><label class="sr-only" for="goal">${t('你现在想做什么','Your current goal')}</label><textarea id="goal" rows="2" maxlength="1000" placeholder="${t('比如：我想让产品首页更简洁，不知道从哪改','For example: make my product homepage less cluttered')}">${esc(goal)}</textarea><button class="primary" ${working?'disabled':''}>${working?t('正在找…','Looking…'):t('帮我找个起点 →','Find a starting point →')}</button></form><div class="under-goal"><button data-action="ai">${ai?'✦ ':''}${t(ai?'语义搜索已开':'开启语义搜索',ai?'Meaning search on':'Enable meaning search')}</button><button data-action="library">${t('或者，直接翻收藏','Or browse your saves')} ↗</button></div>${searchStatus()}${data.goalState?.plan?.goal&&!goal?`<button class="saved-plan" data-action="resume"><small>${t('上次留下的事','PICK UP WHERE YOU LEFT OFF')}</small><strong>${esc(data.goalState.plan.goal)}</strong><span>↗</span></button>`:''}<div id="answer">${answerHTML()}</div><div id="scan-progress">${scanLine()}</div>`:
+    $('#main').innerHTML = `<section class="intro ${has?'compact':''}"><p class="eyebrow">${t('少找一会儿，多用一点。','LESS SEARCHING. MORE DOING.')}</p><h1>${has?t('把想到的事，做起来。','Put your idea to work.'):t('好东西收藏了，<br>然后呢？','You saved something good.<br>What next?')}</h1><p class="lead">${has?t('说个想法。找回相关收藏和方法，直接交给 AI。','Describe an idea. Find relevant saves and methods, ready for your AI.'):t('连接小红书，把收藏找回来。需要时，知道看哪篇、信什么、怎么用。','Connect Xiaohongshu. Find the save you need, check the claims, and put the idea to use.')}</p></section>
+    ${has?`<form id="goal-form" class="goal-form"><label class="sr-only" for="goal">${t('你现在想做什么','Your current goal')}</label><textarea id="goal" rows="2" maxlength="1000" placeholder="${t('比如：我想让产品首页更简洁，不知道从哪改','For example: make my product homepage less cluttered')}">${esc(goal)}</textarea><button class="primary" ${working?'disabled':''}>${working?t('正在找…','Looking…'):t('找内容和方法 →','Find ideas and methods →')}</button></form><div class="under-goal"><span>${data.items.filter(x=>!annotation(x.id).trashed).length} ${t('条自己的收藏','of your saves')}</span><button data-action="library">${t('查看全部收藏','Browse all saves')} ↗</button></div>${searchStatus()}${data.goalState?.plan?.goal&&!goal?`<button class="saved-plan" data-action="resume"><small>${t('上次留下的事','PICK UP WHERE YOU LEFT OFF')}</small><strong>${esc(data.goalState.plan.goal)}</strong><span>↗</span></button>`:''}<div id="answer">${answerHTML()}</div><div id="scan-progress">${progressHTML()}</div>`:
     `<div class="paper-stack" aria-hidden="true"><div class="paper back"><i></i><i></i><i></i></div><div class="paper front"><span>↗</span><p>${t('留给下一次<br>刚好需要的自己。','For the moment<br>you need it.')}</p><i></i></div></div><div class="welcome"><button class="primary" data-action="connection">${t('连接我的小红书 →','Connect my Xiaohongshu →')}</button><p>${t('登录后扫描收藏，无需上传文件。','Sign in to scan your saves. No file upload.')}</p><button class="quiet" data-action="demo">${t('先用示例试一试','Explore an example first')}</button></div>`}`;
     $('#goal-form')?.addEventListener('submit', findStart);
-    $('#goal')?.addEventListener('input', e=>{cancelSearch();goal=e.target.value;choice='';answer=null;if($('#answer'))$('#answer').innerHTML='';if($('#search-status'))$('#search-status').outerHTML=searchStatus();const submit=$('#goal-form button');if(submit){submit.disabled=false;submit.textContent=t('帮我找个起点 →','Find a starting point →');}});
+    $('#goal')?.addEventListener('input', e=>{cancelSearch();goal=e.target.value;choice='';answer=null;if($('#answer'))$('#answer').innerHTML='';if($('#search-status'))$('#search-status').outerHTML=searchStatus();const submit=$('#goal-form button');if(submit){submit.disabled=false;submit.textContent=t('找内容和方法 →','Find ideas and methods →');}});
+  }
+  function ideaAnswer(preferred=null,strict=false) {
+    const matches=Q.search(data.items,data,goal);
+    const selected=matches.find(r=>r.source.id===preferred?.source?.id)||(!strict&&['ready','needs_reading'].includes(preferred?.status)?preferred:null)||matches[0];
+    if(!selected)return (!strict&&preferred)||C.chooseStart(data.items,data.guides,data,goal,choice);
+    const unique=[selected,...matches.filter(r=>r.source.id!==selected.source?.id)];
+    return {...selected,matches:unique,goal};
   }
   function answerHTML() {
     if (!answer) return '';
-    if (answer.status === 'clarify') return `<section class="answer"><p class="eyebrow">${t('先缩小一点范围','ONE QUICK DETAIL')}</p><h2>${t('你想先解决哪一件事？','Which part comes first?')}</h2>${!answer.options.length?`<p>${t('再具体一点：想改善哪个动作、做出什么结果？','What specific change or outcome do you want?')}</p>`:''}<div class="actions">${answer.options.map(o=>`<button data-action="choice" data-choice="${esc(o.choice)}">${esc(lang==='zh'?choices[o.choice]||o.label:o.label)}</button>`).join('')}</div></section>`;
-    if (!['ready','needs_reading'].includes(answer.status)) return `<section class="answer"><h2>${t('这次还没有足够合适的收藏。','No strong starting point yet.')}</h2><p>${t('已有文字还不足以支持这些要求。可以读取相关收藏的正文，或补充可靠来源；没有合适证据时，RedBot 不会勉强推荐。','The saved text does not establish these requirements. Read a related source or add reliable evidence; RedBot will not force a recommendation.')}</p>${requirementsHTML(answer)}<button data-action="library">${t('看看已有收藏','Browse my saves')} →</button></section>`;
-    const x = answer.source, g = answer.guide, take = x ? R.shortTake(x) : null;
-    return `<article class="answer"><p class="eyebrow">${answer.status==='needs_reading'?t('先确认内容','READ BEFORE RELYING ON IT'):t('先看这一篇','START HERE')}</p><h2>${esc(x?.title||g?.title)}</h2><p class="source-line">${esc(x?.author||'')} ${answer.semantic?t('· 按语义匹配','· Matched by meaning'):t('· 根据收藏中的文字匹配','· Matched from saved text')}</p>${take?.lead?`<blockquote>${esc(take.lead)}</blockquote>`:`<p>${t('目前只有标题。读到正文后，才能判断如何用在你的问题上。','Only the title is available. Read the source to see how it applies.')}</p>`}${g?`<p>${esc(g.method)}</p>`:''}${requirementsHTML(answer)}<div class="actions"><button class="primary" data-action="detail" data-id="${esc(x?.id||'')}">${t('看重点与条件 →','Read the useful part →')}</button>${answer.status==='ready'?`<button data-action="keep">${t('留作下一步','Keep this plan')}</button>`:''}<button class="quiet" data-action="skip">${t('不太适合','Not a fit')}</button></div></article>`;
+    if (answer.status === 'clarify') return `<section class="answer"><h2>${t('还想找哪方面的内容？','What would you like to find?')}</h2><div class="actions">${answer.options.map(o=>`<button data-action="choice" data-choice="${esc(o.choice)}">${esc(lang==='zh'?choices[o.choice]||o.label:o.label)}</button>`).join('')}</div></section>`;
+    if (!['ready','needs_reading'].includes(answer.status)) return `<section class="answer"><h2>${t('还没找到能支持这个想法的内容。','No supporting save found yet.')}</h2><p>${t('可以换一个关键词，或看看已有收藏。没有内容依据时，不会勉强给出方法。','Try another keyword or browse your saves. A method needs supporting source content.')}</p>${requirementsHTML(answer)}<button data-action="library">${t('看看已有收藏','Browse my saves')} →</button></section>`;
+    const x=answer.source,g=answer.guide,take=x?R.shortTake(x):null,insight=x?.insight;
+    const matches=answer.matches||[],others=matches.filter(r=>r.source?.id!==x?.id),hasText=!!insight||take?.sourceKind&&take.sourceKind!=='none';
+    return `<article class="answer quick-answer"><p class="eyebrow">${t('和这个想法有关','FOR YOUR IDEA')}</p><h2>${esc(x?.title||g?.title)}</h2><p class="source-line">${esc(x?.author||'')}${matches.length>1?' · '+t('找到 '+matches.length+' 条相关收藏',matches.length+' relevant saves'):''}</p>
+      <div class="quick-content">${insight?`<p class="summary-lead">${esc(simple(insight.overview))}</p>${insight.methods?.length?`<h3>${t('可以借用的方法','Methods to draw on')}</h3><ol>${insight.methods.slice(0,3).map(m=>`<li>${esc(simple(m.text))}</li>`).join('')}</ol>`:''}${insight.gap&&!insight.methods?.length?`<p class="muted">${esc(simple(insight.gap))}</p>`:''}<p class="source-caption">${t('根据已读原文整理，作者经验仍需结合你的情况判断。','Organized from the source. Check how the author’s experience fits your situation.')}</p>`:take?.lead?`<p class="source-caption">${t('先看原文里的内容','FROM THE SAVED SOURCE')}</p><blockquote>${esc(take.lead)}</blockquote><p class="muted">${t('这是原文摘录，尚未生成内容总结。','This is a source excerpt; a summary is not ready yet.')}</p>`:`<p>${t('目前只有标题，读到内容后才能总结方法。','Only the title is available. Read the content before deriving a method.')}</p>`}</div>
+      ${x?`<div id="quick-progress">${intelligenceProgress(x.id)}</div>`:''}${requirementsHTML(answer)}
+      <div class="actions">${x?hasText?`<button class="primary" data-action="quick-copy" data-id="${esc(x.id)}">${t('复制给 AI','Copy for AI')} ↗</button><button data-action="detail" data-id="${esc(x.id)}">${t('原文与详情','Source and details')}</button>`:`<button class="primary" data-action="detail" data-id="${esc(x.id)}">${t('读取内容 →','Read content →')}</button>`:''}<button class="quiet" data-action="skip">${t('不太相关','Not relevant')}</button></div>${hasText?`<p class="handoff-hint">${t('带上你的想法和这篇内容，粘贴到 Codex 或常用 AI 即可。','Includes your idea and this source. Paste into Codex or your usual AI.')}</p>`:''}
+      ${others.length?`<section class="quick-related"><h3>${t('也可以看看','Other relevant saves')}</h3>${others.slice(0,ideaLimit-1).map(r=>`<button data-action="quick-select" data-id="${esc(r.source.id)}"><strong>${esc(r.source.title)}</strong><span>${esc(r.source.author||'')} ↗</span></button>`).join('')}${others.length>ideaLimit-1?`<button class="quiet" data-action="quick-more">${t('再看 '+(others.length-ideaLimit+1)+' 条相关收藏','Show '+(others.length-ideaLimit+1)+' more saves')}</button>`:''}</section>`:''}</article>`;
+  }
+  function refreshQuickAnswer() {
+    if(tab!=='home'||!answer||!$('#answer'))return;
+    if(answer.source?.id){const current=item(answer.source.id);if(current)answer.source=current;}
+    $('#answer').innerHTML=answerHTML();
+  }
+  function prepareQuickAnswer() {
+    const x=answer?.source;if(tab!=='home'||!x||!credentials||x.insight||!readable(x))return;
+    if(['running','failed'].includes(intelligence.get(x.id)?.state)||[...intelligence.values()].some(j=>j.state==='running'))return;
+    void requestInsight(x.id);
+  }
+  async function copyQuickAnswer(id) {
+    const x=item(id);if(!x)return;
+    const value=Q.handoff(x,goal,lang);
+    try{await navigator.clipboard.writeText(value);notify(t('已复制。粘贴到 Codex 或你常用的 AI，即可继续。','Copied. Paste into Codex or your usual AI to continue.'));}
+    catch{modal(`<h2>${t('复制给 AI','Copy for AI')}</h2><textarea id="quick-output" rows="10" readonly>${esc(value)}</textarea><button data-action="quick-download" data-id="${esc(id)}">${t('下载文本','Download text')}</button>`,'quick-copy');}
   }
   async function findStart(event) {
     event?.preventDefault(); goal = $('#goal')?.value.trim() || goal.trim();
     if (!goal || working) return;
     const generation=++searchGeneration,scope=libraryKey(),requestedGoal=goal;
     const current=()=>generation===searchGeneration&&scope===libraryKey()&&requestedGoal===goal;
-    working=true;searchCoverage=null;searchProgress=ai?t('正在准备此设备上的语义匹配…','Preparing on-device meaning search…'):'';render();
-    let next=C.chooseStart(data.items,data.guides,data,goal,choice);
+    ideaLimit=3;working=true;searchCoverage=null;searchProgress=ai?t('正在准备此设备上的语义匹配…','Preparing on-device meaning search…'):'';render();
+    let next=ideaAnswer(C.chooseStart(data.items,data.guides,data,goal,choice));
+    if(current()){answer=next;refreshQuickAnswer();}
     try {
       if(ai&&!choice){
         RedBotAI.setScope(scope);
@@ -369,11 +414,11 @@
         if(!aiReady){await RedBotAI.load();if(!current())return;aiReady=true;}
         const result=await RedBotAI.search(requestedGoal,data.items,data.guides,data,{scope});
         if(!current())return;searchCoverage=result.coverage;searchProgress='';
-        next=C.semanticStart(data.items,data.guides,data,requestedGoal,result.ranked);
+        next=ideaAnswer(C.semanticStart(data.items,data.guides,data,requestedGoal,result.ranked));
       }
       if(current())answer=next;
     }catch(error){if(current()){answer=next;searchProgress=t('语义匹配未完成，下面使用基础匹配；不代表已覆盖全库。','Meaning search did not finish. Basic matching is shown below; full semantic coverage is not established.');}}
-    finally{if(current()){working=false;render();}}
+    finally{if(current()){working=false;render();prepareQuickAnswer();$('#answer')?.scrollIntoView({block:'start',behavior:'smooth'});}}
   }
   function filtered() {
     const view = ['trash','archived','favorite','unread'].includes(filter)?filter:'all';
@@ -388,13 +433,13 @@
     $('#cards').querySelectorAll('img').forEach(img=>img.onerror=()=>img.hidden=true);
   }
   function renderLibrary() {
-    $('#main').innerHTML = `<section class="library-heading"><div><p class="eyebrow">${t('你的积累，随时可用。','GOOD FINDS, WITHIN REACH.')}</p><h1>${t('我的收藏','My saves')}</h1></div><button data-action="sync">${t('刷新收藏 ↻','Refresh ↻')}</button></section><div id="scan-progress">${scanLine()}</div><div class="library-search"><label class="sr-only" for="search">${t('搜索收藏','Search saves')}</label><input id="search" type="search" placeholder="${t('搜关键词、笔记或作者…','Search words, notes, or authors…')}" value="${esc(query)}"><button data-action="organize">${t('整理','Organize')}</button></div><div class="filters"><select id="filter" aria-label="${t('阅读状态','Reading status')}">${[['all',t('全部','Everything')],['unread',t('还没看','Unread')],['favorite',t('常用','Favorites')],['content',t('有文字内容','With text')],['archived',t('已归档','Archived')],['trash',t('回收站','Trash')]].map(([v,l])=>`<option value="${v}" ${filter===v?'selected':''}>${l}</option>`).join('')}</select><select id="topic" aria-label="${t('主题','Topic')}"><option value="">${t('所有主题','All topics')}</option>${C.TOPICS.map(v=>`<option value="${esc(v)}" ${topic===v?'selected':''}>${esc(label(v))}</option>`).join('')}</select><select id="collection" aria-label="${t('合集','Collection')}"><option value="">${t('所有合集','All collections')}</option>${data.collections.map(c=>`<option value="${esc(c.id)}" ${collection===c.id?'selected':''}>${esc(c.name)}</option>`).join('')}</select><select id="sort" aria-label="${t('排序','Sort')}"><option value="position">${t('收藏顺序','Saved order')}</option><option value="title" ${sort==='title'?'selected':''}>${t('标题顺序','Title')}</option><option value="recent" ${sort==='recent'?'selected':''}>${t('最近加入','Recently added')}</option></select></div><div id="result-count" class="result-count"></div><section id="cards" class="cards"></section><button id="more" data-action="more"></button>`;
+    $('#main').innerHTML = `<section class="library-heading"><div><p class="eyebrow">${t('你的积累，随时可用。','GOOD FINDS, WITHIN REACH.')}</p><h1>${t('我的收藏','My saves')}</h1></div><button data-action="sync">${t('刷新收藏 ↻','Refresh ↻')}</button></section><div id="scan-progress">${progressHTML()}</div><div class="library-search"><label class="sr-only" for="search">${t('搜索收藏','Search saves')}</label><input id="search" type="search" placeholder="${t('搜关键词、笔记或作者…','Search words, notes, or authors…')}" value="${esc(query)}"><button data-action="organize">${t('整理','Organize')}</button></div><div class="filters"><select id="filter" aria-label="${t('阅读状态','Reading status')}">${[['all',t('全部','Everything')],['unread',t('还没看','Unread')],['favorite',t('常用','Favorites')],['content',t('有文字内容','With text')],['archived',t('已归档','Archived')],['trash',t('回收站','Trash')]].map(([v,l])=>`<option value="${v}" ${filter===v?'selected':''}>${l}</option>`).join('')}</select><select id="topic" aria-label="${t('主题','Topic')}"><option value="">${t('所有主题','All topics')}</option>${C.TOPICS.map(v=>`<option value="${esc(v)}" ${topic===v?'selected':''}>${esc(label(v))}</option>`).join('')}</select><select id="collection" aria-label="${t('合集','Collection')}"><option value="">${t('所有合集','All collections')}</option>${data.collections.map(c=>`<option value="${esc(c.id)}" ${collection===c.id?'selected':''}>${esc(c.name)}</option>`).join('')}</select><select id="sort" aria-label="${t('排序','Sort')}"><option value="position">${t('收藏顺序','Saved order')}</option><option value="title" ${sort==='title'?'selected':''}>${t('标题顺序','Title')}</option><option value="recent" ${sort==='recent'?'selected':''}>${t('最近加入','Recently added')}</option></select></div><div id="result-count" class="result-count"></div><section id="cards" class="cards"></section><button id="more" data-action="more"></button>`;
     cards(); updateProgress();
     $('#search').oninput = e=>{cancelSearch();query=e.target.value;limit=60;cards();};
     for (const name of ['filter','topic','collection','sort']) $('#'+name).onchange=e=>{if(name==='filter')filter=e.target.value;if(name==='topic')topic=e.target.value;if(name==='collection')collection=e.target.value;if(name==='sort')sort=e.target.value;limit=60;cards();};
   }
   function connectionDialog() {
-    if(!credentials&&!sidecourtSession&&config.sidecourtAuth!==false)return accountDialog();
+    if(!credentials&&!sidecourtSession&&config.sidecourtAuth===true)return accountDialog();
     const running = status?.job?.state === 'running', connected = status?.state === 'connected';
     const scan = status?.scan || data.scan;
     let content = '';
@@ -419,7 +464,7 @@
         await refreshConnectionConfig();
         const session = await api('/api/session', {invite:code,consent});
         const apiRoot = apiURL();
-        rememberConnection({...session,api:apiRoot,accountUser:sidecourtSession?.user?.id});
+        rememberConnection({...session,api:apiRoot,...(config.sidecourtAuth===true&&sidecourtSession?.user?.id?{accountUser:sidecourtSession.user.id}:{})});
         data = normalize({items:[],annotations:{},collections:[],guides:[],goalState:{}});
         goal=''; answer=null; lastFetch=''; onboarding=true; status={state:'needs_sign_in'};
         await startLogin({configReady:true}); render();
@@ -652,7 +697,7 @@
     modal(`<button id="dialog-update" data-action="update-app" hidden></button>
       <div class="detail-head"><p class="eyebrow">${esc(label(a.category||x.category))}</p><h2>${esc(x.title)}</h2><p class="muted">${esc(x.author)}</p></div>
       <section class="useful-summary"><h3>${t('内容与方法','Overview and method')}</h3>
-        ${insight?`<p class="summary-lead">${esc(simple(insight.overview))}</p>${insight.methods.length?`<ol>${insight.methods.map(p=>`<li>${esc(simple(p.text))}</li>`).join('')}</ol>`:''}${insight.gap?`<p class="muted">${esc(simple(insight.gap))}</p>`:''}<p class="source-caption">${t('根据已读取原文由 AI 整理','AI summary of the source already read')}</p>`:`<p>${readable(x)?t('正在提炼内容和方法…','Understanding the content and method…'):t('正在准备这篇的内容。','Preparing this save.')}</p>${take.lead?`<details><summary>${t('先看已读到的内容','Read the available source')}</summary><p>${esc(take.lead)}</p>${take.points.map(p=>`<p>${esc(p.text)}</p>`).join('')}</details>`:''}`}
+        ${insight?`<p class="summary-lead">${esc(simple(insight.overview))}</p>${insight.methods.length?`<ol>${insight.methods.map(p=>`<li>${esc(simple(p.text))}</li>`).join('')}</ol>`:''}${insight.gap&&!insight.methods?.length?`<p class="muted">${esc(simple(insight.gap))}</p>`:''}<p class="source-caption">${t('根据已读取原文由 AI 整理','AI summary of the source already read')}</p>`:`<p>${readable(x)?t('正在提炼内容和方法…','Understanding the content and method…'):t('正在准备这篇的内容。','Preparing this save.')}</p>${take.lead?`<details><summary>${t('先看已读到的内容','Read the available source')}</summary><p>${esc(take.lead)}</p>${take.points.map(p=>`<p>${esc(p.text)}</p>`).join('')}</details>`:''}`}
         <div id="intelligence-progress">${intelligenceProgress(id)}</div>
         ${readable(x)?`<button class="primary" data-action="brief" data-id="${esc(id)}">${t('用到我的事情里 →','Use this for my goal →')}</button>`:`<div id="source-progress">${readProgress(x)}</div>`}
       </section>
@@ -699,6 +744,8 @@
     }
   }
   function refreshIntelligence(){
+    refreshQuickAnswer();
+    prepareQuickAnswer();
     if($('#intelligence-progress')&&detailId)$('#intelligence-progress').innerHTML=intelligenceProgress(detailId);
     if($('#dialog').dataset.kind==='brief'&&detailId){
       const pending=intelligence.get(detailId), result=annotation(detailId).buildBrief?.result;
@@ -715,7 +762,7 @@
     refreshIntelligence();
   }
   function settings() {
-    modal(`<h2>${t('设置与我的数据','Settings and my data')}</h2><p>RedBot v${APP_VERSION}</p><button id="dialog-update" data-action="update-app" ${latestVersion?'':'hidden'}>${t('有新版本，保存并刷新','Update available — save and reload')}</button><p>${t('个人笔记和计划保存在这个浏览器。换设备前，先导出备份。','Your notes and plans stay in this browser. Export a backup before switching devices.')}</p><div class="setting"><span>${t('导出当前收藏、笔记与计划','Export this library, notes and plan')}</span><button data-action="export">${t('导出','Export')}</button></div><div class="setting"><span>${t('从 RedBot 备份恢复','Restore a RedBot backup')}</span><button data-action="import">${t('恢复备份','Restore')}</button></div><div class="setting"><span>${t('原有设备收藏与当前账号分别保管','Device saves stay separate from account saves')}</span><button data-action="device-copy">${t('查看设备副本','Device copy')}</button></div><div class="setting"><span>${t('添加一个链接（备用入口）','Add a link (optional)')}</span><button data-action="add">${t('添加','Add')}</button></div><p class="muted">${t('这里的归档、回收站和合集只整理 RedBot 副本，不会改动小红书。','Archiving, trash and collections only organize your RedBot copy. Xiaohongshu is unchanged.')}</p>`, 'settings');
+    modal(`<h2>${t('设置与我的数据','Settings and my data')}</h2><p>RedBot v${APP_VERSION}</p><button id="dialog-update" data-action="update-app" ${latestVersion?'':'hidden'}>${t('有新版本，保存并刷新','Update available — save and reload')}</button><p>${t('个人笔记和计划保存在这个浏览器。换设备前，先导出备份。','Your notes and plans stay in this browser. Export a backup before switching devices.')}</p><div class="setting"><span>${t('导出当前收藏、笔记与计划','Export this library, notes and plan')}</span><button data-action="export">${t('导出','Export')}</button></div><div class="setting"><span>${t('从 RedBot 备份恢复','Restore a RedBot backup')}</span><button data-action="import">${t('恢复备份','Restore')}</button></div><div class="setting"><span>${t('原有设备收藏与当前账号分别保管','Device saves stay separate from account saves')}</span><button data-action="device-copy">${t('查看设备副本','Device copy')}</button></div><div class="setting"><span>${t('添加一个链接（备用入口）','Add a link (optional)')}</span><button data-action="add">${t('添加','Add')}</button></div><div class="setting"><span>${t('不记得原词，也能找','Search beyond exact words')}</span><button data-action="ai">${t('搜索设置','Search settings')}</button></div><p class="muted">${t('这里的归档、回收站和合集只整理 RedBot 副本，不会改动小红书。','Archiving, trash and collections only organize your RedBot copy. Xiaohongshu is unchanged.')}</p>`, 'settings');
   }
   function organize() {
     modal(`<h2>${t('给这些收藏一个去处','A place for related saves')}</h2><form id="collection-form"><label for="collection-name">${t('新合集名称','New collection name')}</label><input id="collection-name" required maxlength="60" placeholder="${t('比如：下个产品、周末做饭','Next product, weekend recipes…')}"><button class="primary">${t('创建合集','Create collection')}</button></form><p class="muted">${t('打开任意收藏，在笔记区域选择合集。不会改变小红书中的分组。','Open a save and choose its collection below your note. This does not change Xiaohongshu folders.')}</p>`, 'organize');
@@ -765,6 +812,10 @@
     if(action==='update-app')return reloadUpdatedApp();
     if(action==='note'){data.annotations[id]={...a,note:$('#personal-note').value,category:$('#save-topic').value,...($('#save-collection')?{collections:$('#save-collection').value?[$('#save-collection').value]:[]}: {})};await save();notify(t('笔记已保存。','Note saved.'));render();return;}
     if(action==='repo-check'){target.disabled=true;const checks=await R.fetchProjects(R.githubProjects(x));data.annotations[id]={...annotation(id),projectChecks:checks};save();if(detailId===id&&$('#repo-results'))$('#repo-results').innerHTML=repoHTML(checks);target.disabled=false;return;}
+    if(action==='quick-copy')return copyQuickAnswer(id);
+    if(action==='quick-download')return download($('#quick-output').value,'RedBot-to-AI.txt');
+    if(action==='quick-select'){const selected=answer?.matches?.find(r=>r.source?.id===id);if(selected){cancelSearch();answer={...selected,matches:answer.matches,goal};refreshQuickAnswer();prepareQuickAnswer();}return;}
+    if(action==='quick-more'){ideaLimit+=6;refreshQuickAnswer();return;}
     if(action==='brief')return brief(id);
     if(action==='insight'){intelligence.delete(id);return requestInsight(id);}
     if(action==='retry-assistant'){const draft=annotation(id).buildBrief||{};return requestInsight(id,draft.goal||'',$('#include-note')?.checked?annotation(id).note||'':'');}
