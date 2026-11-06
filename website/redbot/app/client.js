@@ -1,7 +1,7 @@
 /* RedBot account-first web client. User text is never passed through translation. */
 (() => {
   'use strict';
-  const C = ShelfCore, R = RedBotCheck, APP_VERSION = '1.10.1';
+  const C = ShelfCore, R = RedBotCheck, APP_VERSION = '1.10.2';
   const $ = s => document.querySelector(s);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const stored = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } };
@@ -659,7 +659,7 @@
       <details class="detail-secondary source-material"><summary>${t('查看原文与读取范围','Source and reading coverage')}</summary>${readable(x)?`<div id="source-progress">${readProgress(x)}</div>`:''}${insight?`<details><summary>${t('整理依据','Summary evidence')}</summary><blockquote>${esc(insight.evidence)}</blockquote>${insight.methods.map(m=>`<blockquote>${esc(m.evidence)}</blockquote>`).join('')}</details>`:''}<a class="button" href="${esc(R.safeLink(x.url))}" target="_blank" rel="noopener noreferrer">${t('打开原文 ↗','Open original ↗')}</a>${commentsHTML(x)}${videoHTML(x)}<details class="full-source"><summary>${t('全部已保存文字','All saved text')}</summary><p class="prewrap">${esc(sourceText(x))||t('尚无正文。','No source text.')}</p></details></details>
       <details class="detail-secondary"><summary>${t('我的笔记与整理','My notes and organization')}</summary><label for="personal-note">${t('留给自己的笔记','A note to yourself')}</label><textarea id="personal-note" rows="3">${esc(a.note||'')}</textarea><label for="save-topic">${t('主题','Topic')}</label><select id="save-topic">${C.TOPICS.map(c=>`<option ${c===(a.category||x.category)?'selected':''} value="${esc(c)}">${esc(label(c))}</option>`).join('')}</select>${data.collections.length?`<label for="save-collection">${t('加入合集','Collection')}</label><select id="save-collection"><option value="">${t('不放入合集','No collection')}</option>${data.collections.map(c=>`<option value="${esc(c.id)}" ${(a.collections||[]).includes(c.id)?'selected':''}>${esc(c.name)}</option>`).join('')}</select>`:''}<div class="actions"><button data-action="note" data-id="${esc(id)}">${t('保存笔记','Save note')}</button><button data-action="read-mark" data-id="${esc(id)}">${a.read?t('标为未读','Mark unread'):t('标为已读','Mark read')}</button><button data-action="archive" data-id="${esc(id)}">${a.archived?t('取消归档','Unarchive'):t('归档','Archive')}</button><button data-action="trash" data-id="${esc(id)}" class="quiet">${a.trashed?t('移回收藏','Restore'):t('移入回收站','Move to trash')}</button></div></details>`, 'detail');
     renderVersion();
-    if(credentials&&readable(x)&&!insight&&!intelligence.has(id))void requestInsight(id);
+    if(credentials&&readable(x)&&!insight&&(!intelligence.has(id)||intelligence.get(id).state==='done'))void requestInsight(id);
     if(!refresh&&credentials&&status?.state==='connected'&&/^[a-f0-9]{24}$/.test(id)&&!readable(x))void requestRead(id);
   }
   function repoHTML(checks) {
