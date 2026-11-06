@@ -1,7 +1,7 @@
 /* RedBot account-first web client. User text is never passed through translation. */
 (() => {
   'use strict';
-  const C = ShelfCore, R = RedBotCheck, APP_VERSION = '1.10.2';
+  const C = ShelfCore, R = RedBotCheck, APP_VERSION = '1.10.3';
   const $ = s => document.querySelector(s);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const stored = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } };
@@ -227,6 +227,7 @@
       account_already_connected:t('这个 SideCourt 账号已有连接，请从账号入口恢复。','This SideCourt account already has a connection. Resume it from Account.'),
       account_service_unavailable:t('账号服务暂时无法连接，请稍后重试。','The account service is unavailable. Try again shortly.'),
       ai_result_unknown:t('未确认这次整理的结果，可以重试；原文已保留。','This result could not be confirmed. You can retry; the source is kept.'),
+      ai_result_unsupported:t('整理结果已更新，请保存笔记后刷新页面。','The result format has changed. Save your notes and refresh.'),
       ai_busy:t('正在整理另一篇内容，完成后可继续。','Another save is being understood. Try after it finishes.'),
       source_not_read:t('还没有足够的原文，请先读取内容。','Read the source content first.'),
       ai_not_configured:t('内容理解暂不可用，已读取原文仍可查看。','Understanding is unavailable; saved source text is still available.'),
@@ -693,7 +694,7 @@
     intelligence.set(job.targetId,{...job,startedAt:pending?.startedAt||Date.parse(job.startedAt)||Date.now()});
     if(job.state==='done'&&job.result){
       consumedJobs.add(receipt);
-      if(job.kind==='insight'){const x=item(job.targetId);if(x){x.insight=C.normalizeInsight(job.result);await save();}}
+      if(job.kind==='insight'){const x=item(job.targetId);if(x){const normalized=C.normalizeInsight(job.result);if(!normalized){intelligence.set(job.targetId,{...job,state:'failed',error:'ai_result_unsupported'});return;}x.insight=normalized;await save();if(detailId===job.targetId&&$('#dialog').dataset.kind==='detail')refreshDetail();}}
       else {const a=annotation(job.targetId);data.annotations[job.targetId]={...a,buildBrief:{...a.buildBrief,result:job.result}};await save();}
     }
   }
