@@ -1,7 +1,7 @@
 /* RedBot saved-content client. User text is never passed through translation. */
 (() => {
   'use strict';
-  const C = ShelfCore, R = RedBotCheck, Q = RedBotQuick, APP_VERSION = '1.13.0';
+  const C = ShelfCore, R = RedBotCheck, Q = RedBotQuick, APP_VERSION = '1.13.1';
   const $ = s => document.querySelector(s);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const stored = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } };
@@ -573,7 +573,14 @@
   function completeContent(x){return fullSourceReady(x)&&x.insight?.contentVersion===1?x.insight.content||'':'';}
   function contentHTML(value){
     const inline=s=>esc(simple(s)).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
-    return value.split(/\n{2,}/).map(part=>/^#{1,6} /.test(part)?`<h3>${inline(part.replace(/^#{1,6} /,''))}</h3>`:`<p class="prewrap">${inline(part.replace(/^\s*\* +/gm,'• '))}</p>`).join('');
+    const html=[],paragraph=[];
+    const flush=()=>{if(paragraph.length){html.push(`<p class="prewrap">${inline(paragraph.join('\n'))}</p>`);paragraph.length=0;}};
+    for(const line of value.split('\n')){
+      if(/^#{1,6} /.test(line)){flush();html.push(`<h3>${inline(line.replace(/^#{1,6} /,''))}</h3>`);}
+      else if(!line.trim())flush();
+      else paragraph.push(line.replace(/^(\s*)\* +/,'$1• '));
+    }
+    flush();return html.join('');
   }
   function contentForAI(x){return [x.title,x.author,completeContent(x)].filter(Boolean).join('\n\n');}
   function selected(id) {return detailId===id && $('#dialog').open && $('#dialog').dataset.kind==='detail';}
