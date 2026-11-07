@@ -7,6 +7,11 @@ let circleSession='';
 try{circleSession=sessionStorage.getItem(circleSessionKey)||'';}catch{}
 function rememberCircleSession(value){circleSession=value;try{if(value)sessionStorage.setItem(circleSessionKey,value);else sessionStorage.removeItem(circleSessionKey);}catch{}}
 
+export function setClubSession(value){
+ if(value&&!/^[a-f0-9]{64}$/.test(value))throw Error('Invalid TheClub session');rememberCircleSession(value||'');
+ if(globalThis.DAYCUP_NATIVE)globalThis.webkit.messageHandlers.daycup.postMessage({action:'circleSession',session:value||''});
+}
+
 export async function circleRequest(path='',method='GET',body) {
  const local=['127.0.0.1','localhost','[::1]'].includes(location.hostname);
  const endpoint=(local?'/api/daycup/circle':circleEdge)+path;
@@ -92,7 +97,7 @@ export function createCircleUI(host){
   document.querySelectorAll('[data-circle-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.circleFilter;author='';page();});
   q('#circle-more-cups').onclick=()=>load(true);
  }
- async function page(){await loadCities();if(location.hash!=='#circle'&&location.hash) return;frame();await load();}
+ async function page(){await loadCities();if(location.hash!=='#circle')return;frame();await load();}
  async function load(more=false){
   const serial=++generation,target=q('#circle-stream');if(!target)return;
   const setup=ownSetup(),match=connection==='machine'?{machine:setup?.name||''}:connection==='grinder'?{grinder:setup?.grinder||''}:connection==='origin'?{origin}:connection==='nearby'?{nearby:'1'}:{};
@@ -110,6 +115,7 @@ export function createCircleUI(host){
   }catch(error){if(serial!==generation||!target.isConnected)return;target.innerHTML=`<div class="circle-empty"><div class="circle-ceramic" aria-hidden="true"></div><h2>${t("Your circle, when you connect.")}</h2><p>${esc(error.message)}</p><a class="button" href="#history">${t("Your saved cups →")}</a><button id="circle-retry">${t("Try again")}</button></div>`;q('#circle-retry').onclick=()=>page();}
  }
  async function detail(id){
+  if(location.hash!=='#cup/'+id)return;
   const serial=++generation;q('#main').innerHTML=`<a class="circle-back" href="#circle">${t("← Coffee circle")}</a><div id="circle-detail" aria-live="polite"><p>${t("Opening this cup…")}</p></div>`;const target=q('#circle-detail');
   try{const result=await circleRequest('/cup/'+encodeURIComponent(id));if(serial!==generation||!target.isConnected)return;viewer=result.viewer;const c=result.cup;target.innerHTML=card(c,true)+`<section class="circle-replies"><p class="eyebrow">${t("THE NEXT CUP")}</p><h2>${c.responses.length?t("Same inspiration. Their own cups."):t("Be the next to brew this.")}</h2><p>${t("Use your setup, taste the result, then share it back here.")}</p>${c.responses.map(r=>card(r)).join('')}</section>`;bind([c,...c.responses]);}catch(error){if(target.isConnected)target.innerHTML=`<h1>${t("This cup is unavailable.")}</h1><p>${esc(error.message)}</p>`;}
  }
@@ -123,10 +129,21 @@ export function createCircleUI(host){
   document.querySelectorAll('[data-circle-cheer]').forEach(b=>b.onclick=()=>act(b,{action:b.getAttribute('aria-pressed')==='true'?'uncheer':'cheer',target:b.dataset.circleCheer}));
   document.querySelectorAll('[data-circle-follow]').forEach(b=>b.onclick=()=>act(b,{action:b.getAttribute('aria-pressed')==='true'?'unfollow':'follow',target:b.dataset.circleFollow}));
  }
- async function act(button,value){if(!viewer)return join(()=>act(button,value));button.disabled=true;try{await circleRequest('/action','POST',value);await refresh();}catch(error){toast(error.message);button.disabled=false;}}
+ async function act(button,value){if(!viewer)return join(()=>act(button,value));const route=location.hash;button.disabled=true;try{await circleRequest('/action','POST',value);if(location.hash===route)await refresh();}catch(error){toast(error.message);button.disabled=false;}}
  function join(after){
+  if(host.account&&(!['127.0.0.1','localhost','[::1]'].includes(location.hostname)||host.account().client.user))return joinAccount(after);
   modal(`<p class="eyebrow">${t("A SMALL COFFEE CIRCLE")}</p><h2>${t("What should we call you?")}</h2><form id="circle-join-form"><label>${t("Your public name")}<input name="name" autocomplete="nickname" maxlength="40" required></label><label>${t("Early access invitation")}<input name="invite" type="password" autocomplete="off" minlength="16" maxlength="200" required></label><p class="field-help">${t("Your name is shown with cups you choose to share. Your private library stays on this device. The first circle is invitation-only.")}</p><p class="field-help">${t("By joining, you agree to share your own coffee experiences respectfully. No harassment, hate, sexual content or spam. Use a cup’s menu to report or hide a person.")} <a href="https://sidecourt.space/drops/daycup/support.html" target="_blank" rel="noopener">${t("Community support")}</a></p><button class="primary">${t("Join the circle")}</button><p id="circle-join-status" role="status"></p></form>`);
   q('#circle-join-form').onsubmit=singleSubmit(async e=>{const f=new FormData(e.target);try{const result=await circleRequest('/join','POST',{name:f.get('name'),invite:f.get('invite')});viewer=result.viewer;close();await after?.();}catch(error){const status=q('#circle-join-status');if(status)status.textContent=t(error.message);}});
+ }
+ async function joinAccount(after){
+  const account=host.account();if(!account.client.user){modal(`<h2>${t('Join TheClub with your DayCup account')}</h2><p>${t('Sign in with Google or email, then choose a public name. Your private library stays private.')}</p><button id="club-signin" class="primary">${t('Sign in / Register')}</button>`);q('#club-signin').onclick=()=>account.open();return;}
+  try{const current=await account.client.club();if(current.viewer){setClubSession(current.session);viewer=current.viewer;return after?.();}}catch(error){toast(error.message);return;}
+  modal(`<p class="eyebrow">TheClub</p><h2>${t('What should we call you?')}</h2><form id="club-account-join"><label>${t('Your public name')}<input name="name" autocomplete="nickname" maxlength="40" required></label><p class="field-help">${t('Only your chosen name and the cups you publish appear in TheClub. Your email and private records are never included.')}</p><p class="field-help">${t('By joining, you agree to share your own coffee experiences respectfully. No harassment, hate, sexual content or spam. Use a cup’s menu to report or hide a person.')}</p><button class="primary">${t('Join TheClub')}</button><p id="club-join-status" role="status"></p></form>`);
+  q('#club-account-join').onsubmit=singleSubmit(async event=>{try{const result=await account.client.club(new FormData(event.target).get('name'));setClubSession(result.session);viewer=result.viewer;close();await after?.();}catch(error){if(q('#club-join-status'))q('#club-join-status').textContent=error.message;}});
+ }
+ async function restoreAccount(){
+  viewer=null;setClubSession('');const account=host.account?.();if(!account?.client.user)return;
+  try{const result=await account.client.club();if(result.viewer){setClubSession(result.session);viewer=result.viewer;}}catch{/* Account remains usable; joining TheClub provides a retry. */}
  }
  async function ready(after){
   try{const r=await circleRequest('/me');viewer=r.viewer;if(!viewer)return join(after);return await after();}catch(error){toast(error.message);}
@@ -179,12 +196,12 @@ export function createCircleUI(host){
  }
  function options(c){
   modal(`<h2>${t("This cup")}</h2>${c.mine?`<button id="circle-delete" class="danger">${t("Remove my shared cup")}</button>`:`<button id="circle-block">${t("Hide this person’s cups")}</button><form id="circle-report"><label>${t("Report a concern")}<textarea name="reason" maxlength="500" required></textarea></label><button>${t("Send report")}</button></form>`}<p class="field-help">${t("Your private coffee records are separate from the circle.")}</p>`);
-  if(c.mine)q('#circle-delete').onclick=()=>{modal(`<h2>${t("Remove this shared cup?")}</h2><p>${t("Its public link will stop working. Your private record stays in your Journal.")}</p><button id="circle-confirm-delete" class="danger">${t("Remove shared cup")}</button>`);q('#circle-confirm-delete').onclick=async()=>{try{await circleRequest('/action','POST',{action:'delete',target:c.id});const entry=data('circle-share').find(x=>x.cupId===c.id);if(entry)await host.removeRecord(entry.id);close();location.hash='circle';page();}catch(error){toast(error.message);}};};
+  if(c.mine)q('#circle-delete').onclick=()=>{modal(`<h2>${t("Remove this shared cup?")}</h2><p>${t("Its public link will stop working. Your private record stays in your Journal.")}</p><button id="circle-confirm-delete" class="danger">${t("Remove shared cup")}</button>`);q('#circle-confirm-delete').onclick=singleSubmit(async()=>{const route=location.hash;try{await circleRequest('/action','POST',{action:'delete',target:c.id});const entry=data('circle-share').find(x=>x.cupId===c.id);if(entry)await host.removeRecord(entry.id);if(location.hash===route){close();location.hash='circle';page();}}catch(error){toast(error.message);}});};
   else{
-   q('#circle-block').onclick=async()=>{try{if(!viewer)return join(()=>options(c));await circleRequest('/action','POST',{action:'block',target:c.author.id});close();location.hash='circle';page();}catch(error){toast(error.message);}};
+   q('#circle-block').onclick=singleSubmit(async()=>{const route=location.hash;try{if(!viewer)return join(()=>options(c));await circleRequest('/action','POST',{action:'block',target:c.author.id});if(location.hash===route){close();location.hash='circle';page();}}catch(error){toast(error.message);}});
    q('#circle-report').onsubmit=singleSubmit(async e=>{try{if(!viewer)return join(()=>options(c));await circleRequest('/action','POST',{action:'report',target:c.id,reason:new FormData(e.target).get('reason')});close();toast(t("Report saved. You can also hide this person’s cups."));}catch(error){toast(error.message);}});
   }
  }
  function account(){modal(`<h2>${esc(viewer.name)}${t("’s circle")}</h2><p>${t("Your public cups and connections are separate from your private library.")}</p><button id="circle-my-cups">${t("See my shared cups →")}</button><button class="danger" id="circle-leave">${t("Remove my circle profile")}</button>`);q('#circle-my-cups').onclick=()=>{author=viewer.id;filter='all';close();if(location.hash==='#circle')page();else location.hash='circle';};q('#circle-leave').onclick=()=>{modal(`<h2>${t("Leave the coffee circle?")}</h2><p>${t("This removes your profile, shared cups, cheers and follows. Your private beans and brews stay on this device. Copies someone already saved cannot be withdrawn.")}</p><button class="danger" id="circle-confirm-leave">${t("Remove profile & shared cups")}</button>`);q('#circle-confirm-leave').onclick=async()=>{try{await circleRequest('/leave','POST',{});for(const r of data('circle-share'))await host.removeRecord(r.id);viewer=null;close();page();}catch(error){toast(error.message);}};};}
- return {page,detail,shareCup,clearPreferences(){city='';connection='';try{localStorage.removeItem('daycup-circle-city');}catch{}}};
+ return {page,detail,shareCup,restoreAccount,resetAccount(){viewer=null;generation++;setClubSession('');},clearPreferences(){city='';connection='';try{localStorage.removeItem('daycup-circle-city');}catch{}}};
 }

@@ -1,6 +1,6 @@
 // DayCup interface languages. English strings are the source keys; zhStrings maps them to Simplified Chinese.
 // No network, no external library. Works in the browser, the standalone bundle and Node tests.
-export const appVersion='2.10.0';
+export const appVersion='2.11.0';
 export const languages={en:'English',zh:'中文'};
 const zhStrings={};
 let activeLanguage='en';
@@ -23,6 +23,7 @@ export function onLanguageChange(listener){languageListeners.add(listener);retur
 // t('Aim for {min}–{max} seconds',{min:25,max:32}) — placeholders are replaced after lookup, in either language.
 export function t(text,params){
  let out=activeLanguage==='zh'?(Object.hasOwn(zhStrings,text)?zhStrings[text]:text):text;
+ if(typeof out==='string')out=out.replace(/咖啡圈/g,'TheClub').replace(/coffee circle/gi,'TheClub').replace(/\bthe TheClub\b/gi,'TheClub').replace(/\bthe circle\b/gi,'TheClub').replace(/\bCircle\b/g,'TheClub').replace(/\bcircle\b/g,'TheClub');
  if(params)for(const [key,value] of Object.entries(params))out=out.split('{'+key+'}').join(String(value));
  return out;
 }
@@ -730,3 +731,19 @@ addTranslations({
 'Confirm your actual basket or dripper capacity and use the normal manufacturer brew program. No unverified pressure or pre-infusion number is imposed.':"请确认实际粉碗或滤杯容量，并使用厂商的常规冲煮程序。不强加任何未核实的压力或预浸泡数值"
 });
 addTranslations({'Manufacturer source':'厂商来源'});
+
+// Account-first product flow and independently editable personal library.
+addTranslations({
+'BEFORE YOUR FIRST CUP':'第一次冲煮前','Bag removed · your cups are still saved':'豆子已删除，冲煮记录已保留','Brewing details · optional for now':'冲煮参数 · 可以稍后补充','Choose basket type':'选择粉碗类型','Choose your cloud library to finish setup':'选择云端记录，完成账号设置','Delete bag':'删除豆子','Delete this bag?':'删除这包豆子？','Edit setup':'编辑器材','Google or email · one account with SideCourt':'Google 或邮箱登录 · 与 SideCourt 共用账号','Keep bag':'保留豆子','Maximum dose / g':'最大粉量 / g','Minimum dose / g':'最小粉量 / g','Models saved':'型号已保存','My account':'我的账号','One detail from your basket':'确认一下粉碗容量','Please confirm your actual equipment before calculating a recipe':'请先确认实际器材，再计算配方','Save and find my recipe':'保存并生成配方','Save your models now. Confirm the basket and dose before your first recipe.':'先保存器材型号，第一次生成配方前再确认粉碗和粉量','Sign in / Register':'登录 / 注册','Sign in or create your account':'登录或创建账号','The bag and its shelf photo will be removed. Your saved cups, recipes and shared images stay in your history.':'将移除豆架上的这包豆子和照片，已保存的咖啡、配方与分享图都会保留','This is my basket capacity and a separate brewer and grinder':'已确认实际容量，咖啡机与磨豆机是独立设备','Use the dose printed on your basket or dripper. For a single rated dose, enter it in both fields.':'按粉碗或滤杯标注填写，如果只标注了一个粉量，两个位置填相同的数值','YOUR COFFEE, WITH YOU':'把咖啡记录带在身边','YOUR DAYCUP ACCOUNT':'你的 DayCup 账号','You are browsing as a guest. These records stay on this device.':'当前为访客，记录只保存在这台设备','Your private library syncs across devices':'私人记录在你的设备之间同步',
+'Join TheClub with your DayCup account':'使用 DayCup 账号加入 TheClub','Sign in with Google or email, then choose a public name. Your private library stays private.':'使用 Google 或邮箱登录后，设置公开昵称，私人记录仍只有你可见','Only your chosen name and the cups you publish appear in TheClub. Your email and private records are never included.':'TheClub 只展示你选择的昵称和主动发布的咖啡，不公开邮箱和私人记录','Join TheClub':'加入 TheClub'
+});
+
+addTranslations({'Edit bag':'编辑豆子','Your V60':'你的 V60 滤杯','Choose the size on your dripper, or enter your own model':'选择滤杯上标注的尺寸，也可以手动填写','Enter my model':'手动填写型号'});
+
+addTranslations({'Account':'账号','Sign in':'登录'});
+
+addTranslations({
+ "Your library is private by default. Sign in with your DayCup / SideCourt account and choose a public name to join TheClub. Only the saved cups you explicitly publish, their finished share images and captions become public. Private notes and other history are excluded. You can cheer, follow, hide a person, report a concern, remove your own shared cups or leave TheClub. Reports are stored for review. Copies saved by others cannot be recalled. TheClub does not use OpenAI tokens.": "私人记录默认不公开，使用 DayCup / SideCourt 账号登录并设置公开昵称后，可加入 TheClub。只有你主动发布的单杯、完成的分享图和配文会公开，不包含私密笔记或其他历史。你可以点赞、关注、屏蔽、举报、删除自己的分享或退出 TheClub。举报会保存以供处理，其他人已经保存的副本无法撤回。TheClub 不消耗 OpenAI token",
+ "TheClub profiles and interactions use Supabase. Account credentials are kept in iPhone Keychain or browser local storage so you can stay signed in; community credentials use Keychain or tab session storage. Neither is included in library backups. Account cloud data and public posts are stored separately. Public text has a limited automatic check, not comprehensive moderation. For a report, safety or removal request, contact": "TheClub 资料和互动使用 Supabase 保存。登录凭据保存在 iPhone 钥匙串或浏览器本地存储中以保持登录，社区凭据使用钥匙串或标签页会话存储，两者均不包含在记录备份中。私人云端记录与公开分享分开保存，公开文字仅经过有限的自动检查。举报、安全或移除请求请联系",
+ "Use Google or email to sign in or register with the shared SideCourt account service. Choose to open a private cloud library, start an empty one or bring your guest records. Your activated library reopens on this device and syncs changes; guest data is never uploaded automatically. From My account you can sign out, delete the cloud copy or delete your DayCup account data and TheClub profile. Deleting DayCup data keeps the shared SideCourt sign-in and other products intact. A content-free revision marker prevents an older device from restoring erased data. Export a backup before deletion.": "可使用 Google 或邮箱登录、注册，共用 SideCourt 账号服务。你可以打开已有云端记录、从空白开始或带上本机访客记录。启用后的私人记录会在本机重新打开并同步修改，访客记录不会自动上传。在「我的账号」中可以退出、删除云端副本，或删除 DayCup 数据和 TheClub 资料。删除 DayCup 数据不删除共用的 SideCourt 登录身份或其他产品，只保留无内容的版本标记，防止旧设备回写已删除记录。删除前请导出需要保留的内容"
+});

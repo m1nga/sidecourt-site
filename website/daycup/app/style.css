@@ -143,3 +143,12 @@ nav.you-tabs a{min-height:44px;display:flex;align-items:center;padding:8px 0;whi
  html[lang=zh-CN] .journal-paper .empty h2{font-size:21px;line-height:1.4}
  html[lang=zh-CN] .journal-paper .empty p{font-size:14px;line-height:1.6}
 }
+
+/* Account state is visible at first entry, independent of settings or native navigation. */
+.account-entry{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:22px 24px;margin:0 0 28px;border:1px solid #d7d3c6;border-radius:22px;background:#eeece2}.account-entry .eyebrow{margin:0 0 8px}.account-entry strong{display:block;font-size:20px;overflow-wrap:anywhere}.account-entry p:not(.eyebrow){margin:8px 0 4px;font-size:14px;line-height:1.5}.account-entry small{display:block;font-size:12px;color:#746d60}.account-entry button{flex:none;font-size:14px;white-space:nowrap}.utility-nav #header-account{display:inline-flex;font-size:13px;padding:10px 13px;border-radius:20px;white-space:nowrap}.setup-optional{margin:20px 0}.setup-optional>summary{font-size:15px;padding:15px 0}.counter-base{flex-wrap:wrap}.delete-bag{color:#8d4b37;font-size:13px;margin:4px auto 0}.account-signin h2{line-height:1.2}.account-start-note{font-size:14px;line-height:1.65}.account-panel-status{padding:10px 0}
+@media(max-width:600px){.account-entry{padding:18px;align-items:stretch;flex-direction:column;gap:12px}.account-entry strong{font-size:19px}.account-entry button{align-self:flex-start}.utility-nav #header-account{display:inline-flex!important;min-width:0;width:auto;height:auto;font-size:12px;padding:9px 12px}.counter-base{gap:10px}.counter-base [data-edit-setup]{margin-left:auto}.counter-base [data-use-setup]{width:100%}}
+
+@media(max-width:600px){header>.wordmark{font-size:29px}.utility-nav{gap:6px}.utility-nav a[href="#equipment"]{display:none}.utility-nav #header-account{padding:9px 11px}.utility-nav #language{padding:9px;min-width:38px}}
+
+@media(max-width:600px){.utility-nav #language{min-width:44px}}
+@media(max-width:360px){header>.wordmark{font-size:27px}.utility-nav #header-account{padding:9px}}

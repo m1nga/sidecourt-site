@@ -88,3 +88,6 @@ body[data-route=cup] main{max-width:640px;margin-top:30px}
 .circle-photo.circle-photo-composed{display:block;padding:0;min-height:0;background:none;overflow:hidden}.circle-photo-composed>img,#circle-composition-preview{display:block;width:100%;max-width:100%;height:auto;object-fit:contain;border-radius:0}.circle-photo-composed::before,.circle-photo-composed::after{display:none}
 
 .circle-selected-model{font-size:13px;font-weight:600;overflow-wrap:anywhere;margin:12px 0}.circle-selected-model:empty{display:none}
+/* Long equipment names stay inside a narrow field; the system picker keeps the full options. */
+.circle-match-context label{max-width:100%;overflow:hidden}
+.circle-match-context select{max-width:100%;overflow:hidden;text-overflow:ellipsis}
