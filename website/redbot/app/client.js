@@ -1,7 +1,7 @@
 /* RedBot saved-content client. User text is never passed through translation. */
 (() => {
   'use strict';
-  const C = ShelfCore, R = RedBotCheck, Q = RedBotQuick, APP_VERSION = '1.12.2';
+  const C = ShelfCore, R = RedBotCheck, Q = RedBotQuick, APP_VERSION = '1.12.3';
   const $ = s => document.querySelector(s);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const stored = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } };
@@ -18,6 +18,7 @@
   const reads = new Map();
   let readEpoch = 0, statusSnapshot = {epoch:0,startedAt:0};
   let latestVersion = '', versionCheckedAt = 0, aiLoadGeneration = 0;
+  let userInteracted = false, automaticUpdateAttempted = false;
   let onboarding = false, offline = false, startedAt = 0, connectionError = '';
   let bootstrapPending, configValidated = false, configCheckedAt=0;
   let sidecourtSession=null, accountPending=false, ideaLimit=3;
@@ -179,7 +180,11 @@
           next = await response.json();
           if (!next || typeof next.api !== 'string' || !/^https:\/\/[a-z0-9.-]+(?::\d+)?$/.test(next.api)) throw Error();
         }
-        if(next.discovery===true){
+        if(next.transport!=null&&next.transport!=='encrypted-v1')throw Error('invalid_transport');
+        if(next.transport==='encrypted-v1'&&!/^[A-Za-z0-9_-]{87}$/.test(next.readerKey||''))throw Error('invalid_transport');
+        // The legacy discovery flag keeps already-open older clients working.
+        // Current clients always use the pinned encrypted transport when configured.
+        if(next.discovery===true&&next.transport!=='encrypted-v1'){
           const gateway=next.api;
           const response=await fetch(gateway+'/api/route',{cache:'no-store',credentials:'omit',redirect:'error',signal:AbortSignal.timeout(8000)});
           const route=await response.json();
@@ -221,7 +226,11 @@
     const endpoint = path.split('?')[0];
     const timeout = endpoint==='/api/library' ? 60000 : endpoint==='/api/connection' ? 8000 : 15000;
     try {
-      response = await fetch(root + path, {method:body ? 'POST' : 'GET', credentials:'omit', referrerPolicy:'no-referrer', headers:{...(credentials ? {Authorization:'Bearer ' + credentials.token} : {}), ...(usesSideCourtAccount()&&sidecourtSession?.access_token?{'X-SideCourt-Token':sidecourtSession.access_token}:{}), ...(body ? {'Content-Type':'application/json'} : {})}, ...(body ? {body:JSON.stringify(body)} : {}), signal:AbortSignal.timeout(timeout), cache:'no-store'});
+      const options={method:body ? 'POST' : 'GET', credentials:'omit', referrerPolicy:'no-referrer', headers:{...(credentials ? {Authorization:'Bearer ' + credentials.token} : {}), ...(usesSideCourtAccount()&&sidecourtSession?.access_token?{'X-SideCourt-Token':sidecourtSession.access_token}:{}), ...(body ? {'Content-Type':'application/json'} : {})}, ...(body ? {body:JSON.stringify(body)} : {}), signal:AbortSignal.timeout(timeout), cache:'no-store'};
+      if(config.transport==='encrypted-v1') {
+        if(!window.RedBotTransport)throw Error('transport_unavailable');
+        response=await window.RedBotTransport.fetch(root,path,options,config.readerKey);
+      } else response=await fetch(root+path,options);
     } catch { throw Error('service_offline'); }
     let result;
     try { result = await response.json(); } catch { throw Error('service_offline'); }
@@ -672,17 +681,35 @@
       node.textContent=t('有新版本，保存并刷新','Update available — save and reload');
     }
   }
-  async function checkVersion() {
+  function canAutomaticallyUpdate() {
+    return !userInteracted && !detailId && !working && !requestActive && !onboarding && !$('#dialog')?.open;
+  }
+  async function checkVersion(automatic = false) {
     if(Date.now()-versionCheckedAt<60000)return;
     versionCheckedAt=Date.now();
-    try {const response=await fetch(new URL('version.json',location.href),{cache:'no-store',credentials:'omit',redirect:'error',signal:AbortSignal.timeout(5000)});if(!response.ok)return;const v=(await response.json()).version;if(typeof v==='string'&&/^\d+\.\d+\.\d+$/.test(v)&&v.split('.').reduce((n,x,i)=>n+Number(x)*1000**(2-i),0)>APP_VERSION.split('.').reduce((n,x,i)=>n+Number(x)*1000**(2-i),0)){latestVersion=v;renderVersion();}}catch{}
+    try {
+      const response=await fetch(new URL('version.json',location.href),{cache:'no-store',credentials:'omit',redirect:'error',signal:AbortSignal.timeout(5000)});
+      if(!response.ok)return;
+      const v=(await response.json()).version;
+      const versionNumber=value=>value.split('.').reduce((n,x,i)=>n+Number(x)*1000**(2-i),0);
+      if(typeof v!=='string'||!/^\d+\.\d+\.\d+$/.test(v)||versionNumber(v)<=versionNumber(APP_VERSION))return;
+      latestVersion=v;renderVersion();
+      // Only an untouched fresh page may update itself. Recheck after saving
+      // and installing: typing while the new shell downloads must win.
+      if(automatic&&!automaticUpdateAttempted&&canAutomaticallyUpdate()) {
+        automaticUpdateAttempted=true;
+        await reloadUpdatedApp(canAutomaticallyUpdate);
+      }
+    } catch {}
   }
-  async function reloadUpdatedApp() {
+  async function reloadUpdatedApp(canReload = () => true) {
+    if(!canReload())return;
     if(detailId&&$('#personal-note')) {
       data.annotations[detailId]={...annotation(detailId),note:$('#personal-note').value,category:$('#save-topic').value,...($('#save-collection')?{collections:$('#save-collection').value?[$('#save-collection').value]:[]}: {})};
     }
     if($('#brief-form')&&detailId){const a=annotation(detailId);data.annotations[detailId]={...a,buildBrief:{...a.buildBrief,goal:$('#brief-goal').value,promptVersion:3}};}
     if(!await save())return;
+    if(!canReload())return;
     try {
       if(typeof navigator!=='undefined' && navigator.serviceWorker) {
         const registration=await navigator.serviceWorker.getRegistration();
@@ -696,7 +723,7 @@
           });
         }
       }
-      location.reload();
+      if(canReload())location.reload();
     } catch {notify(t('更新还在准备，当前内容已保存。稍后再点一次更新即可。','The update is still being prepared. Your content is saved; try updating again shortly.'));}
   }
   function timecode(value){const n=Math.max(0,Math.floor(Number(value)||0));return Math.floor(n/60)+':'+String(n%60).padStart(2,'0');}
@@ -877,6 +904,7 @@
     if(action==='language'){lang=lang==='zh'?'en':'zh';localStorage.setItem('redbot.language',JSON.stringify(lang));dismiss();render();return;}
   }
   async function init() {
+    for(const event of ['input','pointerdown','keydown'])document.addEventListener(event,()=>{userInteracted=true;},{capture:true,passive:true,once:true});
     document.addEventListener('click',e=>{const button=e.target.closest('[data-action]');if(button&&!button.disabled)act(button.dataset.action,button).catch(error=>notify(failure(error)));});
     $('#dialog-close').onclick=dismiss;
     $('#dialog').addEventListener('cancel',e=>{e.preventDefault();dismiss();});
@@ -886,13 +914,15 @@
     try {data=normalize(await cacheRead()||(!credentials?stored('shelf.library.v1',{}):{}));}catch{}
     // Browsing the saved device copy must not wait for any network request.
     render();
+    if(typeof performance!=='undefined')$('#main')?.setAttribute('data-redbot-ready-ms',String(Math.round(performance.now())));
+    // A failed reader must not delay discovering a fixed app version.
+    void checkVersion(true);
     try {await refreshConnectionConfig();}
     catch(error) {
       connectionError=failure(error);
       if(credentials){offline=true;updateProgress();}
     }
     await initAccount();
-    void checkVersion();
     if(invitation&&!credentials)connectionDialog();
     if(credentials)await refreshStatus();
     // One foreground timer. A user action must wake an idle 30-second poll.
