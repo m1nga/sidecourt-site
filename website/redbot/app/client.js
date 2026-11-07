@@ -1,7 +1,7 @@
 /* RedBot saved-content client. User text is never passed through translation. */
 (() => {
   'use strict';
-  const C = ShelfCore, R = RedBotCheck, Q = RedBotQuick, APP_VERSION = '1.13.2';
+  const C = ShelfCore, R = RedBotCheck, Q = RedBotQuick, APP_VERSION = '1.13.3';
   const $ = s => document.querySelector(s);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const stored = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } };
@@ -416,6 +416,7 @@
     void requestInsight(x.id);
   }
   async function copyText(value) {
+    if(navigator.clipboard?.writeText){try{await navigator.clipboard.writeText(value);return;}catch{}}
     const focused=document.activeElement, field=document.createElement('textarea');
     field.value=value;field.readOnly=true;field.tabIndex=-1;
     field.style.cssText='position:fixed;top:0;left:-9999px;opacity:0;font-size:16px';
@@ -424,7 +425,7 @@
     try{host.appendChild(field);field.focus({preventScroll:true});field.select();field.setSelectionRange(0,value.length);copied=document.execCommand?.('copy')===true;}
     catch{}
     finally{field.remove();focused?.focus?.({preventScroll:true});}
-    if(!copied)await navigator.clipboard.writeText(value);
+    if(!copied)throw Error('Clipboard copy was blocked');
   }
   async function copyQuickAnswer(id) {
     const x=item(id);if(!x)return;
