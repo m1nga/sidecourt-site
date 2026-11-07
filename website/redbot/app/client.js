@@ -1,7 +1,7 @@
 /* RedBot saved-content client. User text is never passed through translation. */
 (() => {
   'use strict';
-  const C = ShelfCore, R = RedBotCheck, Q = RedBotQuick, APP_VERSION = '1.12.4';
+  const C = ShelfCore, R = RedBotCheck, Q = RedBotQuick, APP_VERSION = '1.13.0';
   const $ = s => document.querySelector(s);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const stored = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } };
@@ -569,6 +569,13 @@
     if(x.type==='video')return !!x.videoAnalysis && R.blocks({...x,description:'',summary:'',readingNotes:'',research:null,transcript:''}).some(b=>b.label!=='Post title');
     return R.scan(x).readable;
   }
+  function fullSourceReady(x){return x?.contentReadVersion===1&&x.contentReadStatus==='ready';}
+  function completeContent(x){return fullSourceReady(x)&&x.insight?.contentVersion===1?x.insight.content||'':'';}
+  function contentHTML(value){
+    const inline=s=>esc(simple(s)).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+    return value.split(/\n{2,}/).map(part=>/^#{1,6} /.test(part)?`<h3>${inline(part.replace(/^#{1,6} /,''))}</h3>`:`<p class="prewrap">${inline(part.replace(/^\s*\* +/gm,'• '))}</p>`).join('');
+  }
+  function contentForAI(x){return [x.title,x.author,completeContent(x)].filter(Boolean).join('\n\n');}
   function selected(id) {return detailId===id && $('#dialog').open && $('#dialog').dataset.kind==='detail';}
   function refreshDetail() {
     if(!detailId || !selected(detailId))return;
@@ -581,10 +588,14 @@
     if(focus&&$('#'+focus))$('#'+focus).focus({preventScroll:true});
     $('#dialog').scrollTop=scroll;
   }
+  function contentReadMessage(){
+    const j=status?.job||{},names={comments:t('正在读取正文和评论…','Reading text and comments…'),download:t('正在读取视频…','Loading the video…'),audio:t('正在读取完整视频语音…','Reading the full audio…'),frames:t('正在读取视频画面里的文字…','Reading on-screen text…'),visual:t('正在读取视频中的图片和演示…','Reading images and demonstrations…'),images:t('正在读取帖子图片…','Reading post images…')};
+    return (names[j.phase]||t('正在读取内容…','Reading content…'))+(j.total>1?` ${Math.min(j.part||0,j.total)}/${j.total}`:'');
+  }
   function readProgress(x) {
     if(!x)return '';
     const r=reads.get(x.id), pending=['queued','starting','running'].includes(r?.state);
-    let message=r?.state==='queued'?t('正在等待上一项读取结束…','Waiting for the current read to finish…'):r?.state==='starting'?t('正在开始读取…','Starting the read…'):r?.state==='running'?t('正在读取正文和作者评论…','Reading text and author comments…'):r?.error||'';
+    let message=r?.state==='queued'?t('正在等待上一项读取结束…','Waiting for the current read to finish…'):r?.state==='starting'?t('正在开始读取…','Starting the read…'):r?.state==='running'?contentReadMessage():r?.error||'';
     if(r?.error&&pending)message+=' '+r.error;
     if(offline&&pending)message=t('正在重新连接，读取结果会自动更新。你可以先看其它收藏。','Reconnecting. The read result will update automatically. You can browse other saves meanwhile.');
     if(!message&&readable(x))message=t('原文已读取。','Source text read.');
@@ -600,7 +611,7 @@
   }
   async function startSelectedRead(id,r) {
     if(!selected(id)||reads.get(id)!==r||r.state!=='queued')return;
-    if(!r.force&&readable(item(id))&&item(id).contentReadStatus==='ready') {r.state='done';refreshDetail();if(r.briefAfter)brief(id);return;}
+    if(!r.force&&fullSourceReady(item(id))) {r.state='done';refreshDetail();if(r.briefAfter)brief(id);return;}
     if(status?.job?.state==='running') {
       if(status.job.targetId===id&&status.job.kind==='read'){r.state='running';r.jobId=status.job.id;r.epoch=readEpoch;r.acceptedAt=statusSnapshot.startedAt;r.requestStartedAt=Date.parse(status.job.startedAt)||Date.now();refreshDetail();}
       else if(status.readingQueue?.state==='running'&&!r.priorityRequested){r.priorityRequested=true;try{await api('/api/prioritize-read',{id});}catch(error){r.error=failure(error);refreshDetail();}}
@@ -608,7 +619,7 @@
     }
     r.state='starting';r.baseline=readOutcome(item(id));r.requestStartedAt=Date.now();refreshDetail();if(typeof pollSoon==='function')pollSoon();
     try {
-      const result=await api('/api/quick-read',{id});
+      const result=await api('/api/quick-read',{id,full:true});
       const job=result.job||result;
       r.state='running';r.jobId=job.id||result.jobId||'';r.acceptedAt=Date.now();r.epoch=++readEpoch;
       status={...status,job:{...job,id:r.jobId,kind:'read',state:'running',targetId:id}};
@@ -747,24 +758,21 @@
   }
   function detail(id,{refresh=false}={}) {
     const x=item(id);if(!x)return;detailId=id;
-    if(!reads.has(id)&&['failed','cancelled','empty'].includes(x.contentReadStatus))reads.set(id,{state:x.contentReadStatus,error:x.contentReadStatus==='empty'?t('这次没有取得可用正文。可以重试或打开原文。','No usable text was returned. Retry or open the original.'):failure(Error(x.contentReadError?.code||'source_unavailable'))});
-    if(!reads.has(id)&&x.type==='video'&&x.videoAnalysis&&!readable(x))reads.set(id,{state:'failed',error:failure(Error(x.videoAnalysis.error||'source_unavailable'))});
-    const a=annotation(id), report=R.scan(x), take=R.shortTake(x), insight=x.insight;
-    const cueNames={free:t('“免费”的范围','What “free” includes'),cost:t('价格或使用条件','Cost or access conditions'),promotion:t('推广或引流线索','Promotion or contact gate'),promise:t('需要验证的承诺','A promise to verify'),license:t('复用与授权条件','Reuse terms')};
+    if(!reads.has(id)&&['failed','cancelled','empty'].includes(x.contentReadStatus))reads.set(id,{state:x.contentReadStatus,error:failure(Error(x.contentReadError?.code||'source_unavailable'))});
+    const a=annotation(id),content=completeContent(x),ready=fullSourceReady(x),pending=['queued','starting','running'].includes(reads.get(id)?.state);
+    const comments=x.comments,partialComments=ready&&(!comments||comments.hasMore!==false||comments.truncated);
     modal(`<button id="dialog-update" data-action="update-app" hidden></button>
       <div class="detail-head"><p class="eyebrow">${esc(label(a.category||x.category))}</p><h2>${esc(x.title)}</h2><p class="muted">${esc(x.author)}</p></div>
-      <section class="useful-summary"><h3>${t('内容与方法','Overview and method')}</h3>
-        ${insight?`<p class="summary-lead">${esc(simple(insight.overview))}</p>${insight.methods.length?`<ol>${insight.methods.map(p=>`<li>${esc(simple(p.text))}</li>`).join('')}</ol>`:''}${insight.gap&&!insight.methods?.length?`<p class="muted">${esc(simple(insight.gap))}</p>`:''}<p class="source-caption">${x.type==='video'&&!x.videoAnalysis?.complete?t('根据正文和已读评论整理，尚未读取视频。','Based on text and returned comments. Video not read yet.'):t('根据已读取原文由 AI 整理','AI summary of the source already read')}</p>`:`<p>${readable(x)?t('正在提炼内容和方法…','Understanding the content and method…'):t('正在准备这篇的内容。','Preparing this save.')}</p>${take.lead?`<p class="source-preview">${esc(simple(take.lead))}</p>`:''}`}
-        <div id="intelligence-progress">${intelligenceProgress(id)}</div>
-        ${readable(x)?`<button class="primary" data-action="brief" data-id="${esc(id)}">${t('用到我的事情里 →','Use this for my goal →')}</button>`:`<div id="source-progress">${readProgress(x)}</div>`}
-        ${x.type==='video'&&!x.videoAnalysis?.complete?`<div class="continue-video"><p class="muted">${t('方法可能在视频里，可继续读取。','The method may be in the video. Read it when needed.')}</p><button data-action="video" data-id="${esc(id)}" ${status?.job?.state==='running'?'disabled':''}>${t('继续读视频','Read video content')}</button><div id="video-progress">${videoProgress()}</div></div>`:''}
-      </section>
-      ${readable(x)&&report.signals.length?`<details class="detail-secondary"><summary>${t('需要核实的说法','Claims to verify')}</summary><p class="muted">${t('来自原文的提醒，仍需核实。','Source cues to verify.')}</p>${report.signals.map(s=>`<p><strong>${cueNames[s.id]||esc(s.label)}</strong></p><blockquote>${esc(window.RedBotText?.simplify(s.excerpt)||s.excerpt)}</blockquote>`).join('')}${report.projects.length?`<button data-action="repo-check" data-id="${esc(id)}">${t('核对项目信息','Check project details')}</button><div id="repo-results">${repoHTML(a.projectChecks||[])}</div>`:''}</details>`:''}
-      <details class="detail-secondary source-material"><summary>${t('查看原文与读取范围','Source and reading coverage')}</summary>${readable(x)?`<div id="source-progress">${readProgress(x)}</div>`:''}${insight?`<details><summary>${t('整理依据','Summary evidence')}</summary><blockquote>${esc(insight.evidence)}</blockquote>${insight.methods.map(m=>`<blockquote>${esc(m.evidence)}</blockquote>`).join('')}</details>`:''}<a class="button" href="${esc(R.safeLink(x.url))}" target="_blank" rel="noopener noreferrer">${t('打开原文 ↗','Open original ↗')}</a>${commentsHTML(x)}${videoHTML(x)}<details class="full-source"><summary>${t('全部已保存文字','All saved text')}</summary><p class="prewrap">${esc(sourceText(x))||t('尚无正文。','No source text.')}</p></details></details>
-      <details class="detail-secondary"><summary>${t('我的笔记与整理','My notes and organization')}</summary><label for="personal-note">${t('留给自己的笔记','A note to yourself')}</label><textarea id="personal-note" rows="3">${esc(a.note||'')}</textarea><label for="save-topic">${t('主题','Topic')}</label><select id="save-topic">${C.TOPICS.map(c=>`<option ${c===(a.category||x.category)?'selected':''} value="${esc(c)}">${esc(label(c))}</option>`).join('')}</select>${data.collections.length?`<label for="save-collection">${t('加入合集','Collection')}</label><select id="save-collection"><option value="">${t('不放入合集','No collection')}</option>${data.collections.map(c=>`<option value="${esc(c.id)}" ${(a.collections||[]).includes(c.id)?'selected':''}>${esc(c.name)}</option>`).join('')}</select>`:''}<div class="actions"><button data-action="note" data-id="${esc(id)}">${t('保存笔记','Save note')}</button><button data-action="read-mark" data-id="${esc(id)}">${a.read?t('标为未读','Mark unread'):t('标为已读','Mark read')}</button><button data-action="archive" data-id="${esc(id)}">${a.archived?t('取消归档','Unarchive'):t('归档','Archive')}</button><button data-action="trash" data-id="${esc(id)}" class="quiet">${a.trashed?t('移回收藏','Restore'):t('移入回收站','Move to trash')}</button></div></details>`, 'detail');
+      <section class="useful-summary content-description">
+        ${content?`<button class="primary content-copy" data-action="copy-content" data-id="${esc(id)}">${t('复制给 AI','Copy for AI')}</button>`:''}
+        ${content?`<div class="content-text">${contentHTML(content)}</div>`:`<p>${t('正在读取内容，完成后会直接显示在这里。','Reading this save. The useful content will appear here when ready.')}</p>`}
+        ${!ready||pending?`<div id="source-progress">${readProgress(x)}</div>`:''}
+        ${ready?`<div id="intelligence-progress">${intelligenceProgress(id)}</div>`:''}
+        ${partialComments?`<p class="muted">${t('评论尚未全部取得；下文包含本次已读到的有用补充。','Some comments could not be loaded. This includes useful additions from the comments received.')}</p>`:''}
+      </section>`, 'detail');
     renderVersion();
-    if(credentials&&readable(x)&&!insight&&(!intelligence.has(id)||intelligence.get(id).state==='done'))void requestInsight(id);
-    if(!refresh&&credentials&&status?.state==='connected'&&/^[a-f0-9]{24}$/.test(id)&&!readable(x))void requestRead(id);
+    if(credentials&&ready&&!content&&!pending&&(!intelligence.has(id)||intelligence.get(id).state==='done'))void requestInsight(id);
+    if(!refresh&&credentials&&status?.state==='connected'&&/^[a-f0-9]{24}$/.test(id)&&!ready&&!reads.has(id))void requestRead(id);
   }
   function repoHTML(checks) {
     return checks.map(c=>`<p><a href="${esc(R.safeLink(c.url))}" target="_blank" rel="noopener noreferrer">${esc(c.repo)} ↗</a><br>${c.status==='checked'?`${t('许可证','License')}: ${esc(c.license)} · ${c.archived?t('已归档','Archived'):t('未归档','Not archived')}<br>${t('最近推送','Last push')} ${esc(c.pushedAt?.slice(0,10)||'—')}`:t('尚未核实，不据此判断风险。','Not verified; no risk verdict.')}<br><small>${t('查询时间','Checked')} ${esc(date(c.checkedAt))} · ${t('不涵盖 API 费用或依赖授权。','Does not verify API costs or dependency terms.')}</small></p>`).join('');
@@ -772,8 +780,8 @@
   function simple(value){return window.RedBotText?.simplify(value)||value;}
   function intelligenceProgress(id){
     const job=intelligence.get(id)||((status?.aiJob?.targetId===id)?status.aiJob:null);if(!job)return '';
-    if(job.state==='running')return `<p role="status">${t(job.phase==='adapting'?'正在结合你的目标整理…':'正在提炼重点…',job.phase==='adapting'?'Adapting to your goal…':'Finding the useful points…')}</p>`;
-    if(job.state==='failed')return `<p role="alert">${esc(failure(Error(job.error||'ai_unavailable')))}</p><button data-action="${job.kind==='assistant'?'retry-assistant':'insight'}" data-id="${esc(id)}">${t('重新整理','Try again')}</button>`;
+    if(job.state==='running')return `<p role="status">${t(job.phase==='adapting'?'正在结合你的目标整理…':'正在写出有用内容…',job.phase==='adapting'?'Adapting to your goal…':'Writing out the useful content…')}</p>`;
+    if(job.state==='failed')return `<p role="alert">${esc(failure(Error(job.error||'ai_unavailable')))}</p><button data-action="${job.kind==='assistant'?'retry-assistant':'insight'}" data-id="${esc(id)}">${t('重试','Try again')}</button>`;
     return '';
   }
   async function requestInsight(id,goalValue=null,note=''){
@@ -781,7 +789,7 @@
     const scope=libraryKey(),kind=goalValue===null?'insight':'assistant',requestId=crypto.randomUUID(),startedAt=Date.now();
     intelligence.set(id,{state:'running',kind,targetId:id,phase:'queued',requestId,startedAt});refreshIntelligence();if(typeof pollSoon==='function')pollSoon();
     try{
-      const job=await api(kind==='insight'?'/api/insight':'/api/assistant',{id,requestId,...(goalValue===null?{fast:true}:{goal:goalValue,note})});
+      const job=await api(kind==='insight'?'/api/insight':'/api/assistant',{id,requestId,...(goalValue===null?(typeof selected==='function'&&selected(id)?{full:true}:{fast:true}):{goal:goalValue,note})});
       if(scope!==libraryKey())return;
       intelligence.set(id,{...job,startedAt}); await consumeIntelligence(job); refreshIntelligence();if(job.kind==='insight'&&job.state==='done')refreshDetail();
     }catch(error){
@@ -881,6 +889,7 @@
     if(action==='sidecourt')return accountDialog();
     if(action==='account-check')return checkAccount({resume:true});
     if(action==='account-bind')return bindAccount();
+    if(action==='copy-content'){const x=item(id);if(!completeContent(x))return;try{await copyText(contentForAI(x));notify(t('已复制，直接粘贴给 AI 即可。','Copied. Paste it into your AI.'));}catch{notify(t('复制失败，请选中文字复制。','Could not copy. Select the text to copy it.'));}return;}
     if(action==='copy-brief'){try{await copyText($('#brief-output').value);notify(t('已复制，可粘贴到项目里的工具。','Copied. Paste it into your assistant with the project open.'));}catch{notify(t('复制失败，可以下载文本。','Copy failed. Download the text instead.'));}return;}
     if(action==='download-brief')return download($('#brief-output').value,'RedBot-build-brief.txt');
     if(action==='settings')return settings();
