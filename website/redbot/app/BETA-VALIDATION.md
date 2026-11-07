@@ -1,3 +1,13 @@
+# RedBot 1.12.2 connection recovery
+
+The relay now verifies a fresh response from the actual public reader before publishing or renewing its address. A running tunnel that no longer serves its public address is replaced after repeated failures when the local reader still responds.
+
+An already-connected foreground page retries discovery after five seconds while disconnected. Cached saves remain available. Recovery checks do not replay a sign-in or sync request.
+
+Five post-repair checks reached the public reader and passed the browser's authorization preflight. The account endpoint rejected anonymous requests as expected. These checks used one network. New reads still need the host online and Xiaohongshu available.
+
+--- Previous validation ---
+
 # RedBot 1.12.1: recent saves first
 
 Opening or returning to the app and Refresh latest check the source’s first observed favorites page separately from the uncapped Scan all saves action. The homepage exposes three recent saves. Existing text and personal annotations remain usable while updates arrive.

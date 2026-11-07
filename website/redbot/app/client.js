@@ -1,7 +1,7 @@
 /* RedBot saved-content client. User text is never passed through translation. */
 (() => {
   'use strict';
-  const C = ShelfCore, R = RedBotCheck, Q = RedBotQuick, APP_VERSION = '1.12.1';
+  const C = ShelfCore, R = RedBotCheck, Q = RedBotQuick, APP_VERSION = '1.12.2';
   const $ = s => document.querySelector(s);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const stored = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } };
@@ -218,8 +218,10 @@
     if(usesSideCourtAccount()&&window.RedBotAccount){try{sidecourtSession=await RedBotAccount.session();}catch{}}
     if (!configValidated || !root) throw Error('connection_config_unavailable');
     let response;
+    const endpoint = path.split('?')[0];
+    const timeout = endpoint==='/api/library' ? 60000 : endpoint==='/api/connection' ? 8000 : 15000;
     try {
-      response = await fetch(root + path, {method:body ? 'POST' : 'GET', credentials:'omit', referrerPolicy:'no-referrer', headers:{...(credentials ? {Authorization:'Bearer ' + credentials.token} : {}), ...(usesSideCourtAccount()&&sidecourtSession?.access_token?{'X-SideCourt-Token':sidecourtSession.access_token}:{}), ...(body ? {'Content-Type':'application/json'} : {})}, ...(body ? {body:JSON.stringify(body)} : {}), signal:AbortSignal.timeout(path.split('?')[0]==='/api/library'?60000:15000), cache:'no-store'});
+      response = await fetch(root + path, {method:body ? 'POST' : 'GET', credentials:'omit', referrerPolicy:'no-referrer', headers:{...(credentials ? {Authorization:'Bearer ' + credentials.token} : {}), ...(usesSideCourtAccount()&&sidecourtSession?.access_token?{'X-SideCourt-Token':sidecourtSession.access_token}:{}), ...(body ? {'Content-Type':'application/json'} : {})}, ...(body ? {body:JSON.stringify(body)} : {}), signal:AbortSignal.timeout(timeout), cache:'no-store'});
     } catch { throw Error('service_offline'); }
     let result;
     try { result = await response.json(); } catch { throw Error('service_offline'); }
@@ -884,25 +886,31 @@
     try {data=normalize(await cacheRead()||(!credentials?stored('shelf.library.v1',{}):{}));}catch{}
     // Browsing the saved device copy must not wait for any network request.
     render();
-    try {await refreshConnectionConfig();} catch(error) {connectionError=failure(error);}
+    try {await refreshConnectionConfig();}
+    catch(error) {
+      connectionError=failure(error);
+      if(credentials){offline=true;updateProgress();}
+    }
     await initAccount();
     void checkVersion();
     if(invitation&&!credentials)connectionDialog();
     if(credentials)await refreshStatus();
     // One foreground timer. A user action must wake an idle 30-second poll.
     let pollTimer=null,polling=false;
+    const reconnectDelay=5000;
     const poll = async () => {
       if(polling)return;
       polling=true;
       try {
         if (!document.hidden && credentials){
-          if((!configValidated||offline)&&Date.now()-configCheckedAt>15000){try{await refreshConnectionConfig();}catch{}}
+          if((!configValidated||offline)&&Date.now()-configCheckedAt>=reconnectDelay){try{await refreshConnectionConfig();}catch{}}
           await refreshStatus();
         }
       } finally {
         polling=false;clearTimeout(pollTimer);
         const pending=Array.from(intelligence.values()).some(j=>j.state==='running')||Array.from(reads.values()).some(r=>['queued','starting','running'].includes(r.state));
-        pollTimer=setTimeout(poll,libraryPage?100:pending||status?.job?.state==='running'||status?.aiJob?.state==='running'||status?.state==='waiting'?800:30000);
+        const reconnecting=!document.hidden&&credentials&&(!configValidated||offline);
+        pollTimer=setTimeout(poll,reconnecting?reconnectDelay:libraryPage?100:pending||status?.job?.state==='running'||status?.aiJob?.state==='running'||status?.state==='waiting'?800:30000);
       }
     };
     pollSoon=()=>{clearTimeout(pollTimer);pollTimer=setTimeout(poll,100);};
