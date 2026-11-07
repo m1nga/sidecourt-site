@@ -1,7 +1,7 @@
 /* RedBot saved-content client. User text is never passed through translation. */
 (() => {
   'use strict';
-  const C = ShelfCore, R = RedBotCheck, Q = RedBotQuick, APP_VERSION = '1.12.3';
+  const C = ShelfCore, R = RedBotCheck, Q = RedBotQuick, APP_VERSION = '1.12.4';
   const $ = s => document.querySelector(s);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const stored = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } };
@@ -271,7 +271,7 @@
       qr_unavailable:t('暂时没拿到登录码，请重试。','Could not get a sign-in code. Try again.'),
       source_content_invalid:t('来源返回的内容与这篇收藏不一致，未替换已有内容。请刷新收藏后重试。','The returned source did not match this save. Existing content is kept. Refresh your saves and retry.'),
       read_cancelled:t('正文读取已取消，可稍后重试。','Text reading cancelled. Retry when ready.'),
-      source_unavailable:t('小红书暂时没有返回内容。已有收藏保留，可稍后重试或重新连接。','Xiaohongshu did not return content. Your saves are kept; retry or reconnect later.'),
+      source_unavailable:t('小红书这次未能完成读取。已有收藏和登录状态保留，可稍后重试。','This read from Xiaohongshu did not finish. Your saves and sign-in are kept; try again later.'),
       scan_incomplete:t('本次没有读到列表末尾，已收到的收藏会保留。','The end of the list was not reached. Saves already received are kept.'),
       sync_first:t('先刷新收藏，更新这篇笔记的访问链接。','Refresh your saves to update access to this post.'),
       video_busy:t('另一段视频正在处理，请稍后重试。','Another video is being processed. Try later.'),
