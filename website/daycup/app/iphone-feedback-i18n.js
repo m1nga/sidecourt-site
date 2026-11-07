@@ -79,3 +79,15 @@ addTranslations({
  'This cup image could not be prepared. Try again.':'分享图生成失败，请重试',
  'Your finished cup image':'你的分享图'
 });
+
+addTranslations({
+ "Choose a library": "选择记录库",
+ "Synced": "已同步",
+ "Sync needs attention": "同步需要重试",
+ "Syncing…": "正在同步…",
+ "Your changes are saved on this device. Retry when you’re online.": "修改已保存在本机，请联网后重试。",
+ "Changes save automatically to your private cloud library.": "修改会自动保存到你的私人云端库。",
+ "Keep your coffee with you across devices": "在不同设备上接着记录每一杯",
+ "Sign in to DayCup": "登录 DayCup",
+ "Brewing animation · not a pressure reading": "冲煮动效 · 非实测压力"
+});

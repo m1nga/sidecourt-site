@@ -1,6 +1,6 @@
 // DayCup interface languages. English strings are the source keys; zhStrings maps them to Simplified Chinese.
 // No network, no external library. Works in the browser, the standalone bundle and Node tests.
-export const appVersion='2.11.0';
+export const appVersion='2.12.0';
 export const languages={en:'English',zh:'中文'};
 const zhStrings={};
 let activeLanguage='en';
@@ -12,17 +12,19 @@ function browserLanguage(){
  return list.some(code=>String(code).toLowerCase().startsWith('zh'))?'zh':'en';
 }
 activeLanguage=storedLanguage()||browserLanguage();
+// Web, offline file and native host share the same explicit language preference.
+export function preferredLanguage(){return activeLanguage;}
 export function currentLanguage(){return activeLanguage;}
 export function setLanguage(code){
  if(!languages[code])throw Error('Unsupported language: '+code);
  activeLanguage=code;
  if(typeof document!=='undefined'){try{globalThis.localStorage?.setItem('daycup-language',code);}catch{}}
- for(const listener of languageListeners)listener(code);
+ for(const listener of languageListeners)listener(currentLanguage());
 }
 export function onLanguageChange(listener){languageListeners.add(listener);return()=>languageListeners.delete(listener);}
 // t('Aim for {min}–{max} seconds',{min:25,max:32}) — placeholders are replaced after lookup, in either language.
 export function t(text,params){
- let out=activeLanguage==='zh'?(Object.hasOwn(zhStrings,text)?zhStrings[text]:text):text;
+ let out=currentLanguage()==='zh'?(Object.hasOwn(zhStrings,text)?zhStrings[text]:text):text;
  if(typeof out==='string')out=out.replace(/咖啡圈/g,'TheClub').replace(/coffee circle/gi,'TheClub').replace(/\bthe TheClub\b/gi,'TheClub').replace(/\bthe circle\b/gi,'TheClub').replace(/\bCircle\b/g,'TheClub').replace(/\bcircle\b/g,'TheClub');
  if(params)for(const [key,value] of Object.entries(params))out=out.split('{'+key+'}').join(String(value));
  return out;

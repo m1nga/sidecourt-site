@@ -27,3 +27,47 @@
 
 /* Clear sign-in choices; provider availability never masquerades as completed setup. */
 .account-signin{max-width:440px;margin:0 auto}.account-signin h2{font-size:clamp(24px,6vw,32px);line-height:1.2}.account-signin>p:not(.eyebrow){font-size:14px;color:var(--muted,#746c61);line-height:1.6}.account-providers{display:grid;gap:10px;margin-top:24px}.account-providers button{width:100%;min-height:48px;display:flex;align-items:center;justify-content:center;gap:12px;border:1px solid #d7d0c3;background:#fff;color:#302c27;border-radius:12px;box-shadow:none;font-size:15px}.account-providers button[hidden]{display:none}.account-providers button:disabled{opacity:.5}.provider-mark{font-weight:700;font-size:21px}.provider-unavailable{display:flex;justify-content:space-between;align-items:center;padding:12px 4px;color:#777365;font-size:14px}.provider-unavailable small{font-size:12px;border-radius:20px;padding:4px 9px;background:#e9e6dd}.account-divider{display:flex;gap:12px;align-items:center;margin:20px 0;font-size:12px;color:#847c70}.account-divider:before,.account-divider:after{content:'';height:1px;flex:1;background:#ddd6c9}.account-signin form{display:grid;gap:10px}.account-signin form input{width:100%;min-width:0;box-sizing:border-box}.account-signin form button{min-height:46px;margin:0}.account-code,.account-privacy{margin-top:18px;font-size:13px}.account-code form{padding-top:14px}.account-privacy p{line-height:1.65;color:#777365}#account-provider-status:empty{display:none}
+
+/* A quiet grind reference. Pressure belongs to the brewing scene, never this control. */
+.grind-instrument{max-width:280px;margin:24px auto 0;touch-action:pan-y;border-radius:0}
+.grind-setting-row{display:flex;justify-content:center;align-items:center;gap:22px}
+.next-cup .grind-setting-row button{margin:0;min-width:44px;min-height:44px;width:44px;padding:0;border-radius:50%;font-size:22px;gap:0}
+.next-cup .grind-setting-row .grind-readout{display:grid;gap:5px;width:140px;padding:8px 4px;border:0;border-radius:12px;background:none;box-shadow:none}
+.grind-readout small{font-size:12px;font-weight:500;color:var(--muted);letter-spacing:.02em}
+.grind-readout strong{font:600 30px/1.15 -apple-system,BlinkMacSystemFont,sans-serif;letter-spacing:-.6px;overflow-wrap:anywhere}
+.grind-readout>span{font-size:11px;font-weight:400;color:var(--muted)}
+.grind-instrument input[type=range]{display:block;width:100%;height:44px;padding:0;margin:0;accent-color:#8e7055;background:none;border:0;box-shadow:none;cursor:pointer}
+.grind-direction{margin:-4px 0 5px;font-size:11px;color:var(--muted)}
+.next-cup .grind-status{font-size:11px;line-height:1.5;margin:8px auto 20px;max-width:280px}
+.next-cup #continue-brew{font-size:14px;min-height:48px;width:240px;max-width:100%}
+
+/* Red enamel, steel bezel, a six-o'clock 9 and the DayCup wordmark. */
+.brew-instruments{display:flex;justify-content:center;align-items:center;margin:10px auto 0;max-width:500px;gap:12px}
+.pressure-gauge{flex:1 1 260px;max-width:280px;min-width:0;filter:drop-shadow(0 8px 9px #302d2420)}
+.pressure-gauge svg{display:block;width:100%;height:auto;overflow:visible}
+.pressure-wordmark{font:700 31px Georgia,'Times New Roman',serif;letter-spacing:-1.3px;fill:#fff3e4;text-anchor:middle}
+.pressure-numbers{font:650 20px -apple-system,BlinkMacSystemFont,sans-serif;text-anchor:middle;font-variant-numeric:tabular-nums}
+.pressure-unit{font:400 13px -apple-system,BlinkMacSystemFont,sans-serif;fill:#fff3e4;text-anchor:middle;letter-spacing:1px}
+.pressure-needle{transform:rotate(0deg);transform-origin:160px 160px;transition:transform .7s cubic-bezier(.25,.7,.3,1);filter:drop-shadow(0 2px 1px #20041170)}
+.pressure-gauge.is-running .pressure-needle{transform:rotate(-90deg);transition-duration:3s}
+.brew-clock{flex:1 1 200px;min-width:0;max-width:240px}
+.brew-clock .brew-flow{margin:0 auto;max-width:220px}
+.brew-clock .brew-flow svg,.native-app .brew-clock .brew-flow svg{height:auto}
+.brew-clock .timer-numeric{padding:2px 0 14px;gap:7px}
+.recipe .timer .timer-numeric output{font:500 clamp(44px,9vw,64px)/1 -apple-system,BlinkMacSystemFont,sans-serif;letter-spacing:-2px;font-variant-numeric:tabular-nums}
+.timer-numeric small{font-size:10px;letter-spacing:.12em;color:var(--muted)}
+.timer-numeric span{font-size:9px;color:var(--muted)}
+.recipe .timer .pressure-caption{font-size:10px;line-height:1.5;color:var(--muted);margin:12px auto 20px;max-width:100%}
+.recipe .timer #brew-step{font-size:12px;max-width:380px}
+.recipe .timer .actions{max-width:400px}
+.recipe .timer .actions button{font-size:13px;min-height:48px;line-height:1.4}
+@media(max-width:560px){
+ .brew-instruments{flex-direction:column;gap:0;margin-top:12px}
+ .pressure-gauge{flex:none;width:min(100%,270px)}
+ .brew-clock{flex:none;width:100%;max-width:300px;display:flex;align-items:center;justify-content:center;gap:0}
+ .brew-clock .brew-flow{width:52%;flex:none;margin:0}
+ .brew-clock .timer-numeric{flex:1;min-width:0;padding:10px 0}
+ .recipe .timer .pressure-caption{margin:0 auto 16px}
+ .recipe .timer .actions{flex-wrap:wrap}
+}
+@media(prefers-reduced-motion:reduce){.pressure-needle,.pressure-gauge.is-running .pressure-needle{transition:none}}

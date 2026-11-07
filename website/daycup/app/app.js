@@ -14,7 +14,7 @@ import {curatedDirectory,featuredChoices,beanProfiles,curationVersion} from './c
 import {sameBrewContext,methods,drinks,drinkStrengths,roasts,preferences,tastes,basis,recommend,adjust,explainRecipe,captureBrewRecipe,validateEntry,validateEquipment} from './rules.js';
 import {budgetLabels,modelYear,matchingModels,selectionMetadata,safeSource} from './equipment.js';
 import {originChoices,processChoices,originLabel,localToday} from './bean-options.js';
-import {t,appVersion,languages,currentLanguage,setLanguage} from './i18n.js';
+import {t,appVersion,languages,currentLanguage,preferredLanguage,setLanguage} from './i18n.js';
 const $=s=>document.querySelector(s),escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const option=(values,selected)=>Object.entries(values).map(([key,value])=>`<option value="${escape(key)}" ${key===selected?'selected':''}>${escape(t(value))}</option>`).join('');
 const input=(label,name,value='',type='text',extra='')=>`<label>${label}<input name="${name}" value="${escape(value)}" type="${type}" ${extra}></label>`;
@@ -27,7 +27,7 @@ let accountScope='guest',guestPreferences=null,accountSyncTimer=null;
 const scope=()=>accountScope;
 const data=kind=>entries.filter(e=>e.kind===kind).map(e=>JSON.parse(e.payload));
 const toast=message=>{message=t(message);const host=$('#dialog').open?$('#dialog'):$('#editor').open?$('#editor'):$('#dialog');if(host.open){let feedback=host.querySelector('.dialog-notice');if(!feedback){feedback=document.createElement('p');feedback.className='dialog-notice error';feedback.setAttribute('role','status');host.append(feedback);}feedback.textContent=message;}$('#notice').textContent=message;$('#notice').hidden=false;clearTimeout(toast.timeout);toast.timeout=setTimeout(()=>{$('#notice').hidden=true;},9000);};
-const modal=html=>{sheetOrigin=null;$('#dialog').classList.remove('equipment-dialog','feedback-dialog','photo-dialog','grind-dialog');$('#dialog .dialog-notice')?.remove();$('#dialog-content').innerHTML=html;$('#dialog').showModal();};
+const modal=html=>{sheetOrigin=null;$('#dialog').classList.remove('equipment-dialog','feedback-dialog','photo-dialog','grind-dialog');$('#dialog .dialog-notice')?.remove();$('#dialog-content').innerHTML=html;$('#dialog').classList.toggle('account-dialog',!!$('#dialog-content .account-settings'));const heading=$('#dialog-content h2');if(heading){heading.id='dialog-heading';$('#dialog').setAttribute('aria-labelledby',heading.id);}else $('#dialog').removeAttribute('aria-labelledby');$('#dialog').showModal();};
 $('#dialog .close').onclick=closeSheet;
 $('#editor .editor-close').onclick=()=>$('#editor').close();
 $('#dialog').addEventListener('cancel',e=>{e.preventDefault();closeSheet();});
@@ -49,11 +49,7 @@ function draftGrind(r){return grindDrafts.get(grindKey(r))??String(r.grindData?.
 function usableScale(e){const s=grindScale(e);return s&&Number.isFinite(s.min)&&Number.isFinite(s.max)&&Number.isFinite(s.step)&&s.step>0?s:null;}
 function grindFace(r){
  const scale=usableScale(r.equipment),value=draftGrind(r),valid=scale&&value!==''&&Number.isFinite(Number(value));
- let html=dialFace(value||'—','GRIND SETTING',scale?scale.max-scale.min:6,valid?Number(value)-scale.min:0);
- html=html.replace(`<span>${t("MIN : SEC")}</span>`,'<span>'+(scale?t("DIAL VALUE"):t("YOUR REFERENCE"))+'</span>').replace('<div class="dial-display">',`<button type="button" class="dial-display" id="grind-readout" aria-label="${t("Edit grind setting")}">`).replace('</span></div></div>','</span></button></div>');
- if(scale)html=html.replace(/(<text[^>]*>)([^<]*)(<\/text>)/g,(()=>{let i=0;return(_,a,b,c)=>a+Number((scale.min+(scale.max-scale.min)*(i++)/6).toFixed(1))+c;})());
- else html=html.replace(/<g class="dial-numbers">.*?<\/g>/,'').replace('class="dial-hand"','class="dial-hand uncalibrated"');
- return `<div class="grind-instrument ${scale?'':'manual-reference'}" ${scale?`role="slider" tabindex="0" aria-label="${t('Grind setting')}" aria-valuemin="${scale.min}" aria-valuemax="${scale.max}" aria-valuenow="${valid?value:scale.min}" aria-valuetext="${escape(value||t('Not set'))}"`:''}>${html}</div><p class="grind-status">${grindDrafts.has(grindKey(r))?t("Unsaved trial · not yet brewed"):value?t("Starting reference · confirm on your grinder"):t("Set your own reference")}</p>${scale?`<div class="dial-controls"><button type="button" id="grind-down" aria-label="${t("Decrease grind setting")}">−</button><span>${scale.finer==='lower'?t("Finer ← → Coarser"):t("Coarser ← → Finer")}</span><button type="button" id="grind-up" aria-label="${t("Increase grind setting")}">+</button></div>`:''}`;
+ return `<div class="grind-instrument ${scale?'':'manual-reference'}"><div class="grind-setting-row">${scale?`<button type="button" id="grind-down" aria-label="${t('Decrease grind setting')}">−</button>`:''}<button type="button" class="grind-readout" id="grind-readout" aria-label="${t('Edit grind setting')}"><small>${t('Grind setting')}</small><strong>${escape(value||'—')}</strong><span>${t('Edit')} <span aria-hidden="true">›</span></span></button>${scale?`<button type="button" id="grind-up" aria-label="${t('Increase grind setting')}">+</button>`:''}</div>${scale?`<input id="grind-range" type="range" min="${scale.min}" max="${scale.max}" step="${scale.step}" value="${valid?value:scale.min}" aria-label="${t('Grind setting')}" aria-valuetext="${escape(value||t('Not set'))}"><p class="grind-direction">${scale.finer==='lower'?t('Finer ← → Coarser'):t('Coarser ← → Finer')}</p>`:''}</div><p class="grind-status">${grindDrafts.has(grindKey(r))?t('Unsaved trial · not yet brewed'):value?t('Starting reference · confirm on your grinder'):t('Set your own reference')}</p>`;
 }
 function homeCupHTML(e,b,resume){
  let r;try{r=recommend(e,b,selected.preference,selected.dose,data('brew'),{drink:selected.drink,strength:selected.strength});}catch{r=null;}
@@ -66,12 +62,10 @@ function bindRitual(){
  if($('#grind-readout')&&r)$('#grind-readout').onclick=()=>editGrind(r,$('#grind-readout'));
  const scale=r&&usableScale(r.equipment),host=$('.grind-instrument');
  if(scale&&host){
-  const update=n=>{const value=Number((scale.min+Math.min(Math.floor((scale.max-scale.min)/scale.step+1e-8),Math.round((Math.max(scale.min,Math.min(scale.max,n))-scale.min)/scale.step))*scale.step).toFixed(8));if(value>scale.max)return;grindDrafts.set(grindKey(r),String(value));host.setAttribute('aria-valuenow',value);host.setAttribute('aria-valuetext',String(value));host.querySelector('.dial-display strong').textContent=value;host.querySelector('.dial-hand').setAttribute('transform',`rotate(${-90+(value-scale.min)/(scale.max-scale.min)*180} 160 164)`);$('.grind-status').textContent=t("Unsaved trial · not yet brewed");};
+  const update=n=>{const value=Number((scale.min+Math.min(Math.floor((scale.max-scale.min)/scale.step+1e-8),Math.round((Math.max(scale.min,Math.min(scale.max,n))-scale.min)/scale.step))*scale.step).toFixed(8));if(value>scale.max)return;grindDrafts.set(grindKey(r),String(value));$('#grind-range').value=value;$('#grind-range').setAttribute('aria-valuetext',String(value));host.querySelector('#grind-readout strong').textContent=value;$('.grind-status').textContent=t('Unsaved trial · not yet brewed');};
   const step=n=>update((Number(draftGrind(r))||scale.min)+n*scale.step);
   $('#grind-down').onclick=()=>step(-1);$('#grind-up').onclick=()=>step(1);
-  host.onkeydown=e=>{if(e.target!==host)return;const k=e.key;if(['ArrowLeft','ArrowDown','ArrowRight','ArrowUp','Home','End'].includes(k)){e.preventDefault();if(k==='Home')update(scale.min);else if(k==='End')update(scale.max);else step(['ArrowLeft','ArrowDown'].includes(k)?-1:1);}};
-  let dragging=false;const point=e=>{const b=host.querySelector('svg').getBoundingClientRect(),x=e.clientX-b.x-b.width/2,y=e.clientY-b.y-b.width*164/320,angle=Math.atan2(-y,x);update(scale.min+(1-Math.max(0,Math.min(Math.PI,angle))/Math.PI)*(scale.max-scale.min));};
-  host.onpointerdown=e=>{if(e.target.closest('button'))return;dragging=true;host.setPointerCapture(e.pointerId);point(e);};host.onpointermove=e=>{if(dragging)point(e);};host.onpointerup=host.onpointercancel=()=>dragging=false;
+  $('#grind-range').oninput=e=>update(Number(e.target.value));
  }
  const beans=data('bean'),stage=$('.bag-stage');let switching=false;
  const select=async(index,direction)=>{if(switching||index<0||index>=beans.length||beans[index].id===selected.bean)return;switching=true;const slide=$('.bag-slide');if(slide&&!reduceMotion())await slide.animate([{transform:getComputedStyle(slide).transform,opacity:1},{transform:`translateX(${-direction*100}%)`,opacity:0}],{duration:170,easing:'ease-in'}).finished;selected.bean=beans[index].id;recipe=null;elapsed=0;timerStart=null;render();const next=$('.bag-slide');if(next&&!reduceMotion())next.animate([{transform:`translateX(${direction*100}%)`,opacity:0},{transform:'none',opacity:1}],{duration:240,easing:'ease-out'});};
@@ -223,25 +217,33 @@ function confirmFirstBrew(setup,after){
  modal(`<p class="eyebrow">${t('BEFORE YOUR FIRST CUP')}</p><h2>${t('One detail from your basket')}</h2><p>${escape(setup.name)} · ${escape(setup.grinder)}</p><form id="first-brew-setup"><p>${t('Use the dose printed on your basket or dripper. For a single rated dose, enter it in both fields.')}</p><div class="row">${input(t('Minimum dose / g'),'minDose',setup.minDose||'','number','min="5" max="35" step="0.1" required')}${input(t('Maximum dose / g'),'maxDose',setup.maxDose||'','number','min="5" max="50" step="0.1" required')}</div>${setup.method==='espresso'?`<label>${t('Installed espresso basket')}<select name="basketType" required><option value="">${t('Choose basket type')}</option>${option({'single-wall':'Single-wall / non-pressurized',pressurized:'Pressurized / double-wall'},'')}</select></label>`:''}${check(t('This is my basket capacity and a separate brewer and grinder'),'confirmed')}<button class="primary">${t('Save and find my recipe')}</button></form>`);
  $('#first-brew-setup').onsubmit=singleSubmit(async event=>{event.preventDefault();try{if(scope()!==captured)throw Error(t('Your account changed. Please start again.'));const f=new FormData(event.target);if(!f.has('confirmed'))throw Error(t('Please confirm your actual equipment before calculating a recipe'));const next={...setup,minDose:Number(f.get('minDose')),maxDose:Number(f.get('maxDose')),basketType:setup.method==='v60'?'filter':f.get('basketType'),nonpressurized:f.get('basketType')==='single-wall',architecture:'separate',confirmed:true};validateEquipment(next);if(next.minDose>35||next.maxDose<5||next.method==='v60'&&(next.maxDose<15||next.minDose>30))throw Error(t('Confirm a usable dose range on the actual basket or dripper before saving.'));await replaceLibraryItem('equipment',next);selected.dose=Math.max(next.minDose,Math.min(next.maxDose,selected.dose));$('#dialog').close();after();}catch(error){toast(error.message);}});
 }
-function renderAccountEntry(route){
- applyChrome();if(!['brew','history','account'].includes(route))return;
- const user=accountUI.client.user,active=accountUI.active,section=document.createElement('section');section.className='account-entry';
- section.innerHTML=`<div><p class="eyebrow">${t(active?'YOUR DAYCUP ACCOUNT':'YOUR COFFEE, WITH YOU')}</p><strong>${user?escape(user.email):t('Sign in or create your account')}</strong><p>${t(active?'Your private library syncs across devices':user?'Choose your cloud library to finish setup':'Google or email · one account with SideCourt')}</p>${!active?`<small>${t('You are browsing as a guest. These records stay on this device.')}</small>`:''}</div><button type="button" class="${active?'':'primary'}" data-account-entry>${t(user?'My account':'Sign in / Register')}</button>`;
- $('#main').prepend(section);section.querySelector('button').onclick=()=>accountUI.open();
+function accountStatus(){
+ if(!accountUI.active)return t(accountUI.client.user?'Choose a library':'Saved on this device');
+ if(!navigator.onLine)return t('Offline · Saved on this device');
+ return t(({'Cloud copy saved':'Synced','Cloud sync needs attention':'Sync needs attention','Syncing…':'Syncing…'})[connectionKey]||'Saved on this device');
 }
+function updateAccountStatus(){
+ document.querySelectorAll('[data-account-status]').forEach(node=>node.textContent=accountStatus());
+ document.querySelectorAll('[data-account-status-detail]').forEach(node=>node.textContent=t(connectionKey==='Cloud sync needs attention'?'Your changes are saved on this device. Retry when you’re online.':'Changes save automatically to your private cloud library.'));
+}
+function renderAccountEntry(route){
+ applyChrome();if(route!=='history')return;
+ const section=document.createElement('section');section.className='account-entry';
+ section.innerHTML=`<button type="button" class="account-entry-row" data-account-entry><span class="account-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="3.5"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/></svg></span><span class="account-entry-copy"><strong>${t(accountUI.client.user?'Account & sync':'Sign in to DayCup')}</strong><small ${accountUI.client.user?'data-account-status':''}>${accountUI.client.user?accountStatus():t('Keep your coffee with you across devices')}</small></span><span class="account-chevron" aria-hidden="true">›</span></button>`;
+ $('#main .studio-heading').after(section);section.querySelector('button').onclick=()=>accountUI.open();
+}
+function connection(key){connectionKey=key;$('#connection').textContent=t(key);updateAccountStatus();}
 
-function connection(key){connectionKey=key;$('#connection').textContent=t(key);}
 // Header, navigation and footer text live in index.html as English; this re-labels them in the active language.
 function applyChrome(){
  document.documentElement.lang=currentLanguage()==='zh'?'zh-CN':'en';
  document.title=t('DayCup — A daily ritual, a little better.');
  document.querySelectorAll('[data-i18n]').forEach(node=>{node.textContent=t(node.dataset.i18n);});
  const other=currentLanguage()==='zh'?'en':'zh';
- const toggle=$('#language');if(toggle){toggle.textContent=other==='en'?'EN':'中文';toggle.setAttribute('aria-label',t('Switch language'));toggle.onclick=()=>{switchLanguage(other);};}
+ const toggle=$('#language');if(toggle){toggle.hidden=false;toggle.textContent=other==='en'?'EN':'中文';toggle.setAttribute('aria-label',t('Switch language'));toggle.onclick=()=>{switchLanguage(other);};}
  document.querySelectorAll('[data-i18n-aria]').forEach(node=>node.setAttribute('aria-label',t(node.dataset.i18nAria)));
  document.querySelectorAll('[data-i18n-title]').forEach(node=>node.title=t(node.dataset.i18nTitle));
  $('#connection').textContent=t(connectionKey);
- const accountButton=$('#header-account');if(accountButton){accountButton.textContent=t(accountUI.client.user?'Account':'Sign in');accountButton.onclick=()=>accountUI.open();}
  if(globalThis.DAYCUP_NATIVE)nativeSend('language',{language:currentLanguage()});
 }
 function switchLanguage(code){
@@ -258,13 +260,26 @@ function beanObject(bean){
  const tones={light:'sage',medium:'clay',dark:'cocoa',unknown:'stone'},roastLabel=roasts[bean.roast]?t(roasts[bean.roast]):t("Your beans");
  return `<div class="bean-object ${tones[bean.roast]||'stone'}" aria-hidden="true"><div class="bag-seal"></div><div class="bag-label"><span class="bag-brand">${t("DayCup")}</span><span class="bag-art"><i></i><i></i><i></i></span><strong>${escape(bean.name)}</strong><small>${escape(roastLabel)}</small></div><div class="bag-foot"></div></div>`;
 }
-function dialFace(value,label,limit=60,current=0,live=false){
- const point=(angle,r)=>[160+Math.cos(angle)*r,164-Math.sin(angle)*r];
+// A mechanical illustration, never a sensor or a recipe-pressure recommendation.
+// The reference's lower 0–18 scale places 9 at six o'clock.
+function pressureGaugeHTML(){
+ const point=(bar,r)=>{const a=Math.PI*(1-bar/18);return [160+Math.cos(a)*r,160+Math.sin(a)*r].map(n=>n.toFixed(2));};
  let ticks='',numbers='';
- for(let i=0;i<=60;i++){const a=Math.PI*(1-i/60),p=point(a,145),q=point(a,i%10===0?132:i%5===0?136:139);ticks+=`<path d="M${p[0]} ${p[1]}L${q[0]} ${q[1]}" class="${i%10===0?'major':'minor'}"/>`;}
- for(let i=0;i<=6;i++){const p=point(Math.PI*(1-i/6),116);numbers+=`<text x="${p[0]}" y="${p[1]+4}">${Math.round(limit*i/6)}</text>`;}
- const angle=-90+Math.min(Math.max(current/limit,0),1)*180;
- return `<div class="ritual-dial" ${live?`data-limit="${limit}"`:''}><svg viewBox="0 0 320 184" aria-hidden="true"><path class="dial-bed" d="M7 164a153 153 0 0 1 306 0L282 164a122 122 0 0 0-244 0Z"/><path class="dial-rim" d="M8 164a152 152 0 0 1 304 0"/><g class="dial-ticks">${ticks}</g><g class="dial-numbers">${numbers}</g><g class="dial-hand" transform="rotate(${angle} 160 164)"><path d="M160 10L160 63"/><circle cx="160" cy="11" r="6"/></g></svg><div class="dial-display"><small>${escape(t(label))}</small>${live?`<output id="timer">${escape(value)}</output>`:`<strong>${escape(value)}</strong>`}<span>${t("MIN : SEC")}</span></div></div>`;
+ for(let i=0;i<=36;i++){const bar=i/2,major=i%6===0,p=point(bar,123),q=point(bar,major?109:117);ticks+=`<path d="M${p[0]} ${p[1]}L${q[0]} ${q[1]}" stroke-width="${major?3:1.5}"/>`;}
+ for(let bar=0;bar<=18;bar+=3){const p=point(bar,93);numbers+=`<text x="${p[0]}" y="${p[1]}" dy=".35em" ${bar===9?'class="pressure-nine"':''}>${bar}</text>`;}
+ return `<div class="pressure-gauge ${timerStart?'is-running':''}" data-target-bar="9" aria-hidden="true"><svg viewBox="0 0 320 320" fill="none" focusable="false">
+ <defs><linearGradient id="pressure-steel" x1="40" y1="20" x2="260" y2="304" gradientUnits="userSpaceOnUse"><stop stop-color="#777b80"/><stop offset=".12" stop-color="#f9f8f5"/><stop offset=".25" stop-color="#b5b3b3"/><stop offset=".43" stop-color="#f6f5f2"/><stop offset=".57" stop-color="#83858b"/><stop offset=".74" stop-color="#d1cecb"/><stop offset=".88" stop-color="#fffef9"/><stop offset="1" stop-color="#828287"/></linearGradient><linearGradient id="pressure-bevel" x1="160" y1="20" x2="160" y2="300" gradientUnits="userSpaceOnUse"><stop stop-color="#fff"/><stop offset=".23" stop-color="#727378"/><stop offset=".7" stop-color="#d5d2cf"/><stop offset="1" stop-color="#fffdf7"/></linearGradient><radialGradient id="pressure-red" cx=".35" cy=".22" r=".85"><stop stop-color="#df2545"/><stop offset=".62" stop-color="#c50a30"/><stop offset="1" stop-color="#a90928"/></radialGradient><linearGradient id="pressure-glass" x1="100" y1="35" x2="220" y2="280" gradientUnits="userSpaceOnUse"><stop stop-color="#fff" stop-opacity=".16"/><stop offset=".48" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#10020c" stop-opacity=".1"/></linearGradient></defs>
+ <circle cx="160" cy="160" r="153" fill="url(#pressure-steel)" stroke="#8b8a89" stroke-width="1"/><circle cx="160" cy="160" r="147" stroke="#fffdf8" stroke-opacity=".7" stroke-width="2"/><circle cx="160" cy="160" r="137" fill="url(#pressure-bevel)"/><circle cx="160" cy="160" r="131" fill="#292b31"/><circle cx="160" cy="160" r="127" fill="url(#pressure-red)" stroke="#6c1830" stroke-width="1.5"/>
+ <path d="M47 133a116 116 0 0 1 226 0" stroke="#fff1df" stroke-opacity=".42" stroke-width="1"/>
+ <text class="pressure-wordmark" x="160" y="101">DayCup</text><g class="pressure-beans" fill="#fff3e4"><ellipse cx="142" cy="124" rx="6" ry="10" transform="rotate(35 142 124)"/><ellipse cx="160" cy="122" rx="6" ry="10" transform="rotate(35 160 122)"/><ellipse cx="178" cy="124" rx="6" ry="10" transform="rotate(35 178 124)"/></g><path d="m138 131 8-14m10 12 8-14m10 16 8-14" stroke="#c81937" stroke-width="1.3"/>
+ <g stroke="#fff3e4">${ticks}</g><g class="pressure-numbers" fill="#fff3e4">${numbers}</g><text class="pressure-unit" x="160" y="206">bar</text>
+ <g class="pressure-needle"><path d="M39 160 151 156 182 153Q190 160 182 167L151 164Z" fill="#22252c" stroke="#10151b" stroke-width="1"/><path d="M43 159 149 158" stroke="#697079" stroke-width="1"/></g><circle cx="160" cy="160" r="14" fill="#343740" stroke="#11151d" stroke-width="1.5"/><circle cx="160" cy="160" r="3" fill="#bda17a"/>
+ <circle cx="160" cy="160" r="127" fill="url(#pressure-glass)"/><path d="M55 74a134 134 0 0 1 173-26" stroke="#fff" stroke-opacity=".45" stroke-width="2" stroke-linecap="round"/>
+ </svg></div>`;
+}
+function brewFlowHTML(){
+ const filter=recipe.equipment.method==='v60';
+ return `<div class="brew-flow ${filter?'is-filter':'is-espresso'} ${timerStart?'is-running':''}" aria-hidden="true"><svg viewBox="0 0 280 120" fill="none" focusable="false"><defs><linearGradient id="machine-steel" x1="80" y1="10" x2="180" y2="64" gradientUnits="userSpaceOnUse"><stop stop-color="#e4e0d8"/><stop offset=".5" stop-color="#faf9f5"/><stop offset="1" stop-color="#adaaa4"/></linearGradient></defs><g class="brew-apparatus">${filter?'<path d="M101 12h78l-28 43h-22Z" fill="#eae6db" stroke="#9f998c" stroke-width="1.5"/><path d="m110 17 23 30m7-30v31m30-31-23 30" stroke="#c2bbae"/>':'<rect x="77" y="12" width="126" height="45" rx="9" fill="#b61d38"/><path d="M77 32h126v17a8 8 0 0 1-8 8H85a8 8 0 0 1-8-8Z" fill="url(#machine-steel)"/><path d="M124 48h32v13h-32z" fill="#777974"/><path d="M154 55h39" stroke="#363b36" stroke-width="6" stroke-linecap="round"/><path d="M87 68V40m106 0v10" stroke="#91918a" stroke-width="3" stroke-linecap="round"/><circle cx="188" cy="23" r="3" fill="#ede9d9"/>'}</g><g class="brew-stream" stroke="#9b643d" stroke-width="2.5" stroke-linecap="round">${filter?'<path d="M140 59v25"/>':'<path d="M135 64v20"/><path d="M145 64v20"/>'}</g><path d="M114 85h52l-5 21h-42z" fill="#fbf8f0" stroke="#b4a99a" stroke-width="1.5"/><path d="M166 89h5a6 6 0 0 1 0 12h-8" stroke="#b4a99a" stroke-width="1.5"/><path d="M119 89h42" stroke="#b6895f" stroke-width="2"/><path d="M108 111h66" stroke="#d0c6b8" stroke-width="2" stroke-linecap="round"/></svg></div>`;
 }
 const clockText=n=>{const v=Math.max(0,Math.floor(n));return String(Math.floor(v/60)).padStart(2,'0')+':'+String(v%60).padStart(2,'0');};
 
@@ -289,7 +304,7 @@ const cupRecordUI=createCupRecordUI({data,escape,toast,async saveDesign(brewId,d
  tx.oncomplete=resolve;tx.onerror=()=>reject(failure||tx.error);tx.onabort=()=>reject(failure||tx.error);});entries=await list(scope());scheduleAccountSync();
  },shareCup:(id,composition)=>circleUI.shareCup(id,composition),reflect:(id,drink)=>tasteUI.reviewBag(id,drink)});
 const defaultSelection=()=>({equipment:'',bean:'',preference:'balanced',dose:18,drink:'espresso',strength:'standard'});
-function accountSnapshot(){return {entries:structuredClone(entries),preferences:{language:currentLanguage(),selected:structuredClone(selected)}};}
+function accountSnapshot(){return {entries:structuredClone(entries),preferences:{language:preferredLanguage(),selected:structuredClone(selected)}};}
 function validateAccountSnapshot(s){
  if(!s||!Array.isArray(s.entries)||s.entries.length>10000||new Blob([JSON.stringify(s)]).size>16000000)throw Error(t('Invalid cloud library'));
  const ids=new Set();for(const row of s.entries){validateEntry(row);if(ids.has(row.id))throw Error(t('Invalid cloud library'));ids.add(row.id);}
@@ -312,17 +327,17 @@ async function activateAccount(uid,incoming,{stillCurrent=()=>true}={}){
  if(cache&&localRows.length===0&&JSON.stringify(canonical(local.preferences?.selected))===JSON.stringify(canonical(defaultSelection()))){const empty={entries:[],preferences:{language:cache.preferences?.language,selected:{}}};if(baseline===await snapshotHash(empty,{normalize:false}))baseline=await snapshotHash(empty);}
  if((localRows.length||cache)&&localHash!==incomingHash&&localHash!==baseline){if(incomingHash===baseline)chosen=local;else throw Error(t('This device and cloud have different unsynced changes. Export this device backup before resolving the conflict. No records were replaced.'));}
  if(!stillCurrent())throw Error(t('Account view closed'));await replaceAccountRows(chosen.entries,target);
- if(!guestPreferences)guestPreferences={selected:structuredClone(selected),language:currentLanguage()};
+ if(!guestPreferences)guestPreferences={selected:structuredClone(selected),language:preferredLanguage()};
  accountScope=target;entries=await list(target);resetAccountWork();selected={...defaultSelection(),...(chosen.preferences?.selected||{})};if(chosen.preferences?.language)setLanguage(chosen.preferences.language);
- localStorage.setItem(accountCacheKey(uid),JSON.stringify({baseline:incomingHash,preferences:accountSnapshot().preferences}));applyChrome();connection('Cloud library · Saved locally');
+ localStorage.setItem(accountCacheKey(uid),JSON.stringify({baseline:incomingHash,preferences:accountSnapshot().preferences}));applyChrome();connection(chosen===incoming?'Cloud copy saved':'Cloud library · Saved locally');
 }
 async function activateCachedAccount(uid,{stillCurrent=()=>true}={}){
  const cache=cachedAccount(uid);if(!cache)return false;const target='account:'+uid,local={entries:await list(target),preferences:cache.preferences};validateAccountSnapshot(local);await cupRecordUI.flush();if(!stillCurrent())return false;
- if(!guestPreferences)guestPreferences={selected:structuredClone(selected),language:currentLanguage()};
- accountScope=target;entries=local.entries;resetAccountWork();selected={...defaultSelection(),...(local.preferences?.selected||{})};if(local.preferences?.language)setLanguage(local.preferences.language);applyChrome();return true;
+ if(!guestPreferences)guestPreferences={selected:structuredClone(selected),language:preferredLanguage()};
+ accountScope=target;entries=local.entries;resetAccountWork();selected={...defaultSelection(),...(local.preferences?.selected||{})};if(local.preferences?.language)setLanguage(local.preferences.language);applyChrome();connection('Cloud sync needs attention');return true;
 }
-const accountUI=createAccountUI({escape,modal,close:()=>$('#dialog').close(),toast,getSnapshot:accountSnapshot,authChanged:()=>circleUI.resetAccount(),async removeAccountCache(uid){clearTimeout(accountSyncTimer);await cupRecordUI.flush();circleUI.resetAccount();await clearScope('account:'+uid);localStorage.removeItem(accountCacheKey(uid));},validateSnapshot:validateAccountSnapshot,activate:activateAccount,activateCached:activateCachedAccount,didSync,async deactivate(){circleUI.resetAccount();clearTimeout(accountSyncTimer);await cupRecordUI.flush();cacheAccountPreferences();accountScope='guest';entries=await list('guest');resetAccountWork();if(guestPreferences){selected=guestPreferences.selected;setLanguage(guestPreferences.language);guestPreferences=null;}applyChrome();},refresh:()=>{render();}});
-function scheduleAccountSync(){if(!accountUI.active)return;cacheAccountPreferences();clearTimeout(accountSyncTimer);accountSyncTimer=setTimeout(async()=>{if(!accountUI.active)return;if(accountUI.busy){scheduleAccountSync();return;}try{await accountUI.sync();connection('Cloud copy saved');}catch(error){connection('Cloud sync needs attention');toast(error.message);}},1000);}
+const accountUI=createAccountUI({escape,modal,getStatus:accountStatus,onSyncStatus:connection,close:()=>$('#dialog').close(),toast,getSnapshot:accountSnapshot,authChanged:()=>circleUI.resetAccount(),async removeAccountCache(uid){clearTimeout(accountSyncTimer);await cupRecordUI.flush();circleUI.resetAccount();await clearScope('account:'+uid);localStorage.removeItem(accountCacheKey(uid));},validateSnapshot:validateAccountSnapshot,activate:activateAccount,activateCached:activateCachedAccount,didSync,async deactivate(){circleUI.resetAccount();clearTimeout(accountSyncTimer);await cupRecordUI.flush();cacheAccountPreferences();accountScope='guest';entries=await list('guest');resetAccountWork();if(guestPreferences){selected=guestPreferences.selected;setLanguage(guestPreferences.language);guestPreferences=null;}applyChrome();connection('Saved on this device');},refresh:()=>{render();}});
+function scheduleAccountSync(){if(!accountUI.active)return;connection('Cloud library · Saved locally');cacheAccountPreferences();clearTimeout(accountSyncTimer);accountSyncTimer=setTimeout(async()=>{if(!accountUI.active)return;if(accountUI.busy){scheduleAccountSync();return;}try{await accountUI.sync();connection('Cloud copy saved');}catch(error){connection('Cloud sync needs attention');toast(error.message);}},1000);}
 function render(){
  if(!location.hash.startsWith('#record/'))void cupRecordUI.flush();
  if(globalThis.DAYCUP_NATIVE)nativeSend('route',{route:location.hash.slice(1)||'brew'});
@@ -361,9 +376,10 @@ function brewPage(){
  if(!equipment.length||!beans.length)studioWelcome(equipment.length,beans.length);
  bindRitual();bindTimer();
 }
-function timerHTML(){return `<div class="timer"><div class="timer-numeric"><small>${t('BREW TIME')}</small><output id="timer">${clockText(seconds())}</output><span>${t('MIN : SEC')}</span></div><p id="brew-step" class="muted" role="status" aria-live="polite">${t('Start timing from {basis}',{basis:basis(recipe.equipment.method)})}</p><div class="actions"><button id="timer-toggle" class="primary">${t(timerStart?t("Pause"):t("Start timer"))}</button><button id="finish">${t('Done brewing · save this cup')}</button></div></div>`;}
+function timerHTML(){const espresso=recipe.equipment.method==='espresso';return `<div class="timer"><div class="brew-instruments ${espresso?'has-pressure':''}">${espresso?pressureGaugeHTML():''}<div class="brew-clock">${brewFlowHTML()}<div class="timer-numeric"><small>${t('BREW TIME')}</small><output id="timer" aria-label="${t('Brew time')}">${clockText(seconds())}</output><span>${t('MIN : SEC')}</span></div></div></div>${espresso?`<p class="pressure-caption">${t('Brewing animation · not a pressure reading')}</p>`:''}<p id="brew-step" class="muted" role="status" aria-live="polite">${t('Start timing from {basis}',{basis:basis(recipe.equipment.method)})}</p><div class="actions"><button id="timer-toggle" class="primary">${t(timerStart?'Pause':'Start timer')}</button><button id="finish">${t('Done brewing · save this cup')}</button></div></div>`;}
 function seconds(){return elapsed+(timerStart?(Date.now()-timerStart)/1000:0);}
-function bindTimer(){if(!$('#timer-toggle'))return;$('#timer-toggle').onclick=()=>{if(timerStart){elapsed=seconds();timerStart=null;}else timerStart=Date.now();$('#timer-toggle').textContent=t(timerStart?t("Pause"):t("Start timer"));$('.brew-flow')?.classList.toggle('is-running',!!timerStart);nativeCheckpoint();nativeSend('haptic');};$('#finish').onclick=()=>{elapsed=seconds();timerStart=null;$('.brew-flow')?.classList.remove('is-running');nativeCheckpoint();feedbackPage();};}
+function updateBrewVisuals(){for(const node of document.querySelectorAll('.brew-flow,.pressure-gauge'))node.classList.toggle('is-running',!!timerStart);}
+function bindTimer(){if(!$('#timer-toggle'))return;$('#timer-toggle').onclick=()=>{if(timerStart){elapsed=seconds();timerStart=null;}else timerStart=Date.now();$('#timer-toggle').textContent=t(timerStart?'Pause':'Start timer');updateBrewVisuals();nativeCheckpoint();nativeSend('haptic');};$('#finish').onclick=()=>{elapsed=seconds();timerStart=null;updateBrewVisuals();$('#timer-toggle').textContent=t('Start timer');nativeCheckpoint();feedbackPage();};}
 setInterval(()=>{const out=$('#timer');if(out){const s=Math.max(0,Math.floor(seconds()));out.textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}const step=$('#brew-step');if(step&&recipe){const n=seconds(),p=recipe.pours?.find(p=>n<p.until);const text=n===0?t('Start timing from {basis}',{basis:basis(recipe.equipment.method)}):p?t('{label} · {total} g cumulative water by {until} sec',{label:p.label,total:p.totalG,until:p.until}):recipe.pours?t('Let it draw down. Diagnostic window: {min}–{max} sec.',{min:recipe.timeMin,max:recipe.timeMax}):recipe.timeDiagnostic===false?t('Stop at {output} g espresso. Pressurized basket: log elapsed time only; no single-wall time target.',{output:recipe.output}):t('Stop at {output} g espresso; {min}–{max} sec is a diagnostic window, not an instruction to keep brewing past the yield.',{output:recipe.output,min:recipe.timeMin,max:recipe.timeMax});if(step.textContent!==text)step.textContent=text;}},250);
 function feedbackPage(){
  const snapshot=structuredClone(recipe),captured=scope(),milk=snapshot.drink==='milk',diluted=['americano','iced-americano','milk'].includes(snapshot.drink);
@@ -499,8 +515,8 @@ function dataPage(){
  studioData();
  if(!globalThis.DAYCUP_BUNDLE&&photoRecognitionAvailable()){const section=document.createElement('section');section.className='panel';section.innerHTML=`<h2>${t("Optional photo reading")}</h2><p>${t("Your coffee library works without AI. If you have a DayCup invitation, connect photo reading here. Photos are sent only when you choose to read one.")}</p><form id="tm-connect"><label>${t("Invitation code")}<input name="invite" type="password" autocomplete="off" required maxlength="200"></label><button>${t("Connect photo reading")}</button></form>`;$('.data-studio').append(section);$('#tm-connect').onsubmit=singleSubmit(async e=>{try{await connectPhotoService(e.target.elements.invite.value);e.target.reset();toast(t("Photo reading connected. Your library remains on this device."));}catch(error){toast(error.message);}});}
  if(globalThis.DAYCUP_NATIVE)nativeDataPage();
- const langSection=document.createElement('section');langSection.className='panel language-panel';langSection.innerHTML=`<h2>${t('Language')}</h2><div class="actions">${Object.entries(languages).map(([code,label])=>`<button data-language="${code}" aria-pressed="${currentLanguage()===code}">${label}</button>`).join('')}</div>`;$('#main').prepend(langSection);langSection.querySelectorAll('[data-language]').forEach(button=>button.onclick=()=>switchLanguage(button.dataset.language));
- const accountPanel=document.createElement('section');accountPanel.className='panel account-panel';accountPanel.innerHTML=`<h2>${t('Account & sync')}</h2><p>${t('Sync equipment, beans, preferences and private history across devices after you choose.')}</p><button id="open-account">${t('Account & sync')}</button>`;$('#main').prepend(accountPanel);$('#open-account').onclick=()=>accountUI.open();
+ {const langSection=document.createElement('section');langSection.className='panel language-panel';langSection.innerHTML=`<h2>${t('Language')}</h2><div class="actions">${Object.entries(languages).map(([code,label])=>`<button data-language="${code}" aria-pressed="${currentLanguage()===code}">${label}</button>`).join('')}</div>`;$('#main').prepend(langSection);langSection.querySelectorAll('[data-language]').forEach(button=>button.onclick=()=>switchLanguage(button.dataset.language));}
+ const accountPanel=document.createElement('section');accountPanel.className='account-data-link';accountPanel.innerHTML=`<button id="open-account">${t('Account & sync')} <span aria-hidden="true">›</span></button>`;$('#main').prepend(accountPanel);$('#open-account').onclick=()=>accountUI.open();
 
 }
 window.addEventListener('beforeunload',event=>{if(recipe&&seconds()>0){event.preventDefault();event.returnValue='';}});
@@ -539,7 +555,7 @@ if(globalThis.DAYCUP_NATIVE){
 document.addEventListener('visibilitychange',()=>{if(document.hidden)void cupRecordUI.flush();});
 window.addEventListener('hashchange',()=>{render();$('#main').focus();});
 window.addEventListener('offline',()=>connection('Offline · Saved on this device'));
-window.addEventListener('online',()=>connection('On this device · No automatic uploads'));
+window.addEventListener('online',()=>{connection('Saved on this device');if(accountUI.active)scheduleAccountSync();});
 try {
  applyChrome();
  db=await openDB();entries=await list(scope());
@@ -551,9 +567,9 @@ try {
  await accountUI.restore();
  if(globalThis.DAYCUP_NATIVE)restoreNativeCup();
  if(accountUI.client.user)await circleUI.restoreAccount();
- render();connection(accountUI.active?'Cloud library · Saved locally':bundled?t("Private library · On this device"):t("Saved on this device"));
+ render();if(!accountUI.active)connection(bundled?t("Private library · On this device"):t("Saved on this device"));
  if(!equipmentDirectory||!beanOptions)toast(t('Some directory choices could not load. You can still enter your own equipment and beans.'));
  if(!bundled&&'serviceWorker' in navigator&&['http:','https:'].includes(location.protocol)){
-  navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'}).then(registration=>{const announce=()=>{if(registration.waiting&&navigator.serviceWorker.controller)toast(t("Update ready. Finish your cup, then close all DayCup tabs and reopen. Your records stay on this device."));};announce();registration.addEventListener('updatefound',()=>{registration.installing?.addEventListener('statechange',announce);});return navigator.serviceWorker.ready;}).then(()=>connection('Ready offline · Records on this device')).catch(()=>toast(t('Offline caching could not be installed. Keep this page open and export your records.')));
+  navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'}).then(registration=>{const announce=()=>{if(registration.waiting&&navigator.serviceWorker.controller)toast(t("Update ready. Finish your cup, then close all DayCup tabs and reopen. Your records stay on this device."));};announce();registration.addEventListener('updatefound',()=>{registration.installing?.addEventListener('statechange',announce);});return navigator.serviceWorker.ready;}).then(()=>{if(!accountUI.active)connection('Ready offline · Records on this device');}).catch(()=>toast(t('Offline caching could not be installed. Keep this page open and export your records.')));
  }
 }catch(error){$('#main').innerHTML=`<h1>${t('We could not open your local records.')}</h1><p>${t('Check that your browser allows sites to save data. Your existing records have not been reset. For a downloaded file, try the included loopback launcher.')}</p>`;toast(error.message);}

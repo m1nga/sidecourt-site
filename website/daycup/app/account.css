@@ -1,0 +1,171 @@
+/* Quiet account controls sit beside the journal, away from the brewing ritual. */
+.account-entry {
+  margin: 0 0 28px;
+  padding: 0;
+  display: block;
+  border: 1px solid #ded9ce;
+  border-radius: 18px;
+  background: #faf8f3;
+}
+.account-entry .account-entry-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 18px 20px;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  box-shadow: none;
+  text-align: left;
+  white-space: normal;
+}
+.account-symbol, .account-avatar {
+  display: grid;
+  place-items: center;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #eae4d9;
+  color: #67513d;
+}
+.account-symbol svg { width: 24px; height: 24px; }
+.account-entry-copy { flex: 1; min-width: 0; }
+.account-entry .account-entry-copy strong { font-size: 16px; font-weight: 600; }
+.account-entry .account-entry-copy small { margin-top: 3px; font-size: 13px; color: #6d665c; }
+.account-chevron { font-size: 23px; color: #6d665c; font-weight: 400; }
+
+#dialog.account-dialog {
+  --account-surface: #f6f3ed;
+  --account-group: #fffefa;
+  --account-ink: #302c26;
+  --account-secondary: #6d665c;
+  --account-line: #e4dfd5;
+  --account-accent: #765338;
+  width: min(520px, calc(100% - 32px));
+  max-height: min(90dvh, 860px);
+  padding: 28px;
+  border: 1px solid #ffffff90;
+  border-radius: 28px;
+  background: var(--account-surface);
+  color: var(--account-ink);
+  box-shadow: 0 24px 80px #302c2630;
+  text-align: left;
+}
+#dialog.account-dialog > .close {
+  position: absolute;
+  top: 17px;
+  right: 18px;
+  min-width: 44px;
+  min-height: 44px;
+  margin: 0;
+  padding: 10px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  box-shadow: none;
+  color: var(--account-accent);
+  font-size: 14px;
+  font-weight: 600;
+}
+.account-settings { font-size: 15px; line-height: 1.5; }
+.account-settings h2 {
+  margin: 0 70px 28px 0;
+  font: 650 22px/1.25 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  letter-spacing: -.5px;
+}
+.account-settings button {
+  min-height: 44px;
+  font-size: 15px;
+  font-weight: 500;
+  box-shadow: none;
+}
+.account-settings p { margin: 0; }
+.account-identity { display: flex; align-items: center; gap: 14px; margin: 0 0 28px; }
+.account-avatar { flex-basis: 48px; width: 48px; height: 48px; font-size: 21px; font-weight: 500; }
+.account-identity > div { min-width: 0; }
+.account-identity strong { display: block; font-size: 17px; font-weight: 600; overflow-wrap: anywhere; }
+.account-identity p { color: var(--account-secondary); font-size: 13px; margin-top: 2px; }
+.account-settings .account-intro { margin-bottom: 20px; color: var(--account-secondary); }
+.account-section { margin-bottom: 22px; }
+.account-section h3 { font-size: 13px; font-weight: 600; color: var(--account-secondary); letter-spacing: 0; margin: 0 12px 8px; }
+.account-group { border: 1px solid var(--account-line); border-radius: 16px; background: var(--account-group); }
+.account-status-row, .account-settings .account-action, .account-choice-list > button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  min-height: 52px;
+  padding: 14px 16px;
+  text-align: left;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  line-height: 1.4;
+}
+.account-settings .account-action, .account-choice-list > button { color: var(--account-accent); }
+.account-group > :first-child { border-top-left-radius: 16px; border-top-right-radius: 16px; }
+.account-group > :last-child { border-bottom-left-radius: 16px; border-bottom-right-radius: 16px; }
+.account-group > * + * { border-top: 1px solid var(--account-line) !important; }
+.account-status-value { font-size: 13px; color: var(--account-secondary); text-align: right; max-width: 60%; }
+.account-settings .account-footnote { margin: 9px 12px 0; color: var(--account-secondary); font-size: 13px; line-height: 1.5; }
+.account-choice-list + .account-footnote { margin-bottom: 24px; }
+.account-disclosure > summary, .account-management > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 52px;
+  padding: 14px 16px;
+  font-size: 15px;
+  font-weight: 400;
+  list-style: none;
+}
+.account-disclosure > summary::-webkit-details-marker, .account-management > summary::-webkit-details-marker { display: none; }
+.account-disclosure > summary > span, .account-management > summary > span { font-size: 22px; line-height: 1; color: var(--account-secondary); }
+.account-disclosure[open] > summary > span, .account-management[open] > summary > span { transform: rotate(90deg); }
+.account-disclosure-body { padding: 0 16px 16px; color: var(--account-secondary); font-size: 14px; }
+.account-disclosure-body p + p { margin-top: 10px; }
+.account-disclosure-body button { margin-top: 16px; }
+.account-settings .account-signout {
+  width: 100%;
+  margin: 22px 0 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--account-line);
+  border-radius: 16px;
+  background: var(--account-group);
+  color: var(--account-accent);
+  text-align: left;
+}
+.account-management > summary { color: var(--account-secondary); font-size: 13px; }
+.account-management-body { border: 1px solid var(--account-line); border-radius: 16px; background: var(--account-group); }
+.account-management-body > * + * { border-top: 1px solid var(--account-line); }
+.account-settings button:hover, .account-settings summary:hover, .account-entry-row:hover { background: #eee8dd; }
+.account-settings button.danger { color: #a23829; border: 1px solid currentColor; border-radius: 10px; }
+.account-settings .account-signin > p:not(.eyebrow) { color: var(--account-secondary); margin: 0 0 24px; }
+.account-settings .account-signin label { font-size: 14px; }
+.account-settings .account-privacy { margin-top: 20px; }
+.account-settings .account-privacy p { font-size: 14px; color: var(--account-secondary); margin-top: 10px; }
+#dialog.account-dialog .dialog-notice { font-size: 14px; margin: 16px 0 0; overflow-wrap: anywhere; }
+@media (max-width: 600px) {
+  #dialog.account-dialog { padding: 24px 20px; border-radius: 24px; }
+  #dialog.account-dialog > .close { top: 13px; right: 12px; }
+  .account-entry .account-entry-row { padding: 16px; gap: 12px; }
+  .account-settings h2 { font-size: 21px; margin-bottom: 24px; }
+  .account-identity strong { font-size: 16px; }
+  .account-status-row { align-items: flex-start; flex-wrap: wrap; gap: 4px 16px; }
+  .account-status-value { margin-left: auto; }
+}
+@media (prefers-contrast: more) {
+  #dialog.account-dialog { --account-line: #928879; --account-secondary: #494237; }
+  .account-entry { border-color: #928879; }
+}
+@media (prefers-reduced-transparency: reduce) {
+  #dialog.account-dialog::backdrop { backdrop-filter: none; background: #302c26b3; }
+}
+
+.account-data-link { margin: 0 0 24px; }
+.account-data-link button { padding: 8px 0; background: transparent; border: 0; box-shadow: none; min-height: 44px; color: #765338; }
+.account-data-link button span { margin-left: 12px; }

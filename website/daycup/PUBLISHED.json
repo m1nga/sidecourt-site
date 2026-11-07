@@ -1,5 +1,6 @@
 {
   "app_files": [
+    "account.css",
     "account.js",
     "app.js",
     "backgrounds/01-polar-bench.jpg",
@@ -71,8 +72,8 @@
     "vision.js"
   ],
   "sha256": {
-    "Daycup.html": "cb9bdaf55d30cb18365d85b8240ca53c28b0d9b88b92b249d74b2289230144b5",
-    "Daycup-local-first.zip": "9db4a162f96b308900e024cd15b2ede0057fdddb168fa761e76478b2b26bfed9"
+    "Daycup.html": "e5513f2ed8273665eae21a1d529fc53ccbcdff34301610a475aee72063e22eec",
+    "Daycup-local-first.zip": "0fdc9fdd6545c700af74aa951942bda061cea8f6d7cde6926d198e87fbfce5d2"
   },
-  "source_commit": "2f135d270bd0420e29cefaa7983a6cd1248bbfb2"
+  "source_commit": "90153a04bf39ede88b26ca62b752cfe8532789af"
 }
