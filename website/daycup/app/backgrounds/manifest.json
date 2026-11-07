@@ -1,8 +1,164 @@
 {
-  "version": 1,
+  "version": 2,
   "disclosure": "All backgrounds are AI-generated, not real-location photography.",
   "disclosureZh": "所有背景均为 AI 生成，并非实地摄影。",
   "backgrounds": [
+    {
+      "id": "red-cloud-pause-soft",
+      "filename": "29-red-cloud-pause-soft.jpg",
+      "enName": "A Pause Beneath the Red Cloud",
+      "zhName": "红云下片刻",
+      "sourceType": "ai-edited-user-reference",
+      "disclosure": "AI-edited artwork based on a user-supplied reference.",
+      "disclosureZh": "基于用户参考修改的 AI 创作图片。",
+      "width": 1000,
+      "height": 1250,
+      "bytes": 349417,
+      "sha256": "1b44d7d063d4d5a742ea9f25b124ddffae07e6da277f041a9aabcb93b16af715"
+    },
+    {
+      "id": "desert-newspaper-soft",
+      "filename": "30-desert-newspaper-soft.jpg",
+      "enName": "The World Can Wait",
+      "zhName": "世界稍候",
+      "sourceType": "ai-edited-user-reference",
+      "disclosure": "AI-edited artwork based on a user-supplied reference.",
+      "disclosureZh": "基于用户参考修改的 AI 创作图片。",
+      "width": 1000,
+      "height": 1250,
+      "bytes": 405355,
+      "sha256": "b9f8482e75d3f2bb6ce6c4ffc4d17a108ac952b2050d68bda2b3224df5d3706b"
+    },
+    {
+      "id": "white-house-dance-soft",
+      "filename": "31-white-house-dance-soft.jpg",
+      "enName": "An Afternoon Without Hurry",
+      "zhName": "无须赶路的午后",
+      "sourceType": "ai-edited-user-reference",
+      "disclosure": "AI-edited artwork based on a user-supplied reference.",
+      "disclosureZh": "基于用户参考修改的 AI 创作图片。",
+      "width": 1000,
+      "height": 1250,
+      "bytes": 461527,
+      "sha256": "ee5be84182b4581d67cd352c975f0b4e14a56664ba8566e49a7623b7ec524b8a"
+    },
+    {
+      "id": "canyon-companions-soft",
+      "filename": "32-canyon-companions-soft.jpg",
+      "enName": "Two Seats by the Water",
+      "zhName": "峡谷双椅",
+      "sourceType": "ai-edited-user-reference",
+      "disclosure": "AI-edited artwork based on a user-supplied reference.",
+      "disclosureZh": "基于用户参考修改的 AI 创作图片。",
+      "width": 1000,
+      "height": 1250,
+      "bytes": 404362,
+      "sha256": "7e94a3c18e0f07d18fef882569eba89b564eb1a39519ec7d92c727f67fe827eb"
+    },
+    {
+      "id": "meadow-office-soft",
+      "filename": "33-meadow-office-soft.jpg",
+      "enName": "The Open-Air Office",
+      "zhName": "草地办公室",
+      "sourceType": "ai-edited-user-reference",
+      "disclosure": "AI-edited artwork based on a user-supplied reference.",
+      "disclosureZh": "基于用户参考修改的 AI 创作图片。",
+      "width": 1000,
+      "height": 1250,
+      "bytes": 387295,
+      "sha256": "551956f5cee9e686b6c8a71c83becd636198105858391d21a6cfb9b7fe349db8"
+    },
+    {
+      "id": "swan-lounge-soft",
+      "filename": "34-swan-lounge-soft.jpg",
+      "enName": "A Room beside the Swan",
+      "zhName": "天鹅水畔客厅",
+      "sourceType": "ai-edited-user-reference",
+      "disclosure": "AI-edited artwork based on a user-supplied reference.",
+      "disclosureZh": "基于用户参考修改的 AI 创作图片。",
+      "width": 1000,
+      "height": 1250,
+      "bytes": 268134,
+      "sha256": "cec1048067792f3ab55a912518e84770174a6eb8bd1b2486affeb20f0185aa90"
+    },
+    {
+      "id": "sea-keyboards-soft",
+      "filename": "35-sea-keyboards-soft.jpg",
+      "enName": "A Rhythm Beyond the Shore",
+      "zhName": "浪中节奏",
+      "sourceType": "ai-edited-user-reference",
+      "disclosure": "AI-edited artwork based on a user-supplied reference.",
+      "disclosureZh": "基于用户参考修改的 AI 创作图片。",
+      "width": 1000,
+      "height": 1250,
+      "bytes": 388242,
+      "sha256": "ccd22d6ee4996dc8a6823834ddfc3631b2c6ee3f54197eea4a73328b69c397ac"
+    },
+    {
+      "id": "mountain-desktop-soft",
+      "filename": "36-mountain-desktop-soft.jpg",
+      "enName": "The Long View",
+      "zhName": "雪山长景",
+      "sourceType": "ai-edited-user-reference",
+      "disclosure": "AI-edited artwork based on a user-supplied reference.",
+      "disclosureZh": "基于用户参考修改的 AI 创作图片。",
+      "width": 1000,
+      "height": 1250,
+      "bytes": 410784,
+      "sha256": "957763aedc795f60311c48a94f673831458adb3696930d8f97da1378a62edeb0"
+    },
+    {
+      "enName": "A Quiet Sip",
+      "zhName": "安静喝一口",
+      "id": "quiet-sip",
+      "filename": "37-quiet-sip.jpg",
+      "sourceType": "ai-edited-user-reference",
+      "disclosure": "AI-edited artwork based on a user-supplied reference.",
+      "disclosureZh": "基于用户参考修改的 AI 创作图片。",
+      "width": 1000,
+      "height": 1250,
+      "bytes": 265434,
+      "sha256": "5c2c9cefe4d357957df70bbac27262527aa5caaeb11d1fb733bfcd4c42e854ed"
+    },
+    {
+      "enName": "Behind the Cup",
+      "zhName": "躲进杯子里",
+      "id": "behind-cup",
+      "filename": "38-behind-cup.jpg",
+      "sourceType": "ai-edited-user-reference",
+      "disclosure": "AI-edited artwork based on a user-supplied reference.",
+      "disclosureZh": "基于用户参考修改的 AI 创作图片。",
+      "width": 1000,
+      "height": 1250,
+      "bytes": 333152,
+      "sha256": "6236c931c7f01d8e3aa04a46c5dac64777585f97e590601d03182ceead6a47b0"
+    },
+    {
+      "enName": "Good Day Juice",
+      "zhName": "今日好心情",
+      "id": "daily-juice",
+      "filename": "39-daily-juice.jpg",
+      "sourceType": "ai-edited-user-reference",
+      "disclosure": "AI-edited artwork based on a user-supplied reference.",
+      "disclosureZh": "基于用户参考修改的 AI 创作图片。",
+      "width": 1000,
+      "height": 1250,
+      "bytes": 294380,
+      "sha256": "34c1da3a9bf64458d67c4d6dabd0be97b7f606429d4e8fef452d6a33081cb33d"
+    },
+    {
+      "enName": "One More Sip",
+      "zhName": "再喝一口",
+      "id": "one-more-sip",
+      "filename": "40-one-more-sip.jpg",
+      "sourceType": "ai-edited-user-reference",
+      "disclosure": "AI-edited artwork based on a user-supplied reference.",
+      "disclosureZh": "基于用户参考修改的 AI 创作图片。",
+      "width": 1000,
+      "height": 1250,
+      "bytes": 378662,
+      "sha256": "d1fa4c1b449839e40ac2592d986cf2b3d53ec744a9d28421029aa3c9932f5628"
+    },
     {
       "id": "red-cloud-pause",
       "filename": "21-red-cloud-pause.jpg",
@@ -14,7 +170,8 @@
       "width": 1000,
       "height": 1250,
       "bytes": 345100,
-      "sha256": "27950840d08171cc3d64f531df2cd8e37388e00d92937c7d34de6a8360130e3a"
+      "sha256": "27950840d08171cc3d64f531df2cd8e37388e00d92937c7d34de6a8360130e3a",
+      "archived": true
     },
     {
       "id": "desert-newspaper",
@@ -27,7 +184,8 @@
       "width": 1000,
       "height": 1250,
       "bytes": 335490,
-      "sha256": "9e9cac29df0ed5b18739adb32e530665b93d1c483af7deb47b6e7e57ea343af1"
+      "sha256": "9e9cac29df0ed5b18739adb32e530665b93d1c483af7deb47b6e7e57ea343af1",
+      "archived": true
     },
     {
       "id": "white-house-dance",
@@ -40,7 +198,8 @@
       "width": 1000,
       "height": 1250,
       "bytes": 425768,
-      "sha256": "a471047c3fdf6dfe8566991c4e5e4e679e5192c56ef708510e43fb61ed7e3dfe"
+      "sha256": "a471047c3fdf6dfe8566991c4e5e4e679e5192c56ef708510e43fb61ed7e3dfe",
+      "archived": true
     },
     {
       "id": "canyon-companions",
@@ -53,7 +212,8 @@
       "width": 1000,
       "height": 1250,
       "bytes": 393927,
-      "sha256": "0f0a50539eab541a0477d6a3547fb1a2b0235063236c3111bb2aaa8f717b4445"
+      "sha256": "0f0a50539eab541a0477d6a3547fb1a2b0235063236c3111bb2aaa8f717b4445",
+      "archived": true
     },
     {
       "id": "meadow-office",
@@ -66,7 +226,8 @@
       "width": 1000,
       "height": 1250,
       "bytes": 419050,
-      "sha256": "900ff359ca3268d93868a1c05d25a5d98cf3c42d014fe70b6c416b52a6496351"
+      "sha256": "900ff359ca3268d93868a1c05d25a5d98cf3c42d014fe70b6c416b52a6496351",
+      "archived": true
     },
     {
       "id": "swan-lounge",
@@ -79,7 +240,8 @@
       "width": 1000,
       "height": 1250,
       "bytes": 268427,
-      "sha256": "51c1fd3a1af7af1e7b0dbaa3b6efad728477b2b3948becd78e6060befc02b533"
+      "sha256": "51c1fd3a1af7af1e7b0dbaa3b6efad728477b2b3948becd78e6060befc02b533",
+      "archived": true
     },
     {
       "id": "sea-keyboards",
@@ -92,7 +254,8 @@
       "width": 1000,
       "height": 1250,
       "bytes": 383534,
-      "sha256": "9ddc925a11a2624bf1036659122759981f54ca4293341b4e45f1c675f84147ab"
+      "sha256": "9ddc925a11a2624bf1036659122759981f54ca4293341b4e45f1c675f84147ab",
+      "archived": true
     },
     {
       "id": "mountain-desktop",
@@ -105,7 +268,8 @@
       "width": 1000,
       "height": 1250,
       "bytes": 431548,
-      "sha256": "3ac9638de4fb3097621165b2319298d7164aa255118c6023eb54fe0be8c2053d"
+      "sha256": "3ac9638de4fb3097621165b2319298d7164aa255118c6023eb54fe0be8c2053d",
+      "archived": true
     },
     {
       "id": "blue-reading",

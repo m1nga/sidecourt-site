@@ -31,6 +31,18 @@
     "backgrounds/26-swan-lounge.jpg",
     "backgrounds/27-sea-keyboards.jpg",
     "backgrounds/28-mountain-desktop.jpg",
+    "backgrounds/29-red-cloud-pause-soft.jpg",
+    "backgrounds/30-desert-newspaper-soft.jpg",
+    "backgrounds/31-white-house-dance-soft.jpg",
+    "backgrounds/32-canyon-companions-soft.jpg",
+    "backgrounds/33-meadow-office-soft.jpg",
+    "backgrounds/34-swan-lounge-soft.jpg",
+    "backgrounds/35-sea-keyboards-soft.jpg",
+    "backgrounds/36-mountain-desktop-soft.jpg",
+    "backgrounds/37-quiet-sip.jpg",
+    "backgrounds/38-behind-cup.jpg",
+    "backgrounds/39-daily-juice.jpg",
+    "backgrounds/40-one-more-sip.jpg",
     "backgrounds/manifest.json",
     "bean-options.js",
     "bean-options.json",
@@ -72,8 +84,8 @@
     "vision.js"
   ],
   "sha256": {
-    "Daycup.html": "e5513f2ed8273665eae21a1d529fc53ccbcdff34301610a475aee72063e22eec",
-    "Daycup-local-first.zip": "0fdc9fdd6545c700af74aa951942bda061cea8f6d7cde6926d198e87fbfce5d2"
+    "Daycup.html": "a44b907c01a926f79b0d3b7beb6613c6a189842f8c22c7c6020604a017962a3e",
+    "Daycup-local-first.zip": "3c5190c4cafecdabb9792ceec6d17af6613e1df6f3787bcc23377dc9bbb3684f"
   },
-  "source_commit": "90153a04bf39ede88b26ca62b752cfe8532789af"
+  "source_commit": "ceaa9f8fe14d441c10fab0398ce3651002d0cfa1"
 }

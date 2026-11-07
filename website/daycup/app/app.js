@@ -20,6 +20,7 @@ const option=(values,selected)=>Object.entries(values).map(([key,value])=>`<opti
 const input=(label,name,value='',type='text',extra='')=>`<label>${label}<input name="${name}" value="${escape(value)}" type="${type}" ${extra}></label>`;
 const doseMenu=(label,name,value)=>`<label>${label}<select name="${name}" aria-label="${label}">${Array.from({length:51},(_,n)=>`<option value="${n}" ${n===value?'selected':''}>${n} ${t("g")}</option>`).join('')}</select></label>`;
 const check=(label,name)=>`<label class="check"><input type="checkbox" name="${name}">${label}</label>`;
+let brewFinished=false,finishingTimer=false;
 let db,entries=[],recipe=null,timerStart=null,elapsed=0,busy=false,selected={equipment:'',bean:'',preference:'balanced',dose:18,drink:'espresso',strength:'standard'};
 let equipmentDirectory=null,beanOptions=null,connectionKey='Saved on this device';
 const grindDrafts=new Map();
@@ -267,19 +268,15 @@ function pressureGaugeHTML(){
  let ticks='',numbers='';
  for(let i=0;i<=36;i++){const bar=i/2,major=i%6===0,p=point(bar,123),q=point(bar,major?109:117);ticks+=`<path d="M${p[0]} ${p[1]}L${q[0]} ${q[1]}" stroke-width="${major?3:1.5}"/>`;}
  for(let bar=0;bar<=18;bar+=3){const p=point(bar,93);numbers+=`<text x="${p[0]}" y="${p[1]}" dy=".35em" ${bar===9?'class="pressure-nine"':''}>${bar}</text>`;}
- return `<div class="pressure-gauge ${timerStart?'is-running':''}" data-target-bar="9" aria-hidden="true"><svg viewBox="0 0 320 320" fill="none" focusable="false">
+ return `<div class="pressure-gauge ${pressureActive()?'is-running':''}" data-target-bar="9" aria-hidden="true"><svg viewBox="0 0 320 320" fill="none" focusable="false">
  <defs><linearGradient id="pressure-steel" x1="40" y1="20" x2="260" y2="304" gradientUnits="userSpaceOnUse"><stop stop-color="#777b80"/><stop offset=".12" stop-color="#f9f8f5"/><stop offset=".25" stop-color="#b5b3b3"/><stop offset=".43" stop-color="#f6f5f2"/><stop offset=".57" stop-color="#83858b"/><stop offset=".74" stop-color="#d1cecb"/><stop offset=".88" stop-color="#fffef9"/><stop offset="1" stop-color="#828287"/></linearGradient><linearGradient id="pressure-bevel" x1="160" y1="20" x2="160" y2="300" gradientUnits="userSpaceOnUse"><stop stop-color="#fff"/><stop offset=".23" stop-color="#727378"/><stop offset=".7" stop-color="#d5d2cf"/><stop offset="1" stop-color="#fffdf7"/></linearGradient><radialGradient id="pressure-red" cx=".35" cy=".22" r=".85"><stop stop-color="#df2545"/><stop offset=".62" stop-color="#c50a30"/><stop offset="1" stop-color="#a90928"/></radialGradient><linearGradient id="pressure-glass" x1="100" y1="35" x2="220" y2="280" gradientUnits="userSpaceOnUse"><stop stop-color="#fff" stop-opacity=".16"/><stop offset=".48" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#10020c" stop-opacity=".1"/></linearGradient></defs>
  <circle cx="160" cy="160" r="153" fill="url(#pressure-steel)" stroke="#8b8a89" stroke-width="1"/><circle cx="160" cy="160" r="147" stroke="#fffdf8" stroke-opacity=".7" stroke-width="2"/><circle cx="160" cy="160" r="137" fill="url(#pressure-bevel)"/><circle cx="160" cy="160" r="131" fill="#292b31"/><circle cx="160" cy="160" r="127" fill="url(#pressure-red)" stroke="#6c1830" stroke-width="1.5"/>
  <path d="M47 133a116 116 0 0 1 226 0" stroke="#fff1df" stroke-opacity=".42" stroke-width="1"/>
- <text class="pressure-wordmark" x="160" y="101">DayCup</text><g class="pressure-beans" fill="#fff3e4"><ellipse cx="142" cy="124" rx="6" ry="10" transform="rotate(35 142 124)"/><ellipse cx="160" cy="122" rx="6" ry="10" transform="rotate(35 160 122)"/><ellipse cx="178" cy="124" rx="6" ry="10" transform="rotate(35 178 124)"/></g><path d="m138 131 8-14m10 12 8-14m10 16 8-14" stroke="#c81937" stroke-width="1.3"/>
- <g stroke="#fff3e4">${ticks}</g><g class="pressure-numbers" fill="#fff3e4">${numbers}</g><text class="pressure-unit" x="160" y="206">bar</text>
+ <text class="pressure-wordmark" x="160" y="101">DayCup</text>
+ <g stroke="#fff3e4">${ticks}</g><g class="pressure-numbers" fill="#fff3e4">${numbers}</g><text class="pressure-unit" x="120" y="203">bar</text>
  <g class="pressure-needle"><path d="M39 160 151 156 182 153Q190 160 182 167L151 164Z" fill="#22252c" stroke="#10151b" stroke-width="1"/><path d="M43 159 149 158" stroke="#697079" stroke-width="1"/></g><circle cx="160" cy="160" r="14" fill="#343740" stroke="#11151d" stroke-width="1.5"/><circle cx="160" cy="160" r="3" fill="#bda17a"/>
  <circle cx="160" cy="160" r="127" fill="url(#pressure-glass)"/><path d="M55 74a134 134 0 0 1 173-26" stroke="#fff" stroke-opacity=".45" stroke-width="2" stroke-linecap="round"/>
  </svg></div>`;
-}
-function brewFlowHTML(){
- const filter=recipe.equipment.method==='v60';
- return `<div class="brew-flow ${filter?'is-filter':'is-espresso'} ${timerStart?'is-running':''}" aria-hidden="true"><svg viewBox="0 0 280 120" fill="none" focusable="false"><defs><linearGradient id="machine-steel" x1="80" y1="10" x2="180" y2="64" gradientUnits="userSpaceOnUse"><stop stop-color="#e4e0d8"/><stop offset=".5" stop-color="#faf9f5"/><stop offset="1" stop-color="#adaaa4"/></linearGradient></defs><g class="brew-apparatus">${filter?'<path d="M101 12h78l-28 43h-22Z" fill="#eae6db" stroke="#9f998c" stroke-width="1.5"/><path d="m110 17 23 30m7-30v31m30-31-23 30" stroke="#c2bbae"/>':'<rect x="77" y="12" width="126" height="45" rx="9" fill="#b61d38"/><path d="M77 32h126v17a8 8 0 0 1-8 8H85a8 8 0 0 1-8-8Z" fill="url(#machine-steel)"/><path d="M124 48h32v13h-32z" fill="#777974"/><path d="M154 55h39" stroke="#363b36" stroke-width="6" stroke-linecap="round"/><path d="M87 68V40m106 0v10" stroke="#91918a" stroke-width="3" stroke-linecap="round"/><circle cx="188" cy="23" r="3" fill="#ede9d9"/>'}</g><g class="brew-stream" stroke="#9b643d" stroke-width="2.5" stroke-linecap="round">${filter?'<path d="M140 59v25"/>':'<path d="M135 64v20"/><path d="M145 64v20"/>'}</g><path d="M114 85h52l-5 21h-42z" fill="#fbf8f0" stroke="#b4a99a" stroke-width="1.5"/><path d="M166 89h5a6 6 0 0 1 0 12h-8" stroke="#b4a99a" stroke-width="1.5"/><path d="M119 89h42" stroke="#b6895f" stroke-width="2"/><path d="M108 111h66" stroke="#d0c6b8" stroke-width="2" stroke-linecap="round"/></svg></div>`;
 }
 const clockText=n=>{const v=Math.max(0,Math.floor(n));return String(Math.floor(v/60)).padStart(2,'0')+':'+String(v%60).padStart(2,'0');};
 
@@ -376,10 +373,25 @@ function brewPage(){
  if(!equipment.length||!beans.length)studioWelcome(equipment.length,beans.length);
  bindRitual();bindTimer();
 }
-function timerHTML(){const espresso=recipe.equipment.method==='espresso';return `<div class="timer"><div class="brew-instruments ${espresso?'has-pressure':''}">${espresso?pressureGaugeHTML():''}<div class="brew-clock">${brewFlowHTML()}<div class="timer-numeric"><small>${t('BREW TIME')}</small><output id="timer" aria-label="${t('Brew time')}">${clockText(seconds())}</output><span>${t('MIN : SEC')}</span></div></div></div>${espresso?`<p class="pressure-caption">${t('Brewing animation · not a pressure reading')}</p>`:''}<p id="brew-step" class="muted" role="status" aria-live="polite">${t('Start timing from {basis}',{basis:basis(recipe.equipment.method)})}</p><div class="actions"><button id="timer-toggle" class="primary">${t(timerStart?'Pause':'Start timer')}</button><button id="finish">${t('Done brewing · save this cup')}</button></div></div>`;}
+function pressureActive(){return !!timerStart||(elapsed>0&&!brewFinished);}
+function timerHTML(){const espresso=recipe.equipment.method==='espresso';return `<div class="timer"><div class="brew-instruments ${espresso?'has-pressure':''}">${espresso?pressureGaugeHTML():''}<div class="brew-clock"><div class="timer-numeric"><output id="timer" aria-label="${t('Brew time')}">${clockText(seconds())}</output></div></div></div>${espresso?'':`<p id="brew-step" class="muted" role="status" aria-live="polite">${t('Start timing from {basis}',{basis:basis(recipe.equipment.method)})}</p>`}<div class="actions"><button id="timer-toggle" class="primary" ${finishingTimer?'disabled':''}>${t(timerStart?'Pause':'Start timer')}</button><button id="finish" ${finishingTimer?'disabled':''}>${t('Done brewing · save this cup')}</button></div></div>`;}
 function seconds(){return elapsed+(timerStart?(Date.now()-timerStart)/1000:0);}
-function updateBrewVisuals(){for(const node of document.querySelectorAll('.brew-flow,.pressure-gauge'))node.classList.toggle('is-running',!!timerStart);}
-function bindTimer(){if(!$('#timer-toggle'))return;$('#timer-toggle').onclick=()=>{if(timerStart){elapsed=seconds();timerStart=null;}else timerStart=Date.now();$('#timer-toggle').textContent=t(timerStart?'Pause':'Start timer');updateBrewVisuals();nativeCheckpoint();nativeSend('haptic');};$('#finish').onclick=()=>{elapsed=seconds();timerStart=null;updateBrewVisuals();$('#timer-toggle').textContent=t('Start timer');nativeCheckpoint();feedbackPage();};}
+function updateBrewVisuals(){document.querySelector('.pressure-gauge')?.classList.toggle('is-running',pressureActive());}
+function bindTimer(){
+ if(!$('#timer-toggle'))return;
+ $('#timer-toggle').onclick=()=>{if(finishingTimer)return;if(timerStart){elapsed=seconds();timerStart=null;}else{brewFinished=false;timerStart=Date.now();}$('#timer-toggle').textContent=t(timerStart?'Pause':'Start timer');updateBrewVisuals();nativeCheckpoint();nativeSend('haptic');};
+ $('#finish').onclick=async()=>{
+  if(finishingTimer)return;
+  const finishedRecipe=recipe,capturedScope=scope(),showReturn=pressureActive()&&!!$('.pressure-gauge')&&!reduceMotion();
+  elapsed=seconds();timerStart=null;brewFinished=true;finishingTimer=true;updateBrewVisuals();
+  $('#timer-toggle').textContent=t('Start timer');$('#timer-toggle').disabled=true;$('#finish').disabled=true;nativeCheckpoint();
+  try{
+   // Let the needle return before opening the save sheet. The clock is already stopped.
+   if(showReturn)await new Promise(resolve=>setTimeout(resolve,750));
+   if(recipe===finishedRecipe&&scope()===capturedScope)feedbackPage();
+  }finally{finishingTimer=false;if($('#timer-toggle'))$('#timer-toggle').disabled=false;if($('#finish'))$('#finish').disabled=false;}
+ };
+}
 setInterval(()=>{const out=$('#timer');if(out){const s=Math.max(0,Math.floor(seconds()));out.textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}const step=$('#brew-step');if(step&&recipe){const n=seconds(),p=recipe.pours?.find(p=>n<p.until);const text=n===0?t('Start timing from {basis}',{basis:basis(recipe.equipment.method)}):p?t('{label} · {total} g cumulative water by {until} sec',{label:p.label,total:p.totalG,until:p.until}):recipe.pours?t('Let it draw down. Diagnostic window: {min}–{max} sec.',{min:recipe.timeMin,max:recipe.timeMax}):recipe.timeDiagnostic===false?t('Stop at {output} g espresso. Pressurized basket: log elapsed time only; no single-wall time target.',{output:recipe.output}):t('Stop at {output} g espresso; {min}–{max} sec is a diagnostic window, not an instruction to keep brewing past the yield.',{output:recipe.output,min:recipe.timeMin,max:recipe.timeMax});if(step.textContent!==text)step.textContent=text;}},250);
 function feedbackPage(){
  const snapshot=structuredClone(recipe),captured=scope(),milk=snapshot.drink==='milk',diluted=['americano','iced-americano','milk'].includes(snapshot.drink);
@@ -533,11 +545,11 @@ function nativeDataPage(){
 function nativeSend(action,payload={}){if(!globalThis.DAYCUP_NATIVE)return;globalThis.webkit?.messageHandlers?.daycup?.postMessage({action,...payload});}
 function nativeCheckpoint(){
  if(!globalThis.DAYCUP_NATIVE)return;
- try{if(recipe)localStorage.setItem('daycup-active-cup',JSON.stringify({scope:scope(),recipe,selected,elapsed,timerStart,grindDrafts:[...grindDrafts]}));else localStorage.removeItem('daycup-active-cup');}catch(error){toast(t("Your active timer could not be saved. Finish this cup before closing DayCup."));}
+ try{if(recipe)localStorage.setItem('daycup-active-cup',JSON.stringify({scope:scope(),recipe,selected,elapsed,timerStart,brewFinished,grindDrafts:[...grindDrafts]}));else localStorage.removeItem('daycup-active-cup');}catch(error){toast(t("Your active timer could not be saved. Finish this cup before closing DayCup."));}
  nativeSend('timer',{running:!!timerStart});
 }
 function restoreNativeCup(){
- try{const raw=localStorage.getItem('daycup-active-cup');if(!raw)return;const v=JSON.parse(raw);if((v.scope||'guest')!==scope())return;if(!v.recipe?.equipment?.id||!v.recipe?.bean?.id||!Number.isFinite(v.elapsed)||v.elapsed<0||v.timerStart!==null&&!Number.isFinite(v.timerStart))return;if(!data('equipment').some(e=>e.id===v.recipe.equipment.id)||!data('bean').some(b=>b.id===v.recipe.bean.id))return;recipe=v.recipe;selected=v.selected;elapsed=v.elapsed;timerStart=v.timerStart;if(Array.isArray(v.grindDrafts))for(const pair of v.grindDrafts){if(Array.isArray(pair)&&pair.length===2&&typeof pair[0]==='string'&&typeof pair[1]==='string')grindDrafts.set(...pair);}nativeSend('timer',{running:!!timerStart});}catch(error){toast(t("The unfinished cup could not be restored. Your saved library is still available."));}
+ try{const raw=localStorage.getItem('daycup-active-cup');if(!raw)return;const v=JSON.parse(raw);if((v.scope||'guest')!==scope())return;if(!v.recipe?.equipment?.id||!v.recipe?.bean?.id||!Number.isFinite(v.elapsed)||v.elapsed<0||v.timerStart!==null&&!Number.isFinite(v.timerStart))return;if(!data('equipment').some(e=>e.id===v.recipe.equipment.id)||!data('bean').some(b=>b.id===v.recipe.bean.id))return;recipe=v.recipe;selected=v.selected;elapsed=v.elapsed;timerStart=v.timerStart;brewFinished=v.brewFinished===true;if(Array.isArray(v.grindDrafts))for(const pair of v.grindDrafts){if(Array.isArray(pair)&&pair.length===2&&typeof pair[0]==='string'&&typeof pair[1]==='string')grindDrafts.set(...pair);}nativeSend('timer',{running:!!timerStart});}catch(error){toast(t("The unfinished cup could not be restored. Your saved library is still available."));}
 }
 if(globalThis.DAYCUP_NATIVE){
  document.documentElement.classList.add('native-app');
@@ -570,6 +582,6 @@ try {
  render();if(!accountUI.active)connection(bundled?t("Private library · On this device"):t("Saved on this device"));
  if(!equipmentDirectory||!beanOptions)toast(t('Some directory choices could not load. You can still enter your own equipment and beans.'));
  if(!bundled&&'serviceWorker' in navigator&&['http:','https:'].includes(location.protocol)){
-  navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'}).then(registration=>{const announce=()=>{if(registration.waiting&&navigator.serviceWorker.controller)toast(t("Update ready. Finish your cup, then close all DayCup tabs and reopen. Your records stay on this device."));};announce();registration.addEventListener('updatefound',()=>{registration.installing?.addEventListener('statechange',announce);});return navigator.serviceWorker.ready;}).then(()=>{if(!accountUI.active)connection('Ready offline · Records on this device');}).catch(()=>toast(t('Offline caching could not be installed. Keep this page open and export your records.')));
+  navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'}).then(registration=>{const announce=()=>{if(registration.waiting&&navigator.serviceWorker.controller)toast(t("Update ready. Refresh when you are ready. Your current cup can continue here."));};announce();registration.addEventListener('updatefound',()=>{registration.installing?.addEventListener('statechange',announce);});return navigator.serviceWorker.ready;}).then(()=>{if(!accountUI.active)connection('Ready offline · Records on this device');}).catch(()=>toast(t('Offline caching could not be installed. Keep this page open and export your records.')));
  }
 }catch(error){$('#main').innerHTML=`<h1>${t('We could not open your local records.')}</h1><p>${t('Check that your browser allows sites to save data. Your existing records have not been reset. For a downloaded file, try the included loopback launcher.')}</p>`;toast(error.message);}

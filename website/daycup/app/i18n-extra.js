@@ -463,7 +463,7 @@ addTranslations({
  "Unknown": "未知",
  "Unknown action.": "未知操作",
  "Unsaved trial · not yet brewed": "尚未冲煮的试验计划",
- "Update ready. Finish your cup, then close all DayCup tabs and reopen. Your records stay on this device.": "新版本已就绪。请先完成这一杯，再关闭所有 DayCup 页面并重新打开。记录会留在本机",
+ "Update ready. Refresh when you are ready. Your current cup can continue here.": "新版已就绪，方便时刷新即可；当前这一杯可以继续。",
  "Use Keep a backup to save your library to Files or share it. Bring it back restores a DayCup JSON backup, including backups from the web edition.": "用“保存备份”把记录库保存到“文件”或自行分享。“恢复备份”可导入 DayCup JSON 备份，也兼容网页版本的备份",
  "Use a bag you already have, or add the same bean. We start from your equipment, your bean and your own past cups. Their grinder number is not copied.": "用手边的豆子，或添加同款豆子。从你的器材、豆子和历史记录开始，不照搬对方的研磨刻度",
  "Use for this cup": "这杯用它",

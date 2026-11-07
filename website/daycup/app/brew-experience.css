@@ -5,20 +5,12 @@
 .reader-choices .reader-photo{background:#59654b;color:#fffaf1;border-color:#59654b;box-shadow:none}
 .reader-choices .reader-manual{background:transparent;box-shadow:none;border:1px solid #c8bead}
 .tm-label-reader .field-help{font-size:12px;line-height:1.6;margin:10px 0 0}
-.brew-flow{width:100%;max-width:280px;margin:0 auto 8px;color:var(--muted)}
-.brew-flow svg{width:100%;height:82px;display:block}
-.brew-flow>span{display:block;font-size:10px;line-height:1.5;margin-top:0}
-.brew-stream{opacity:0;stroke-dasharray:6 5;animation:daycup-pour .8s linear infinite;animation-play-state:paused}
-.brew-flow.is-running .brew-stream{opacity:.85;animation-play-state:running}
-@keyframes daycup-pour{to{stroke-dashoffset:-22}}
 .extraction-guide p,.extraction-measurements p{font-size:13px;line-height:1.6}
 .extraction-guide a{font-size:12px;overflow-wrap:anywhere}
 .extraction-measurements{margin:18px 0;border-block:1px solid var(--line);padding:6px 0}
 .extraction-measurements summary{font-size:14px;min-height:44px;display:flex;align-items:center;cursor:pointer}
 .extraction-result{color:var(--muted);margin:10px 0}
-@media(max-width:700px){.recipe .ritual-dial{max-width:270px}.recipe .timer .actions{margin-top:6px}.recipe .timer .actions button{min-width:0;line-height:1.4}.brew-flow{margin-bottom:0}.reader-choices>button{font-size:13px}}
-@media(prefers-reduced-motion:reduce){.brew-stream{animation:none}.brew-flow.is-running .brew-stream{stroke-dasharray:none}}
-.native-app .brew-flow svg{height:68px}.native-app .brew-flow>span{font-size:calc(10px * var(--text-scale,1))}
+@media(max-width:700px){.recipe .ritual-dial{max-width:270px}.recipe .timer .actions{margin-top:6px}.recipe .timer .actions button{min-width:0;line-height:1.4}.reader-choices>button{font-size:13px}}
 .native-app .reader-choices>button{font-size:calc(14px * var(--text-scale,1));min-height:48px}
 .native-app .extraction-measurements summary{font-size:calc(14px * var(--text-scale,1))}
 .native-app .extraction-measurements .extraction-result{font-size:calc(13px * var(--text-scale,1))}
@@ -42,22 +34,19 @@
 .next-cup #continue-brew{font-size:14px;min-height:48px;width:240px;max-width:100%}
 
 /* Red enamel, steel bezel, a six-o'clock 9 and the DayCup wordmark. */
-.brew-instruments{display:flex;justify-content:center;align-items:center;margin:10px auto 0;max-width:500px;gap:12px}
-.pressure-gauge{flex:1 1 260px;max-width:280px;min-width:0;filter:drop-shadow(0 8px 9px #302d2420)}
+.brew-instruments{display:flex;flex-direction:column;justify-content:center;align-items:center;margin:18px auto 0;max-width:400px;gap:8px}
+.pressure-gauge{flex:none;width:min(100%,280px);max-width:280px;min-width:0;filter:drop-shadow(0 8px 9px #302d2420)}
 .pressure-gauge svg{display:block;width:100%;height:auto;overflow:visible}
 .pressure-wordmark{font:700 31px Georgia,'Times New Roman',serif;letter-spacing:-1.3px;fill:#fff3e4;text-anchor:middle}
 .pressure-numbers{font:650 20px -apple-system,BlinkMacSystemFont,sans-serif;text-anchor:middle;font-variant-numeric:tabular-nums}
 .pressure-unit{font:400 13px -apple-system,BlinkMacSystemFont,sans-serif;fill:#fff3e4;text-anchor:middle;letter-spacing:1px}
 .pressure-needle{transform:rotate(0deg);transform-origin:160px 160px;transition:transform .7s cubic-bezier(.25,.7,.3,1);filter:drop-shadow(0 2px 1px #20041170)}
-.pressure-gauge.is-running .pressure-needle{transform:rotate(-90deg);transition-duration:3s}
-.brew-clock{flex:1 1 200px;min-width:0;max-width:240px}
-.brew-clock .brew-flow{margin:0 auto;max-width:220px}
-.brew-clock .brew-flow svg,.native-app .brew-clock .brew-flow svg{height:auto}
-.brew-clock .timer-numeric{padding:2px 0 14px;gap:7px}
+.pressure-gauge.is-running .pressure-needle{transform:rotate(-90deg);transition-duration:1.1s}
+.brew-clock{flex:none;width:100%;min-width:0;max-width:300px}
+.brew-clock .timer-numeric{padding:12px 0 20px;gap:0}
 .recipe .timer .timer-numeric output{font:500 clamp(44px,9vw,64px)/1 -apple-system,BlinkMacSystemFont,sans-serif;letter-spacing:-2px;font-variant-numeric:tabular-nums}
 .timer-numeric small{font-size:10px;letter-spacing:.12em;color:var(--muted)}
 .timer-numeric span{font-size:9px;color:var(--muted)}
-.recipe .timer .pressure-caption{font-size:10px;line-height:1.5;color:var(--muted);margin:12px auto 20px;max-width:100%}
 .recipe .timer #brew-step{font-size:12px;max-width:380px}
 .recipe .timer .actions{max-width:400px}
 .recipe .timer .actions button{font-size:13px;min-height:48px;line-height:1.4}
@@ -65,9 +54,7 @@
  .brew-instruments{flex-direction:column;gap:0;margin-top:12px}
  .pressure-gauge{flex:none;width:min(100%,270px)}
  .brew-clock{flex:none;width:100%;max-width:300px;display:flex;align-items:center;justify-content:center;gap:0}
- .brew-clock .brew-flow{width:52%;flex:none;margin:0}
  .brew-clock .timer-numeric{flex:1;min-width:0;padding:10px 0}
- .recipe .timer .pressure-caption{margin:0 auto 16px}
  .recipe .timer .actions{flex-wrap:wrap}
 }
 @media(prefers-reduced-motion:reduce){.pressure-needle,.pressure-gauge.is-running .pressure-needle{transition:none}}
