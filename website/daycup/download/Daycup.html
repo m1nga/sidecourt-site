@@ -2039,7 +2039,7 @@ function createAccountUI(host){
  const remember=()=>{localStorage.setItem(rememberKey,client.user.id);host.refresh?.();};
  if(typeof window!=='undefined')window.addEventListener('storage',event=>{if(event.key!==sessionKey||!client.user)return;let next;try{next=JSON.parse(event.newValue||'null');}catch{}if(next?.user?.id===client.user.id)return;view++;active=false;client.forget();void host.deactivate().then(()=>{host.close();host.refresh?.();host.toast(tr('Account changed in another tab. Sign in again to continue.','其他标签页的账号已更改，请重新登录后继续'));});});
  const fail=error=>{host.toast(error.message);};
- const run=fn=>async()=>{if(busy||syncing)return;busy=true;try{return await fn();}catch(error){fail(error);}finally{busy=false;}};
+ const run=fn=>async()=>{if(busy||syncing)return;busy=true;const buttons=[...document.querySelectorAll('#dialog-content button:not(:disabled)')];buttons.forEach(b=>b.disabled=true);q('#dialog-content')?.setAttribute('aria-busy','true');host.toast(tr('Working…','正在处理…'));try{return await fn();}catch(error){fail(error);}finally{busy=false;buttons.forEach(b=>{if(b.isConnected)b.disabled=false;});q('#dialog-content')?.removeAttribute('aria-busy');}};
  const consent=()=>tr('Only after you choose: equipment, beans, preferences, private brew history, notes, photos and image designs are stored in your private cloud library. Public Circle posts are separate. Sign-in is provided by SideCourt; emails carry the SideCourt name. DayCup private data stays separate. Signing in does not opt you into Circle, public sharing or marketing. Your guest library stays on this device.','选择同步后，设备、豆子、偏好、私人历史、笔记、照片和图片设计会保存到私有云端\nSideCourt 提供登录，邮件署名为 SideCourt\nDayCup 私有数据与公开咖啡圈分开\n登录不代表加入咖啡圈、公开分享或订阅营销\n本机访客库保持原样');
  const currentView=(version,uid)=>view===version&&client.user?.id===uid&&(!q('#dialog')||q('#dialog').open);
  async function useCloud(){
@@ -3560,7 +3560,7 @@ function confirmFirstBrew(setup,after){
 function renderAccountEntry(route){
  applyChrome();if(!['brew','history','account'].includes(route))return;
  const user=accountUI.client.user,active=accountUI.active,section=document.createElement('section');section.className='account-entry';
- section.innerHTML=`<div><p class="eyebrow">${t(active?'YOUR DAYCUP ACCOUNT':'YOUR COFFEE, WITH YOU')}</p><strong>${user?escape(user.email):t('Sign in or create your account')}</strong><p>${t(active?'Your private library syncs across devices':user?'Choose your cloud library to finish setup':'Google or email · one account with SideCourt')}</p>${!user?`<small>${t('You are browsing as a guest. These records stay on this device.')}</small>`:''}</div><button type="button" class="${active?'':'primary'}" data-account-entry>${t(user?'My account':'Sign in / Register')}</button>`;
+ section.innerHTML=`<div><p class="eyebrow">${t(active?'YOUR DAYCUP ACCOUNT':'YOUR COFFEE, WITH YOU')}</p><strong>${user?escape(user.email):t('Sign in or create your account')}</strong><p>${t(active?'Your private library syncs across devices':user?'Choose your cloud library to finish setup':'Google or email · one account with SideCourt')}</p>${!active?`<small>${t('You are browsing as a guest. These records stay on this device.')}</small>`:''}</div><button type="button" class="${active?'':'primary'}" data-account-entry>${t(user?'My account':'Sign in / Register')}</button>`;
  $('#main').prepend(section);section.querySelector('button').onclick=()=>accountUI.open();
 }
 
@@ -3633,7 +3633,7 @@ function validateAccountSnapshot(s){
 const accountCacheKey=uid=>'daycup-private-cache:'+uid;
 function cachedAccount(uid){try{return JSON.parse(localStorage.getItem(accountCacheKey(uid))||'null');}catch{return null;}}
 function canonical(value){if(Array.isArray(value))return value.map(canonical);if(value&&typeof value==='object')return Object.fromEntries(Object.keys(value).sort().map(k=>[k,canonical(value[k])]));return value;}
-async function snapshotHash(snapshot){const value={entries:[...snapshot.entries].sort((a,b)=>a.id.localeCompare(b.id)),preferences:snapshot.preferences||{}};const hash=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(canonical(value))));return [...new Uint8Array(hash)].map(b=>b.toString(16).padStart(2,'0')).join('');}
+async function snapshotHash(snapshot,{normalize=true}={}){const prefs=snapshot.preferences||{},value={entries:[...snapshot.entries].sort((a,b)=>a.id.localeCompare(b.id)),preferences:normalize?{...prefs,selected:{...defaultSelection(),...prefs.selected}}:prefs};const hash=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(canonical(value))));return [...new Uint8Array(hash)].map(b=>b.toString(16).padStart(2,'0')).join('');}
 async function didSync(snapshot){const uid=accountUI.client.user?.id;if(!uid)return;const old=cachedAccount(uid)||{};localStorage.setItem(accountCacheKey(uid),JSON.stringify({...old,baseline:await snapshotHash(snapshot),preferences:accountScope==='account:'+uid?accountSnapshot().preferences:snapshot.preferences}));}
 function cacheAccountPreferences(){if(!accountScope.startsWith('account:'))return;const uid=accountScope.slice(8),old=cachedAccount(uid)||{};localStorage.setItem(accountCacheKey(uid),JSON.stringify({...old,preferences:accountSnapshot().preferences}));}
 function resetAccountWork(){recipe=null;elapsed=0;timerStart=null;grindDrafts.clear();cupRecordUI.resetSession();}
@@ -3641,8 +3641,10 @@ async function replaceAccountRows(rows,target){await new Promise((resolve,reject
 async function activateAccount(uid,incoming,{stillCurrent=()=>true}={}){
  validateAccountSnapshot(incoming);await cupRecordUI.flush();if(!stillCurrent())throw Error(t('Account view closed'));
  const target='account:'+uid,cache=cachedAccount(uid),localRows=await list(target),local={entries:localRows,preferences:accountScope===target?accountSnapshot().preferences:cache?.preferences||incoming.preferences};
- const incomingHash=await snapshotHash(incoming),localHash=await snapshotHash(local);let chosen=incoming;
- if((localRows.length||cache)&&localHash!==incomingHash&&localHash!==cache?.baseline){if(incomingHash===cache?.baseline)chosen=local;else throw Error(t('This device and cloud have different unsynced changes. Export this device backup before resolving the conflict. No records were replaced.'));}
+ const incomingHash=await snapshotHash(incoming),localHash=await snapshotHash(local);let chosen=incoming,baseline=cache?.baseline;
+ // Migrate only the old empty-library baseline. Actual local edits still trigger conflict protection.
+ if(cache&&localRows.length===0&&JSON.stringify(canonical(local.preferences?.selected))===JSON.stringify(canonical(defaultSelection()))){const empty={entries:[],preferences:{language:cache.preferences?.language,selected:{}}};if(baseline===await snapshotHash(empty,{normalize:false}))baseline=await snapshotHash(empty);}
+ if((localRows.length||cache)&&localHash!==incomingHash&&localHash!==baseline){if(incomingHash===baseline)chosen=local;else throw Error(t('This device and cloud have different unsynced changes. Export this device backup before resolving the conflict. No records were replaced.'));}
  if(!stillCurrent())throw Error(t('Account view closed'));await replaceAccountRows(chosen.entries,target);
  if(!guestPreferences)guestPreferences={selected:structuredClone(selected),language:currentLanguage()};
  accountScope=target;entries=await list(target);resetAccountWork();selected={...defaultSelection(),...(chosen.preferences?.selected||{})};if(chosen.preferences?.language)setLanguage(chosen.preferences.language);

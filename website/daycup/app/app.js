@@ -226,7 +226,7 @@ function confirmFirstBrew(setup,after){
 function renderAccountEntry(route){
  applyChrome();if(!['brew','history','account'].includes(route))return;
  const user=accountUI.client.user,active=accountUI.active,section=document.createElement('section');section.className='account-entry';
- section.innerHTML=`<div><p class="eyebrow">${t(active?'YOUR DAYCUP ACCOUNT':'YOUR COFFEE, WITH YOU')}</p><strong>${user?escape(user.email):t('Sign in or create your account')}</strong><p>${t(active?'Your private library syncs across devices':user?'Choose your cloud library to finish setup':'Google or email · one account with SideCourt')}</p>${!user?`<small>${t('You are browsing as a guest. These records stay on this device.')}</small>`:''}</div><button type="button" class="${active?'':'primary'}" data-account-entry>${t(user?'My account':'Sign in / Register')}</button>`;
+ section.innerHTML=`<div><p class="eyebrow">${t(active?'YOUR DAYCUP ACCOUNT':'YOUR COFFEE, WITH YOU')}</p><strong>${user?escape(user.email):t('Sign in or create your account')}</strong><p>${t(active?'Your private library syncs across devices':user?'Choose your cloud library to finish setup':'Google or email · one account with SideCourt')}</p>${!active?`<small>${t('You are browsing as a guest. These records stay on this device.')}</small>`:''}</div><button type="button" class="${active?'':'primary'}" data-account-entry>${t(user?'My account':'Sign in / Register')}</button>`;
  $('#main').prepend(section);section.querySelector('button').onclick=()=>accountUI.open();
 }
 
@@ -299,7 +299,7 @@ function validateAccountSnapshot(s){
 const accountCacheKey=uid=>'daycup-private-cache:'+uid;
 function cachedAccount(uid){try{return JSON.parse(localStorage.getItem(accountCacheKey(uid))||'null');}catch{return null;}}
 function canonical(value){if(Array.isArray(value))return value.map(canonical);if(value&&typeof value==='object')return Object.fromEntries(Object.keys(value).sort().map(k=>[k,canonical(value[k])]));return value;}
-async function snapshotHash(snapshot){const value={entries:[...snapshot.entries].sort((a,b)=>a.id.localeCompare(b.id)),preferences:snapshot.preferences||{}};const hash=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(canonical(value))));return [...new Uint8Array(hash)].map(b=>b.toString(16).padStart(2,'0')).join('');}
+async function snapshotHash(snapshot,{normalize=true}={}){const prefs=snapshot.preferences||{},value={entries:[...snapshot.entries].sort((a,b)=>a.id.localeCompare(b.id)),preferences:normalize?{...prefs,selected:{...defaultSelection(),...prefs.selected}}:prefs};const hash=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(canonical(value))));return [...new Uint8Array(hash)].map(b=>b.toString(16).padStart(2,'0')).join('');}
 async function didSync(snapshot){const uid=accountUI.client.user?.id;if(!uid)return;const old=cachedAccount(uid)||{};localStorage.setItem(accountCacheKey(uid),JSON.stringify({...old,baseline:await snapshotHash(snapshot),preferences:accountScope==='account:'+uid?accountSnapshot().preferences:snapshot.preferences}));}
 function cacheAccountPreferences(){if(!accountScope.startsWith('account:'))return;const uid=accountScope.slice(8),old=cachedAccount(uid)||{};localStorage.setItem(accountCacheKey(uid),JSON.stringify({...old,preferences:accountSnapshot().preferences}));}
 function resetAccountWork(){recipe=null;elapsed=0;timerStart=null;grindDrafts.clear();cupRecordUI.resetSession();}
@@ -307,8 +307,10 @@ async function replaceAccountRows(rows,target){await new Promise((resolve,reject
 async function activateAccount(uid,incoming,{stillCurrent=()=>true}={}){
  validateAccountSnapshot(incoming);await cupRecordUI.flush();if(!stillCurrent())throw Error(t('Account view closed'));
  const target='account:'+uid,cache=cachedAccount(uid),localRows=await list(target),local={entries:localRows,preferences:accountScope===target?accountSnapshot().preferences:cache?.preferences||incoming.preferences};
- const incomingHash=await snapshotHash(incoming),localHash=await snapshotHash(local);let chosen=incoming;
- if((localRows.length||cache)&&localHash!==incomingHash&&localHash!==cache?.baseline){if(incomingHash===cache?.baseline)chosen=local;else throw Error(t('This device and cloud have different unsynced changes. Export this device backup before resolving the conflict. No records were replaced.'));}
+ const incomingHash=await snapshotHash(incoming),localHash=await snapshotHash(local);let chosen=incoming,baseline=cache?.baseline;
+ // Migrate only the old empty-library baseline. Actual local edits still trigger conflict protection.
+ if(cache&&localRows.length===0&&JSON.stringify(canonical(local.preferences?.selected))===JSON.stringify(canonical(defaultSelection()))){const empty={entries:[],preferences:{language:cache.preferences?.language,selected:{}}};if(baseline===await snapshotHash(empty,{normalize:false}))baseline=await snapshotHash(empty);}
+ if((localRows.length||cache)&&localHash!==incomingHash&&localHash!==baseline){if(incomingHash===baseline)chosen=local;else throw Error(t('This device and cloud have different unsynced changes. Export this device backup before resolving the conflict. No records were replaced.'));}
  if(!stillCurrent())throw Error(t('Account view closed'));await replaceAccountRows(chosen.entries,target);
  if(!guestPreferences)guestPreferences={selected:structuredClone(selected),language:currentLanguage()};
  accountScope=target;entries=await list(target);resetAccountWork();selected={...defaultSelection(),...(chosen.preferences?.selected||{})};if(chosen.preferences?.language)setLanguage(chosen.preferences.language);
