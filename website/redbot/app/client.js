@@ -1,7 +1,7 @@
 /* RedBot saved-content client. User text is never passed through translation. */
 (() => {
   'use strict';
-  const C = ShelfCore, R = RedBotCheck, Q = RedBotQuick, APP_VERSION = '1.13.3';
+  const C = ShelfCore, R = RedBotCheck, Q = RedBotQuick, APP_VERSION = '1.14.0';
   const $ = s => document.querySelector(s);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const stored = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } };
@@ -321,7 +321,7 @@
   function render() {
     document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
     document.title = t('RedBot — 找回收藏，马上用起来','RedBot — Put your saves to use');
-    $('#nav-home').textContent = t('现在想做','For now');
+    $('#nav-home').textContent = t('最近收藏','Recent saves');
     $('#nav-library').textContent = t('我的收藏','My saves');
     $('#nav-home').ariaCurrent = tab === 'home' ? 'page' : 'false';
     $('#nav-library').ariaCurrent = tab === 'library' ? 'page' : 'false';
@@ -368,7 +368,7 @@
     const rows=(ids.length?ids.map(id=>byId.get(id)).filter(Boolean):[...data.items].sort((a,b)=>a.position-b.position)).filter(x=>!annotation(x.id).trashed).slice(0,3);
     if(!rows.length)return '<section id="recent-saves"></section>';
     const busy=status?.job?.state==='running'&&status.job.kind==='recent';
-    return `<section id="recent-saves" class="recent-saves"><div class="recent-heading"><h2>${t('刚收藏，先用上。','Fresh saves. Ready to use.')}</h2><button data-action="sync" ${busy?'disabled':''}>${busy?t('正在找新收藏…','Checking…'):t('刷新 ↻','Refresh ↻')}</button></div><div class="recent-list">${rows.map(x=>`<button class="recent-save" data-action="detail" data-id="${esc(x.id)}"><span class="recent-title">${esc(x.title)}</span><span class="recent-author">${esc(x.author)}${x.type==='video'?' · '+t('视频','Video'):''}</span><span class="recent-open" aria-hidden="true">↗</span></button>`).join('')}</div><p class="recent-status" role="status">${busy?t('先看已有收藏，新帖子找到后就会出现。','Your saves stay usable while new posts arrive.'):data.recent?.at?t('已检查最新收藏 · ','Latest saves checked · ')+esc(date(data.recent.at)):t('点开一篇，先读重点。','Open a save to read its key points.')}</p></section>`;
+    return `<section id="recent-saves" class="recent-saves"><div class="recent-heading"><h2>${t('最近收藏','Recent saves')}</h2><button data-action="sync" ${busy?'disabled':''}>${busy?t('正在找新收藏…','Checking…'):t('刷新 ↻','Refresh ↻')}</button></div><div class="recent-list">${rows.map(x=>`<button class="recent-save" data-action="detail" data-id="${esc(x.id)}"><span class="recent-title">${esc(x.title)}</span><span class="recent-author">${esc(x.author)} · ${completeContent(x)?t('已读，可直接复制','Read · ready to copy'):x.type==='video'?t('视频 · 点开读取','Video · open to read'):t('点开读取','Open to read')}</span><span class="recent-open" aria-hidden="true">↗</span></button>`).join('')}</div><p class="recent-status" role="status">${busy?t('先看已有收藏，新帖子找到后就会出现。','Your saves stay usable while new posts arrive.'):data.recent?.at?t('已检查最新收藏 · ','Latest saves checked · ')+esc(date(data.recent.at)):t('点开一篇，先读重点。','Open a save to read its key points.')}</p></section>`;
   }
   function readingLine() {
     if(!credentials || !data.items.length)return '';
@@ -380,8 +380,8 @@
   }
   function renderHome() {
     const has = data.items.some(x=>!annotation(x.id).trashed);
-    $('#main').innerHTML = `<section class="intro ${has?'compact':''}"><p class="eyebrow">${t('少找一会儿，多用一点。','LESS SEARCHING. MORE DOING.')}</p><h1>${has?t('把想到的事，做起来。','Put your idea to work.'):t('好东西收藏了，<br>然后呢？','You saved something good.<br>What next?')}</h1><p class="lead">${has?t('说个想法。找回相关收藏和方法，直接交给 AI。','Describe an idea. Find relevant saves and methods, ready for your AI.'):t('连接小红书，把收藏找回来。需要时，知道看哪篇、信什么、怎么用。','Connect Xiaohongshu. Find the save you need, check the claims, and put the idea to use.')}</p></section>
-    ${has?`<form id="goal-form" class="goal-form"><label class="sr-only" for="goal">${t('你现在想做什么','Your current goal')}</label><textarea id="goal" rows="2" maxlength="1000" placeholder="${t('比如：我想让产品首页更简洁，不知道从哪改','For example: make my product homepage less cluttered')}">${esc(goal)}</textarea><button class="primary" ${working?'disabled':''}>${working?t('正在找…','Looking…'):t('找内容和方法 →','Find ideas and methods →')}</button></form><div class="under-goal"><span>${data.items.filter(x=>!annotation(x.id).trashed).length} ${t('条自己的收藏','of your saves')}</span><button data-action="library">${t('查看全部收藏','Browse all saves')} ↗</button></div>${recentHTML()}${searchStatus()}${data.goalState?.plan?.goal&&!goal?`<button class="saved-plan" data-action="resume"><small>${t('上次留下的事','PICK UP WHERE YOU LEFT OFF')}</small><strong>${esc(data.goalState.plan.goal)}</strong><span>↗</span></button>`:''}<div id="answer">${answerHTML()}</div><div id="scan-progress">${progressHTML()}</div>`:
+    $('#main').innerHTML = `<section class="intro ${has?'compact':''}"><p class="eyebrow">${t('少找一会儿，多用一点。','LESS SEARCHING. MORE DOING.')}</p><h1>${has?t('点开收藏，用起来。','Open a save. Put it to use.'):t('好东西收藏了，<br>然后呢？','You saved something good.<br>What next?')}</h1><p class="lead">${has?t('读懂文字、图片、视频和评论，留下有用内容，一键复制给 AI。','Read the text, images, video and comments. Get the useful content, ready to copy for AI.'):t('连接小红书，点开一篇收藏，读懂内容，复制给 AI。','Connect Xiaohongshu. Open a save, understand it, and copy it for AI.')}</p></section>
+    ${has?`${recentHTML()}<div class="browse-saves"><button class="primary" data-action="library">${t('查看全部收藏','Browse all saves')} · ${data.items.filter(x=>!annotation(x.id).trashed).length} ↗</button></div><details class="optional-search" ${goal||answer?'open':''}><summary>${t('按想法找收藏','Find saves for an idea')}</summary><form id="goal-form" class="goal-form"><label class="sr-only" for="goal">${t('你现在想做什么','Your current goal')}</label><textarea id="goal" rows="2" maxlength="1000" placeholder="${t('比如：我想让产品首页更简洁，不知道从哪改','For example: make my product homepage less cluttered')}">${esc(goal)}</textarea><button class="primary" ${working?'disabled':''}>${working?t('正在找…','Looking…'):t('找内容和方法 →','Find ideas and methods →')}</button></form>${searchStatus()}${data.goalState?.plan?.goal&&!goal?`<button class="saved-plan" data-action="resume"><small>${t('上次留下的事','PICK UP WHERE YOU LEFT OFF')}</small><strong>${esc(data.goalState.plan.goal)}</strong><span>↗</span></button>`:''}</details><div id="answer">${answerHTML()}</div><div id="scan-progress">${progressHTML()}</div>`:
     `<div class="paper-stack" aria-hidden="true"><div class="paper back"><i></i><i></i><i></i></div><div class="paper front"><span>↗</span><p>${t('留给下一次<br>刚好需要的自己。','For the moment<br>you need it.')}</p><i></i></div></div><div class="welcome"><button class="primary" data-action="connection">${t('连接我的小红书 →','Connect my Xiaohongshu →')}</button><p>${t('登录后扫描收藏，无需上传文件。','Sign in to scan your saves. No file upload.')}</p><button class="quiet" data-action="demo">${t('先用示例试一试','Explore an example first')}</button></div>`}`;
     $('#goal-form')?.addEventListener('submit', findStart);
     $('#goal')?.addEventListener('input', e=>{cancelSearch();goal=e.target.value;choice='';answer=null;if($('#answer'))$('#answer').innerHTML='';if($('#search-status'))$('#search-status').outerHTML=searchStatus();const submit=$('#goal-form button');if(submit){submit.disabled=false;submit.textContent=t('找内容和方法 →','Find ideas and methods →');}});
@@ -774,7 +774,7 @@
       <div class="detail-head"><p class="eyebrow">${esc(label(a.category||x.category))}</p><h2>${esc(x.title)}</h2><p class="muted">${esc(x.author)}</p></div>
       <section class="useful-summary content-description">
         ${content?`<button class="primary content-copy" data-action="copy-content" data-id="${esc(id)}">${t('复制给 AI','Copy for AI')}</button>`:''}
-        ${content?`<div class="content-text">${contentHTML(content)}</div>`:`<p>${t('正在读取内容，完成后会直接显示在这里。','Reading this save. The useful content will appear here when ready.')}</p>`}
+        ${content?`<div class="content-text">${contentHTML(content)}</div>`:`<p id="content-wait">${t('正在读取内容，完成后会直接显示在这里。','Reading this save. The useful content will appear here when ready.')}</p>`}
         ${!ready||pending?`<div id="source-progress">${readProgress(x)}</div>`:''}
         ${ready?`<div id="intelligence-progress">${intelligenceProgress(id)}</div>`:''}
         ${partialComments?`<p class="muted">${t('评论尚未全部取得；下文包含本次已读到的有用补充。','Some comments could not be loaded. This includes useful additions from the comments received.')}</p>`:''}
@@ -789,7 +789,7 @@
   function simple(value){return window.RedBotText?.simplify(value)||value;}
   function intelligenceProgress(id){
     const job=intelligence.get(id)||((status?.aiJob?.targetId===id)?status.aiJob:null);if(!job)return '';
-    if(job.state==='running')return `<p role="status">${t(job.phase==='adapting'?'正在结合你的目标整理…':'正在写出有用内容…',job.phase==='adapting'?'Adapting to your goal…':'Writing out the useful content…')}</p>`;
+    if(job.state==='running')return `<p role="status">${t(job.phase==='adapting'?'正在结合你的目标整理…':'正在写出有用内容，完成后可复制…',job.phase==='adapting'?'Adapting to your goal…':'Writing the useful content. Copy when complete…')}</p>${job.partialContent?`<div class="content-text content-preview">${contentHTML(job.partialContent)}</div>`:''}`;
     if(job.state==='failed')return `<p role="alert">${esc(failure(Error(job.error||'ai_unavailable')))}</p><button data-action="${job.kind==='assistant'?'retry-assistant':'insight'}" data-id="${esc(id)}">${t('重试','Try again')}</button>`;
     return '';
   }
@@ -822,6 +822,7 @@
     refreshQuickAnswer();
     prepareQuickAnswer();
     if($('#intelligence-progress')&&detailId)$('#intelligence-progress').innerHTML=intelligenceProgress(detailId);
+    if($('#content-wait')&&detailId)$('#content-wait').hidden=!!intelligence.get(detailId)?.partialContent;
     if($('#dialog').dataset.kind==='brief'&&detailId){
       const pending=intelligence.get(detailId), result=annotation(detailId).buildBrief?.result;
       if($('#brief-progress'))$('#brief-progress').innerHTML=intelligenceProgress(detailId);

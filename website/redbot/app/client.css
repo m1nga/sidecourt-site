@@ -18,3 +18,5 @@
 @media(max-width:600px){.recent-saves{margin-top:18px}.recent-heading h2{font-size:1.05rem}.recent-title{font-size:1rem}.recent-save{padding-top:14px;padding-bottom:14px}.recent-status{font-size:.75rem}}
 
 .content-copy{margin-bottom:1.4rem}.content-description .prewrap{line-height:1.85;overflow-wrap:anywhere}
+
+.browse-saves{max-width:690px;margin:18px auto 28px}.browse-saves button{width:100%}.optional-search{max-width:690px;margin:24px auto;color:#727969}.optional-search summary{cursor:pointer;font-size:14px}.optional-search .goal-form{margin-top:16px;color:#282c24}.intro.compact{margin-top:0}
