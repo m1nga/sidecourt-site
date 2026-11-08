@@ -84,8 +84,8 @@
     "vision.js"
   ],
   "sha256": {
-    "Daycup.html": "1fbb98570ec5514f494c886d25ac9d454455e78a068ce73a40703e0f5605c127",
-    "Daycup-local-first.zip": "8b30bd48e2aef63428b424b73bc454439a57fcac26bf3f81639e739b2527c00a"
+    "Daycup.html": "2ba1ba73c23f576d9ba2041f52d9d993fa2fb5ad22c27c41e8378f0a6a5f313a",
+    "Daycup-local-first.zip": "69cb55292372f17dc0c3be7ec44ff36b5a4700f27b63f9e5534cd2512d8cedad"
   },
-  "source_commit": "df81399f4d0d84c48bfcce53a1d4ea7a2dc8b3c3"
+  "source_commit": "517459680dc19a0e4c980f0e9ce05c0621c1fecf"
 }

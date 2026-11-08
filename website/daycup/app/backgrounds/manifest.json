@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "disclosure": "All backgrounds are AI-generated, not real-location photography.",
   "disclosureZh": "所有背景均为 AI 生成，并非实地摄影。",
   "backgrounds": [
@@ -118,7 +118,8 @@
       "width": 1000,
       "height": 1250,
       "bytes": 265434,
-      "sha256": "5c2c9cefe4d357957df70bbac27262527aa5caaeb11d1fb733bfcd4c42e854ed"
+      "sha256": "5c2c9cefe4d357957df70bbac27262527aa5caaeb11d1fb733bfcd4c42e854ed",
+      "archived": true
     },
     {
       "enName": "Behind the Cup",
@@ -131,7 +132,8 @@
       "width": 1000,
       "height": 1250,
       "bytes": 333152,
-      "sha256": "6236c931c7f01d8e3aa04a46c5dac64777585f97e590601d03182ceead6a47b0"
+      "sha256": "6236c931c7f01d8e3aa04a46c5dac64777585f97e590601d03182ceead6a47b0",
+      "archived": true
     },
     {
       "enName": "Good Day Juice",
