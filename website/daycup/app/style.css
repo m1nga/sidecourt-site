@@ -18,7 +18,7 @@
 
 /* Reference-led materials and composition, 2026-10-26. Original Daycup assets. */
 :root{--paper:#f4f1ea;--ink:#352b24;--muted:#777168;--line:#ddd8cf;--rust:#96704e;--card:#f7f5ef;--olive:#72745d}
-body{background:radial-gradient(ellipse at 45% 14%,#fffefa 0,transparent 56%),linear-gradient(160deg,#f7f5ee,#eae4d9);background-attachment:fixed}
+body{background:radial-gradient(ellipse at 45% 14%,#fffefa 0,transparent 56%),linear-gradient(160deg,#f7f5ee,#eae4d9);background-attachment:scroll}
 header{max-width:1000px;padding:26px 34px 14px;gap:20px}.wordmark{font-size:36px;font-weight:600;letter-spacing:-1.8px}.wordmark span{font-size:25px}header>p{display:none}#connection{font-size:10px;max-width:210px}
 nav.utility-nav{display:flex;position:static;margin:0 0 0 10px;padding:0;gap:8px;border:0;background:none;backdrop-filter:none;flex-shrink:0}
 .utility-nav a{display:grid;place-items:center;padding:0;width:40px;height:40px;border:1px solid #ffffffb0;border-radius:50%;background:#f5f2eaaa;box-shadow:2px 3px 6px #b4a99426,-2px -2px 5px #fff9;color:var(--ink)}
@@ -152,3 +152,6 @@ nav.you-tabs a{min-height:44px;display:flex;align-items:center;padding:8px 0;whi
 
 @media(max-width:600px){.utility-nav #language{min-width:44px}}
 @media(max-width:360px){header>.wordmark{font-size:27px}.utility-nav #header-account{padding:9px}}
+
+/* Link actions need the same intrinsic box as button elements. */
+a.button{display:inline-flex;align-items:center;justify-content:center;max-width:100%;white-space:normal;overflow-wrap:anywhere;text-align:center}

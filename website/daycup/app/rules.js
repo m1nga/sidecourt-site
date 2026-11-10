@@ -1,3 +1,4 @@
+import {servingAmountsMeasured,validateServingMeasurements} from './serving-measurements.js';
 import {analyzeExtraction} from './extraction.js';
 import {tasteKinds,validateTasteRecord} from './taste.js';
 import {t} from './i18n.js';
@@ -34,12 +35,12 @@ function brewRequest(e,options){
  return {drink,strength};
 }
 function brewServing(r,waterRatio){
- if(r.drink==='milk'){const milkRatio={strong:3,standard:4,light:5}[r.request.strength],milkG=Math.round(r.output*milkRatio*10)/10;return {milkRatio,milkG,waterG:0,iceG:0,totalMassG:Math.round((r.output+milkG)*10)/10,note:t('DayCup latte starting ratio by mass. Weigh the milk added to the cup; foam volume and milk left in the pitcher are not included. Adjust milk to taste.')};}
+ if(r.drink==='milk'){const milkRatio={strong:3,standard:4,light:5}[r.request.strength],milkG=Math.round(r.output*milkRatio*10)/10;return {milkRatio,milkG,waterG:0,iceG:0,totalMassG:Math.round((r.output+milkG)*10)/10,note:t('Add milk to taste. For an exact record, weigh only the milk added to the cup.')};}
  if(!['americano','iced-americano'].includes(r.drink))return null;
  const ratio=waterRatio??({strong:2,standard:3,light:4}[r.request.strength]);
  const waterG=Math.round(r.output*ratio*10)/10,iceG=r.drink==='iced-americano'?Math.round(r.output*3*10)/10:0;
  return {waterG,iceG,waterRatio:ratio,totalMassG:Math.round((r.output+waterG+iceG)*10)/10,
-  note:t(r.drink==='americano'?'DayCup editorial dilution starting point. Add separately weighed hot water to the extracted espresso; never run all dilution water through the coffee puck. This is ingredient mass, not measured drink volume.':'DayCup editorial dilution starting point, not a manufacturer optimum. Total mass includes unmelted ice; it is not liquid volume or a predicted melt amount. Weigh espresso separately before adding cold water and ice.')};
+  note:t(r.drink==='americano'?'Add hot water to the extracted espresso, then adjust to taste. Do not run dilution water through the coffee puck.':'Add cold water and ice to taste. For exact comparison, weigh them separately; ice mass is not liquid volume.')};
 }
 function completeRecipe(r,request){
  const e=r.equipment,b=r.bean,label=b.labelRecipe?.method===e.method&&Math.abs(b.labelRecipe.dose-r.dose)<.01?b.labelRecipe:null;
@@ -123,7 +124,8 @@ export function adjust(r,f){
  if(!f.even||f.taste==='mixed')return review('Check distribution, channeling or pour evenness first. Keep the recipe unchanged while the cup tastes both sour and bitter.');
  if(Math.abs(f.dose-r.dose)>.3||Math.abs(f.output-r.output)>1)return review('The measured dose or output differs from the recipe. Match both targets on your next brew before comparing taste.');
  if(f.taste==='balanced'&&['americano','iced-americano'].includes(r.drink)){
-  if(!f.servingConfirmed||!finite(f.waterG)||!finite(f.iceG)||Math.abs(f.waterG-r.serving.waterG)>1||Math.abs(f.iceG-r.serving.iceG)>1)return review('Confirm the measured dilution water and ice (zero for hot Americano) match the recipe before comparing drink strength.');
+  if(f.servingMeasurements&&!servingAmountsMeasured(r.drink,f))return review(t(r.drink==='americano'?'Your espresso tastes right. Add water to taste; measured amounts are only needed for precise dilution advice.':'Your espresso tastes right. Add water and ice to taste; measured amounts are only needed for precise dilution advice.'));
+  if(!f.servingConfirmed||!servingAmountsMeasured(r.drink,f)||!finite(f.waterG)||!finite(f.iceG)||Math.abs(f.waterG-r.serving.waterG)>1||Math.abs(f.iceG-r.serving.iceG)>1)return review('Confirm the measured dilution water and ice (zero for hot Americano) match the recipe before comparing drink strength.');
   if(['weak','strong'].includes(f.strength)){
    const next=Math.round((r.serving.waterRatio+(f.strength==='weak'?-.5:.5))*10)/10;
    if(next<1||next>8)return review('Dilution has reached the supported range. Keep your espresso unchanged and review the drink size.');
@@ -160,6 +162,7 @@ export function validateEntry(e){
 }
 
 function validateRecipeExtras(r,f,d){
+ validateServingMeasurements(r.drink,f);
  for(const key of ['tdsPercent','beverageMassG'])if(f[key]!==undefined&&(!finite(f[key])||f[key]<=0))throw Error(t('Invalid extraction measurement.'));
  if(f.tdsPercent!==undefined||f.beverageMassG!==undefined){const result=analyzeExtraction({method:r.equipment.method,doseG:f.dose,beverageMassG:r.equipment.method==='espresso'?f.output:f.beverageMassG,tdsPercent:f.tdsPercent});if(!result.valid&&!(r.equipment.method==='v60'&&f.beverageMassG===undefined&&f.tdsPercent>0&&f.tdsPercent<=100))throw Error(t('Invalid extraction measurement.'));}
 

@@ -58,3 +58,48 @@
  .recipe .timer .actions{flex-wrap:wrap}
 }
 @media(prefers-reduced-motion:reduce){.pressure-needle,.pressure-gauge.is-running .pressure-needle{transition:none}}
+
+.brew-flow{width:100%;max-width:280px;margin:0 auto 12px}.brew-flow svg{width:100%;height:120px;display:block}.brew-stream{opacity:0;stroke-dasharray:6 5;animation:daycup-pour .8s linear infinite;animation-play-state:paused}.brew-flow.is-running .brew-stream{opacity:.85;animation-play-state:running}@keyframes daycup-pour{to{stroke-dashoffset:-11}}@media(prefers-reduced-motion:reduce){.brew-stream{animation:none;stroke-dasharray:none}}
+
+
+/* Keep the existing centred flow; let copy and controls define their own height. */
+.next-cup .actions{display:flex;flex-direction:column;align-items:stretch;gap:12px;max-width:280px;margin:24px auto 0}
+.next-cup .actions button,.next-cup .actions #continue-brew{width:100%;min-height:48px;margin:0;font-size:14px;padding:12px 18px;gap:12px}
+.brew-controls form .actions{align-items:stretch;gap:10px}
+.brew-controls form .actions button{flex:1 1 160px;min-width:0;white-space:normal;overflow-wrap:anywhere}
+.brew-controls .row,.feedback-dialog .row{align-items:flex-end}
+.recipe .eyebrow{font-size:12px;letter-spacing:.04em}
+.recipe .recipe-batch{font-size:12px!important;line-height:1.6;overflow-wrap:anywhere}
+.recipe .metrics{gap:20px;max-width:300px}
+.recipe .metrics>div{min-width:0}
+.recipe .metrics small{font-size:12px}
+.recipe .timer .actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch;gap:10px;max-width:430px}
+.recipe .timer .actions button{min-width:0;min-height:48px;padding:12px 8px;font-size:13px;white-space:normal;overflow-wrap:anywhere}
+.recipe>details{padding:0 18px;margin:12px auto}
+.recipe>details[open]{padding-bottom:16px}
+.recipe summary{min-height:48px;font-size:13px}
+.recipe details p,.recipe .preparation>p{font-size:13px;line-height:1.7;margin:12px 0}
+.recipe .preparation-grind{font-weight:600}
+.feedback-dialog #dialog-content>.eyebrow{font-size:12px;letter-spacing:.02em}
+.feedback-dialog label,.feedback-dialog .taste-field legend{font-size:13px}
+.feedback-dialog .field-help{font-size:12px;line-height:1.65;margin:10px 0 16px}
+.feedback-dialog .taste-options label>span{font-size:12px;min-height:88px;padding:10px 4px;overflow-wrap:anywhere}
+.feedback-dialog input:not([type=checkbox]):not([type=radio]),.feedback-dialog textarea,.feedback-dialog select{font-size:16px}
+.feedback-dialog form>details{margin:18px 0}
+.feedback-dialog form>details>summary{min-height:44px;padding:10px 0;font-size:14px}
+.feedback-dialog{--feedback-inset:24px;--feedback-bottom:24px}
+.feedback-actions{position:sticky;bottom:calc(-1 * var(--feedback-bottom));margin:16px calc(-1 * var(--feedback-inset)) calc(-1 * var(--feedback-bottom));padding:14px var(--feedback-inset) var(--feedback-bottom);background:#e8eae7;border-top:1px solid #d8dcd4}
+@media(max-width:700px){.feedback-dialog{--feedback-inset:22px;--feedback-bottom:max(24px,env(safe-area-inset-bottom))}}
+.feedback-actions>.primary{display:block;width:100%;min-height:48px;font-size:14px;white-space:normal}
+@media(max-width:360px){.recipe .timer .actions{gap:6px}.recipe .timer .actions button{font-size:12px;padding:10px 5px}.feedback-dialog .taste-options{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}}
+
+/* Serving additions are optional; extraction measurements remain explicit. */
+.serving-inputs{min-width:0;border:0;border-block:1px solid var(--line);padding:16px 0;margin:24px 0}
+.serving-inputs legend{font-size:14px;font-weight:600;padding:0 6px 0 0}
+.serving-amount{margin:16px 0}
+.serving-amount>label{margin:0 0 8px}
+.serving-amount-controls{display:flex;align-items:flex-end;gap:12px}
+.serving-amount-controls>select{flex:1;min-width:0;margin:0}
+.serving-amount-controls>.serving-number{flex:1;min-width:0;margin:0;font-size:12px}
+.serving-number input{margin-top:6px}
+.serving-summary,.record-serving-summary{font-size:13px;line-height:1.65;color:var(--muted);margin:8px 0;overflow-wrap:anywhere}

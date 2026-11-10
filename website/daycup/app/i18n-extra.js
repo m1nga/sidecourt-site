@@ -754,3 +754,63 @@ addTranslations({
  "Your recorded grind setting (unconfirmed): {value}": "你记录的研磨设置（未确认）：{value}",
  "Confirm the recorded grind setting before using this cup for a brewing adjustment.": "确认实际使用的研磨设置后，才能将这杯作为调豆依据"
 });
+
+// Concise brewing and image-editor copy; saved user content stays unchanged.
+addTranslations({
+  "Target dose": "目标粉量",
+  "Target yield": "目标出液",
+  "Target water": "目标水量",
+  "Why this recipe": "配方依据",
+  "Finish & record": "完成并记录",
+  "Check the suggested amounts and enter your measured time.": "请核对参考用量，并填写实际用时。",
+  "Check the amounts you used. Time comes from the timer.": "请核对实际用量，时间已从计时器填入。",
+  "Confirm only what you checked to guide your next adjustment.": "只勾选你实际确认的项目，作为下次调整的依据。",
+  "Private note (optional)": "私人笔记（可选）",
+  "Cup saved": "这一杯已保存",
+  "Create your image": "制作分享图",
+  "Adjust background": "调整背景",
+  "Select an element to move it. Use the controls to resize or rotate.": "选中元素即可移动，也可用控件调整大小和角度。",
+  "Export & reset": "导出与重置",
+  "Back to brewing": "返回冲煮"
+});
+
+addTranslations({'I used this grind setting for this cup':'这一杯使用了该研磨刻度'});
+
+// Optional serving additions; extraction amounts stay measured.
+addTranslations({
+  "Hot water": "热水",
+  "Cold water": "冷水",
+  "Milk": "奶",
+  "Ice": "冰块",
+  "By feel": "随手加的",
+  "Estimate": "估计",
+  "Measured": "实测",
+  "Amount / g": "用量 / g",
+  "Additions (optional)": "添加用量（可选）",
+  "By feel is fine. You can also record an estimate or a measured amount.": "随手加也没关系，也可以填写估计量或实测量。",
+  "{ingredient}: how much?": "{ingredient}：如何记录用量？",
+  "{ingredient} / g": "{ingredient} / g",
+  "Choose how you recorded the added amount.": "请选择添加用量的记录方式。",
+  "Enter an amount, or choose By feel.": "请填写用量，或选择“随手加的”。",
+  "Use an amount from 0 to 2000 g.": "用量需在 0–2000 g 之间。",
+  "Invalid added-amount record.": "添加用量记录无效。",
+  "Add about {amount} g milk": "加入约 {amount} g 牛奶",
+  "Add about {amount} g water": "加入约 {amount} g 水"
+});
+
+addTranslations({
+  "Add milk to taste. For an exact record, weigh only the milk added to the cup.": "奶量按口味调整。如需精确记录，只称实际加入杯中的奶。",
+  "Add hot water to the extracted espresso, then adjust to taste. Do not run dilution water through the coffee puck.": "萃取完成后再加热水，按口味调整；用于稀释的水不要流经粉饼。",
+  "Add cold water and ice to taste. For exact comparison, weigh them separately; ice mass is not liquid volume.": "冷水和冰块按口味添加。如需精确比较，请分别称重；冰块重量不等于液体体积。",
+  "{espresso} g espresso + about {milk} g milk": "{espresso} g 浓缩 + 约 {milk} g 奶",
+  "{espresso} g espresso + about {water} g hot water": "{espresso} g 浓缩 + 约 {water} g 热水",
+  "{espresso} g espresso + about {water} g cold water": "{espresso} g 浓缩 + 约 {water} g 冷水",
+  " + about {ice} g ice": " + 约 {ice} g 冰块",
+  "Suggested ingredient mass: about {total} g, including ice.": "参考总重量：约 {total} g（含冰块）。",
+  "Suggested ingredient mass: about {total} g.": "参考总重量：约 {total} g。"
+});
+
+addTranslations({
+  'Your espresso tastes right. Add water to taste; measured amounts are only needed for precise dilution advice.':'浓缩口感已经合适。加水量可随口味调整；需要精确的稀释建议时，再记录实测用量。',
+  'Your espresso tastes right. Add water and ice to taste; measured amounts are only needed for precise dilution advice.':'浓缩口感已经合适。水和冰可随口味添加；需要精确的稀释建议时，再记录实测用量。'
+});

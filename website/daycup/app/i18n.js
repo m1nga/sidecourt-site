@@ -2,7 +2,7 @@
 // No network, no external library. Works in the browser, the standalone bundle and Node tests.
 export const appVersion='2.13.1';
 export const languages={en:'English',zh:'中文'};
-const zhStrings={};
+const zhStrings={'Record a finished cup':'记录已做好的咖啡','Brew with timer':'边冲煮边计时','Save & create image':'保存并生成分享图','Enter what you actually used. Check the suggested amounts and enter your measured time. No timer is needed.':'填写这杯的实际参数，核对预填用量并输入你记录的用时，无需开启计时。','Leave this brew':'退出本次冲煮'};
 let activeLanguage='en';
 const languageListeners=new Set();
 function storedLanguage(){if(typeof document==='undefined')return null;try{const value=globalThis.localStorage?.getItem('daycup-language');return languages[value]?value:null;}catch{return null;}}

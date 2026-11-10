@@ -74,6 +74,7 @@
     "privacy-language.js",
     "privacy.html",
     "rules.js",
+    "serving-measurements.js",
     "share-backgrounds.js",
     "share-design.js",
     "share-logo.js",
@@ -84,8 +85,8 @@
     "vision.js"
   ],
   "sha256": {
-    "Daycup.html": "2ba1ba73c23f576d9ba2041f52d9d993fa2fb5ad22c27c41e8378f0a6a5f313a",
-    "Daycup-local-first.zip": "69cb55292372f17dc0c3be7ec44ff36b5a4700f27b63f9e5534cd2512d8cedad"
+    "Daycup.html": "6b166edfd51ab9647cc13a966a90097129f1c2a0aebb22276cbf8180badeab66",
+    "Daycup-local-first.zip": "bcbb8816da6550a340c253e079d0bc7129b8611ec74a43ea910c4f84f426e88e"
   },
-  "source_commit": "517459680dc19a0e4c980f0e9ce05c0621c1fecf"
+  "source_commit": "0c06b870fd12977b7f077930c07ea8e8ce8b2618"
 }

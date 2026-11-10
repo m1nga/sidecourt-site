@@ -15,3 +15,14 @@
 @media(max-width:700px){body[data-route^="record/"] #notice{bottom:calc(155px + env(safe-area-inset-bottom))}}
 
 .record-inspector-title{flex-wrap:wrap}.record-inspector-title strong{flex:1 1 100%}
+
+
+/* Wrapping actions remain inside their panels, including the return link. */
+.record-heading{flex-wrap:wrap}
+.record-heading>div{flex:1 1 210px;min-width:0}
+.record-heading>.button{flex-shrink:0}
+.record-heading .eyebrow{font-size:12px;letter-spacing:.04em;margin-bottom:6px}
+.record-controls>#next-cup{display:flex;min-height:48px;white-space:normal}
+.record-controls>details[open]{padding-bottom:20px}
+.record-controls>details>button{max-width:100%;margin:10px 6px 0 0;white-space:normal}
+.record-share button,.record-stage-tools button{min-width:0;overflow-wrap:anywhere}
