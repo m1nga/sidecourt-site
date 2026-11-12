@@ -90,14 +90,15 @@ shutil.copyfile(root / 'admin.html', out / 'admin/index.html')
 def redirect_page(destination, preserve_hash=False):
  import html
  target = json.dumps(destination)
+ href = html.escape(destination, quote=True)
  script = 'location.replace(' + target + ('+location.search+location.hash' if preserve_hash else '') + ')'
- return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SideCourt</title><link rel="icon" href="/favicon.svg"><link rel="canonical" href="https://sidecourt.space/"><meta http-equiv="refresh" content="0;url='+html.escape(destination,quote=True)+'"></head><body><script>'+script+'</script><a href="'+html.escape(destination,quote=True)+'">Continue to SideCourt</a></body></html>'
+ return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SideCourt</title><link rel="icon" href="/favicon.svg"><link rel="canonical" href="https://sidecourt.space'+href+'"><meta http-equiv="refresh" content="0;url='+href+'"></head><body><script>'+script+'</script><a href="'+href+'">Continue to SideCourt</a></body></html>'
 
 # Retire historic displays, while installed CleanPause clients retain update endpoints.
 (out / 'platform-preview').mkdir(exist_ok=True)
 (out / 'platform-preview/index.html').write_text(redirect_page('/', True))
 # /drops and /guide are real pages of the application now; only the CleanPause slug still redirects.
-(out / 'drops/cleanpause/index.html').write_text(redirect_page('/work/6e3d989a-1d92-4f96-9df1-abac78ea5fc0/'))
+(out / 'drops/cleanpause/index.html').write_text(redirect_page('/work/SC2GM4W/'))
 (out / 'robots.txt').write_text('User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /platform-preview/\nDisallow: /downloads/\nSitemap: https://sidecourt.space/sitemap.xml\n')
 print('Canonical SideCourt application published; historic displays redirected.')
 
@@ -167,7 +168,7 @@ existing=[node.text for node in ET.fromstring((out/'sitemap.xml').read_text()).i
 (out/'llms.txt').write_text((out/'llms.txt').read_text()+'\n## Tools and skills by Ming\n'+''.join('- '+x['name']+': https://sidecourt.space'+x['url']+' — '+x['description']+'\n' for x in __import__('json').loads((root/'tools/catalog.json').read_text())['items']))
 
 # Discovery directory migration: preserve query/hash, leave all product children untouched.
-(out/'drops/index.html').write_text(redirect_page('/discovery/', True).replace('href="https://sidecourt.space/"','href="https://sidecourt.space/discovery/"'))
+(out/'drops/index.html').write_text(redirect_page('/discovery/', True))
 
 # BreakingGap: the approved interactive product page, hosted on the canonical SideCourt domain.
 breakinggap = root / 'breakinggap'
