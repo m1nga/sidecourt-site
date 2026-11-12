@@ -106,6 +106,45 @@
     }, { threshold: 0.4 });
     observer.observe(accident);
   }
+  const page = '/cleanpause/';
+  const metricsEndpoint = 'https://rwbwfokdipabwjparcwy.supabase.co/functions/v1/cleanpause-metrics';
+  let source = 'unknown';
+  try {
+    if (document.referrer) {
+      const ref = new URL(document.referrer);
+      const searchHost = /^(?:www\.)?(?:google\.(?:com|[a-z]{2}|(?:co|com)\.[a-z]{2})|bing\.com|duckduckgo\.com|search\.yahoo\.com|search\.brave\.com|ecosia\.org)$/i;
+      source = searchHost.test(ref.hostname) ? 'organic_search' : 'other';
+    }
+  } catch { /* Keep unknown when the referrer cannot be parsed. */ }
+
+  function recordMetric(action) {
+    try {
+      if (location.origin !== 'https://sidecourt.space' || location.pathname !== page ||
+          localStorage.getItem('sidecourt.analytics.exclude.v1') === '1') return;
+      const verification = sessionStorage.getItem('sidecourt.cleanpause.metrics.verify') === '1';
+      const prefix = 'sidecourt.cleanpause.metrics.' + (verification ? 'verify.' : 'live.');
+      const key = prefix + action;
+      if (sessionStorage.getItem(key)) return;
+      const sourceKey = prefix + 'source';
+      const storedSource = sessionStorage.getItem(sourceKey);
+      const entrySource = ['organic_search', 'other', 'unknown'].includes(storedSource) ? storedSource : source;
+      sessionStorage.setItem(sourceKey, entrySource);
+      const nonce = crypto.randomUUID();
+      sessionStorage.setItem(key, '1');
+      void fetch(metricsEndpoint, {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        credentials: 'omit', referrerPolicy: 'no-referrer', keepalive: true,
+        body: JSON.stringify({page, source: entrySource, action, nonce, verification}),
+      }).catch(() => {});
+    } catch { /* Analytics must not interrupt the preview or download. */ }
+  }
+  recordMetric('landing');
+  const macDownload = document.getElementById('download-app');
+  macDownload.addEventListener('click', () => recordMetric('mac_download_clicked'));
+  macDownload.addEventListener('auxclick', event => {
+    if (event.button === 1) recordMetric('mac_download_clicked');
+  });
+
   const panel = document.getElementById('preview');
   const start = document.getElementById('start-preview');
   const hold = document.getElementById('hold');
@@ -113,7 +152,7 @@
   const status = document.getElementById('demo-status');
   let active = false, began = null, frame = 0, sequence = '';
   function cancelHold() { began = null; cancelAnimationFrame(frame); hold.style.setProperty('--progress', 0); }
-  function finish() {
+  function finish(completed = true) {
     if (!active) return;
     active = false; cancelHold();
     panel.classList.remove('is-cleaning'); hold.hidden = true; reset.hidden = true;
@@ -122,6 +161,7 @@
     start.textContent = 'Try again';
     status.textContent = 'Preview finished. Your Mac’s input was never blocked.';
     start.focus({preventScroll:true});
+    if (completed && !document.hidden) recordMetric('preview_completed');
   }
   function tick(now) {
     if (began === null || !active) return;
@@ -144,8 +184,8 @@
     if (event.key === 'Escape') finish();
     else if (event.key.length === 1 && !event.metaKey && !event.ctrlKey) { sequence = (sequence + event.key.toLowerCase()).slice(-4); if (sequence === 'done') finish(); }
   });
-  reset.addEventListener('click', finish);
-  document.addEventListener('visibilitychange', () => { if (document.hidden && active) finish(); });
+  reset.addEventListener('click', () => finish());
+  document.addEventListener('visibilitychange', () => { if (document.hidden && active) finish(false); });
 })();
 </script>
 </body>
