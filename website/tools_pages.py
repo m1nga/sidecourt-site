@@ -88,6 +88,13 @@ def publish_tools(root,out):
  for x in items:
   if 'install' not in x:continue
   slug=x['slug'];folder=out/'skills'/slug;folder.mkdir(parents=True,exist_ok=True)
+  if slug=='mixtape':
+   shutil.copytree(root/'mixtape-guide',folder,dirs_exist_ok=True)
+   index=folder/'index.html'
+   url='https://sidecourt.space'+x['url']
+   index.write_text(search_metadata(index.read_text(encoding='utf-8'),x['title']+' · SideCourt',x['description'],url),encoding='utf-8')
+   urls.append(url)
+   continue
   body='<p class="eyebrow">'+e(x['name'])+' · AI ASSISTANT SKILL · '+e(x['status'])+'</p><h1>'+e(x['description'])+'</h1><p><strong>Bring:</strong> '+e(x.get('bring','Your task and relevant source material.'))+'</p><p><strong>Get:</strong> '+e(x.get('result','A result within the skill’s documented scope.'))+'</p>'
   if x['status']=='Legacy':body+='<p>This legacy skill remains available for reference. It is not a current default workflow.</p>'
   if slug=='redbot':body+='<div class="actions"><a class="button" href="/drops/redbot/app/">Try RedBot</a><a class="button secondary" href="/drops/redbot/">Product & privacy</a><a class="button secondary" href="/drops/redbot/test/">User test</a></div>'

@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#171b17">
+  <title>Mixtape — What does this moment sound like?</title>
+  <meta name="description" content="Turn a feeling into a playlist with the Mixtape skill for Codex.">
+  <link rel="canonical" href="https://sidecourt.space/skills/mixtape/">
+  <link rel="icon" href="/favicon.svg">
+  <link rel="stylesheet" href="style.css">
+  <script src="copy.js" defer></script>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareSourceCode",
+      "@id": "https://sidecourt.space/skills/mixtape/#entity",
+      "name": "Mixtape",
+      "description": "A skill that turns a mood, scene, or seed tracks into a playlist to review and import.",
+      "url": "https://sidecourt.space/skills/mixtape/",
+      "codeRepository": "https://github.com/m1nga/mixtape",
+      "author": {"@type": "Person", "name": "Ming", "url": "https://sidecourt.space/people/m1nga/"}
+    }
+  </script>
+</head>
+<body class="guide">
+  <a class="skip-link" href="#prompts">Skip to prompts</a>
+  <header>
+    <a class="brand" href="./">mixtape<span>✳</span></a>
+    <nav aria-label="Main navigation">
+      <a href="/skills/">SideCourt Skills</a>
+      <a href="#install">Install</a>
+      <a href="https://github.com/m1nga/mixtape">GitHub ↗</a>
+    </nav>
+  </header>
+  <main>
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <h1 id="hero-title">What does this moment <em>sound like?</em></h1>
+        <p class="lead">Tell your AI what you want to hear. Mixtape turns the feeling into a playlist you can take to Spotify, Apple Music, or YouTube Music.</p>
+        <a class="button dark hero-cta" href="#prompts">Try a prompt <span aria-hidden="true">↗</span></a>
+      </div>
+      <div class="tape-stage" aria-hidden="true">
+        <div class="orbit orbit-one"></div>
+        <div class="orbit orbit-two"></div>
+        <div class="tape">
+          <div class="tape-screw screw-one"></div>
+          <div class="tape-screw screw-two"></div>
+          <div class="tapetop">SIDE A</div>
+          <div class="tapelabel">
+            <div class="label-title">
+              <span class="hand">for right<br>now.</span><span class="label-star">✳</span>
+            </div>
+            <div class="reels"><i></i><div class="tape-window"><span></span></div><i></i></div>
+          </div>
+          <div class="tapebottom">MIXTAPE</div>
+          <div class="tape-base"><i></i><i></i></div>
+        </div>
+      </div>
+    </section>
+    <section id="prompts" class="guide-section" aria-labelledby="prompts-title">
+      <h2 id="prompts-title">Give your AI a place to start.</h2>
+      <div class="guide-grid">
+        <article class="panel">
+          <h3>After hours</h3>
+          <blockquote id="after-hours">Use $mixtape to make me five tracks for late-night work. Start with Tycho’s “A Walk,” let the energy build gently, and end somewhere quiet. I listen on Spotify.</blockquote>
+          <button type="button" data-copy="after-hours" class="quiet">Copy Spotify prompt</button>
+          <p class="copy-result" role="status"></p>
+        </article>
+        <article class="panel">
+          <h3>First cup</h3>
+          <blockquote id="first-cup">Use $mixtape for a slow Sunday morning. Give me warm jazz with a little swing, mostly instrumental, easy enough to talk over. I listen on Apple Music.</blockquote>
+          <button type="button" data-copy="first-cup" class="quiet">Copy Apple Music prompt</button>
+          <p class="copy-result" role="status"></p>
+        </article>
+        <article class="panel">
+          <h3>The long way home</h3>
+          <blockquote id="long-way">Use $mixtape to make a mix for the drive home after a long day. Start with something spacious, pick up the pace halfway through, and bring it back down. I listen on YouTube Music.</blockquote>
+          <button type="button" data-copy="long-way" class="quiet">Copy YouTube Music prompt</button>
+          <p class="copy-result" role="status"></p>
+        </article>
+      </div>
+    </section>
+    <section id="install" class="panel setup" aria-labelledby="install-title">
+      <h2 id="install-title">Use Mixtape in Codex</h2>
+      <ol>
+        <li>
+          Install the skill.
+          <pre id="command"><code>npx skills add m1nga/mixtape</code></pre>
+          <button type="button" data-copy="command" class="quiet">Copy install command</button>
+          <p class="copy-result" role="status"></p>
+        </li>
+        <li>Open Codex or another assistant that supports skills. Paste an example or describe your own moment. Include where you listen if you have a preference.</li>
+        <li>Review the tracklist. Open the Soundiiz link, connect your music account there, and confirm the import. Check the tracks in your music library.</li>
+      </ol>
+      <p class="resources">
+        <a href="/tools/packages/mixtape.zip" download>Download skill package</a>
+        <a href="/tools/sources/mixtape/SKILL.md">Skill instructions</a>
+        <a href="/tools/sources/mixtape/README.md">Full guide</a>
+      </p>
+    </section>
+  </main>
+</body>
+</html>

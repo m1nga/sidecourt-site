@@ -159,9 +159,9 @@
     {
       "slug": "mixtape",
       "name": "Playlist Builder",
-      "title": "Playlist Builder — Get a Verified Playlist You Can Actually Import",
+      "title": "Mixtape — What does this moment sound like?",
       "kind": "Skill",
-      "description": "Get a playlist for your mood that you can import and play.",
+      "description": "Use the Mixtape skill to turn a feeling into a playlist for Spotify, Apple Music, or YouTube Music.",
       "url": "/skills/mixtape/",
       "action": "/skills/mixtape/",
       "status": "Available",
@@ -169,7 +169,7 @@
       "install": "npx skills add m1nga/mixtape",
       "package": "/tools/packages/mixtape.zip",
       "bring": "A mood, a few songs or a listening situation.",
-      "result": "A curated playlist with a verified import link.",
+      "result": "A curated tracklist and a Soundiiz link to review and import it.",
       "example": "Use $mixtape to make a playlist for a quiet evening cooking. Give me an import link.",
       "category": "Creative"
     },

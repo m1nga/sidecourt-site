@@ -72,10 +72,20 @@ class ToolsTest(unittest.TestCase):
    for item in data['items']:
     if 'package' not in item:continue
     detail=(out/('skills/'+item['slug']+'/index.html')).read_text()
-    self.assertIn('class="catalog-detail"',detail)
     self.assertIn('id="install"',detail)
-    self.assertIn('id="copy"',detail)
-    self.assertIn('Copy the command above manually.',detail)
+    if item['slug']=='mixtape':
+     self.assertIn('What does this moment <em>sound like?</em>',detail)
+     self.assertIn('npx skills add m1nga/mixtape',detail)
+     self.assertNotIn('<select',detail)
+     self.assertNotIn('<form',detail)
+     for platform in ['Spotify','Apple Music','YouTube Music']:
+      self.assertIn('>Copy '+platform+' prompt</button>',detail)
+     for asset in ['copy.js','style.css']:
+      self.assertTrue((out/'skills/mixtape'/asset).is_file())
+    else:
+     self.assertIn('class="catalog-detail"',detail)
+     self.assertIn('id="copy"',detail)
+     self.assertIn('Copy the command above manually.',detail)
     self.assertIn(item['package'],detail)
     self.assertIn(item['repository'],detail)
     self.assertIn('/tools/sources/'+item['slug']+'/SKILL.md',detail)
