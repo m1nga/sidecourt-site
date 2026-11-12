@@ -76,6 +76,51 @@ function tidyAddress(){try{
 }catch{}}
 tidyAddress();
 const here=()=>location.pathname+location.search;
+const entryPath=location.pathname,entryTitle=document.title;
+const headFields={
+ canonical:['link','rel','canonical','href'],
+ description:['meta','name','description','content'],
+ author:['meta','name','author','content'],
+ ...Object.fromEntries(['type','title','description','url','image'].map(key=>['og:'+key,['meta','property','og:'+key,'content']]))
+};
+function headNode([tag,key,name]){return document.head.querySelector(tag+'['+key+'="'+name+'"]')}
+const entryHead=Object.fromEntries(Object.entries(headFields).map(([key,field])=>[key,headNode(field)?.getAttribute(field[3])||'']));
+function writeHead(key,value){
+ const field=headFields[key],old=headNode(field);
+ if(!value){old?.remove();return}
+ const node=old||document.createElement(field[0]);
+ node.setAttribute(field[1],field[2]);
+ node.setAttribute(field[3],value);
+ if(!old)document.head.append(node);
+}
+function routeHead(page,previous){
+ $('meta[data-work-robots]')?.remove();
+ if(location.pathname===entryPath){
+  if(previous==='work'||page==='work'){
+   Object.entries(entryHead).forEach(([key,value])=>writeHead(key,value));
+   if(page==='work')document.title=entryTitle;
+  }
+  return;
+ }
+ if(page==='work'||previous==='work'){
+  Object.keys(headFields).forEach(key=>writeHead(key,''));
+  if(page==='work')return;
+  writeHead('description','SideCourt — create something yours, show up for others.');
+ }
+ if(headNode(headFields.canonical)||previous==='work')writeHead('canonical',location.origin+location.pathname);
+}
+function setWorkHead({url='',title,description,author='',limited=false}){
+ document.title=title;
+ const image=!limited&&location.pathname===entryPath&&entryHead.canonical===url?entryHead['og:image']:'';
+ const values={canonical:url,description,author,'og:type':limited||!url?'website':'article',
+  'og:title':title,'og:description':description,'og:url':url,'og:image':image};
+ Object.entries(values).forEach(([key,value])=>writeHead(key,value));
+ if((limited||!url)&&!document.head.querySelector('meta[name="robots"]')){
+  const robots=document.createElement('meta');
+  robots.name='robots';robots.content='noindex';robots.dataset.workRobots='';
+  document.head.append(robots);
+ }
+}
 // Navigate inside the site without reloading. Accepts a path built by SCRoutes.
 function go(path,{replace=false,top=false}={}){
  if(typeof path!=='string'||!path)return false;
@@ -86,7 +131,7 @@ function go(path,{replace=false,top=false}={}){
  route();return true;
 }
 function route(force=false){const address=here(),{page,params}=R.parse(location.pathname,location.search);if(address===current&&force!==true)return;const previous=currentPage;if(current&&(current!==address||!arriving))scrolls.set(current,window.scrollY);if(current!==address)arriving=true;if(previous==='drops')dropReturn=current;if(page==='inside'&&previous&&previous!=='inside')insideReturn=current||R.pagePath('home');current=address;currentPage=page;
- $$('[data-page]').forEach(n=>n.hidden=n.dataset.page!==page);$('.scene[data-page="court"]').classList.toggle('posts-surface',page==='court'&&['posts','drafts'].includes(params.get('tab')));showArt($('.scene[data-page="'+page+'"]'));delete document.documentElement.dataset.entry;$$('.mobile-nav[open]').forEach(n=>n.open=false);$$('.nav a,.mobile-nav a').forEach(n=>{const hit=n.getAttribute('href')?.replace(/\/$/,'')===R.pagePath(page).replace(/\/$/,'');if(hit)n.setAttribute('aria-current','page');else n.removeAttribute('aria-current')});if($('#scene-select'))$('#scene-select').value=page;$('.skip').setAttribute('href','#main-'+page);document.title='SideCourt · '+names[page];{const canonical=document.querySelector('link[rel=canonical]');if(canonical)canonical.href=location.origin+location.pathname};
+ $$('[data-page]').forEach(n=>n.hidden=n.dataset.page!==page);$('.scene[data-page="court"]').classList.toggle('posts-surface',page==='court'&&['posts','drafts'].includes(params.get('tab')));showArt($('.scene[data-page="'+page+'"]'));delete document.documentElement.dataset.entry;$$('.mobile-nav[open]').forEach(n=>n.open=false);$$('.nav a,.mobile-nav a').forEach(n=>{const hit=n.getAttribute('href')?.replace(/\/$/,'')===R.pagePath(page).replace(/\/$/,'');if(hit)n.setAttribute('aria-current','page');else n.removeAttribute('aria-current')});if($('#scene-select'))$('#scene-select').value=page;$('.skip').setAttribute('href','#main-'+page);document.title='SideCourt · '+names[page];routeHead(page,previous);
  if(page==='drops')filterWorks(params);if(page==='court')renderCourt();if(page==='preview')renderPreview();window.CourtApp?.onRoute(page,params);
  $$('[data-back-drops]').forEach(a=>a.setAttribute('href',dropReturn));$$('[data-return]').forEach(a=>a.setAttribute('href',insideReturn));
  const main=$('#main-'+page);main.focus({preventScroll:true});requestAnimationFrame(()=>{if(current!==address)return;arriving=false;const p=params;if(page==='season'&&p.get('section')==='rules'&&$('#season-rules')){const target=$('#season-rules');target.scrollIntoView({block:'start',behavior:'auto'});target.focus({preventScroll:true})}else if(page==='preview'&&p.get('section')==='details'&&$('#preview-details')){const target=$('#preview-details');target.scrollIntoView({block:'start',behavior:'auto'});target.focus({preventScroll:true})}else if(page==='work'&&(p.has('question')||p.has('compose'))&&($('#author-question')||$('#around-work')||$('#cloud-activity-text')||$('#activity-text'))){const target=p.has('question')?($('#author-question')||$('#around-work')):($('#cloud-activity-text')||$('#activity-text')||$('#around-work'));if(target.id==='around-work'||p.has('question'))target.setAttribute('tabindex','-1');target.scrollIntoView({block:'start',behavior:'auto'});target.focus({preventScroll:true})}else window.scrollTo({top:scrolls.get(address)||0,behavior:'auto'})});
@@ -139,7 +184,7 @@ $$('img').forEach(img=>img.addEventListener('error',()=>{img.hidden=true;const p
 function flushPending(){return window.CourtApp?.retainDraft?.()}
 window.addEventListener('pagehide',flushPending);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushPending()});
 window.addEventListener('beforeunload',e=>{flushPending();const d=draftData(),draftKept=window.CourtApp?.retainDraft?.();if((!draftKept&&hasDraft(d)&&JSON.stringify(d)!==JSON.stringify(state.draft))||($('#activity-text')?.value||'')!==state.note){e.preventDefault();e.returnValue=''}});
-window.SC={get state(){return state},reset(){coverRead++;clearTimeout(draftTimer);clearTimeout(noteTimer);state=blank();draftCover="";fileMetadata=[];sessionFiles=[];restoreDraft();},commit,esc,safeURL,sanitizeDraft,str,dialog,closeDialog,saveDraft,saveNote,renderPreview,restoreDraft,renderFiles,syncDraftPreview,draftData,hasDraft,flushPending,route,go,routes:R,get page(){return currentPage},get params(){return R.parse(location.pathname,location.search).params},chooseCover,get shrink(){return shrink},set shrink(fn){shrink=typeof fn==='function'?fn:shrinkCover},
+window.SC={get state(){return state},reset(){coverRead++;clearTimeout(draftTimer);clearTimeout(noteTimer);state=blank();draftCover="";fileMetadata=[];sessionFiles=[];restoreDraft();},commit,esc,safeURL,sanitizeDraft,str,dialog,closeDialog,saveDraft,saveNote,renderPreview,restoreDraft,renderFiles,syncDraftPreview,draftData,hasDraft,flushPending,route,go,setWorkHead,routes:R,get page(){return currentPage},get params(){return R.parse(location.pathname,location.search).params},chooseCover,get shrink(){return shrink},set shrink(fn){shrink=typeof fn==='function'?fn:shrinkCover},
 activate(draft,workspace){if(draft&&!draft.responses)draft={...draft,responses:'open'};if(!commit({draft,workspace},'#form-status','Draft selected.'))return false;clearTimeout(draftTimer);draftTimer=null;coverRead++;sessionFiles=[];restoreDraft();return true},
 setFiles(metadata,files){fileMetadata=metadata;sessionFiles=files;renderFiles()},
 safeToSwitch(){const d=draftData();if(hasDraft(d)&&JSON.stringify(d)!==JSON.stringify(state.draft)){if(!saveDraft())return false}return true},
