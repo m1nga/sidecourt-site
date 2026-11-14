@@ -71,7 +71,11 @@ function tidyAddress(){try{
  const url=new URL(location.href);
  const moved=url.hash?R.legacyPath({search:url.search,hash:url.hash,pathname:url.pathname}):'';
  if(moved){history.replaceState(null,'',moved);return tidyAddress()}
- let changed=false;for(const key of [...url.searchParams.keys()])if(!KEEP_QUERY.has(key)){url.searchParams.delete(key);changed=true}
+ // Preserve only bounded campaign labels on the two measured public entry types.
+ // The server still requires an operator-registered label and matching target/channel.
+ const tagged=['work','connect-ai'].includes(R.parse(url.pathname,url.search).page)&&['x','linkedin','internal_test'].includes(url.searchParams.get('utm_source'))&&/^[a-z0-9][a-z0-9_-]{7,95}$/.test(url.searchParams.get('utm_content')||'');
+ const campaignKey=key=>tagged&&['utm_source','utm_content','utm_medium','utm_campaign'].includes(key)&&/^[a-z0-9_-]{1,96}$/.test(url.searchParams.get(key)||'');
+ let changed=false;for(const key of [...url.searchParams.keys()])if(!KEEP_QUERY.has(key)&&!campaignKey(key)){url.searchParams.delete(key);changed=true}
  if(changed)history.replaceState(history.state,'',url.pathname+url.search+url.hash);
 }catch{}}
 tidyAddress();
