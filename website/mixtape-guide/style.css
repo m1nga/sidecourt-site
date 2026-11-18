@@ -371,7 +371,9 @@ h2 {
 }
 .guide .hero h1 { max-width: 10ch; }
 .guide .hero-copy { padding-bottom: 36px; }
-.guide .hero .lead { max-width: 31ch; }
+.guide .hero .lead { max-width: 34ch; }
+.guide .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; }
+.guide .hero-examples { display: inline-flex; align-items: center; min-height: 44px; color: var(--green); text-underline-offset: 4px; }
 .guide .guide-section { padding-top: 24px; margin: 0 0 36px; }
 .guide .guide-section h2 { margin: 0 0 14px; }
 .guide .guide-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }

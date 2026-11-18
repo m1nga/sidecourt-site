@@ -1,16 +1,57 @@
-# Playlist Builder — Get a Verified Playlist You Can Actually Import
+# Mixtape Playlist Builder — Build a Mood Playlist for Apple Music or Spotify
 
 **Your own playlist, made by your AI.**
 
 Everyone's library is full of playlists made by strangers and algorithms. Mixtape is
 an [agent skill](https://www.thepromptindex.com/how-to-use-ai-agent-skills-the-complete-guide.html)
-for **Claude Code** and **OpenAI Codex** that turns a described mood, a handful of
-seed songs, or your actual listening taste into a real playlist in your streaming
-account — delivered as a one-click [Soundiiz](https://soundiiz.com) import link.
-No platform API keys, no developer accounts.
+for **Claude Code** and **OpenAI Codex** that sequences a playlist around your
+mood, seed songs, or listening taste. It checks the recordings against an Apple
+Music storefront and gives you a temporary [Soundiiz](https://soundiiz.com)
+import link. Choose Apple Music, Spotify, YouTube Music, or another supported
+service in Soundiiz, or name one in your request to preselect it. Review the
+tracklist and confirm the transfer there. Creating the link requires no platform
+API keys. Saving requires a Soundiiz account and a connected music service, and
+depends on service eligibility and plan limits.
 
-> "Playlist for cooking on a Friday night, city pop, ~20 tracks, YouTube Music"
-> → a numbered tracklist with an arc, and a link. Open → confirm → it's in your library.
+Want the studio recording rather than a live version or cover? State that in the
+request. Mixtape checks the selected recordings in the named Apple storefront,
+then keeps the destination import pending until it has a receipt. Soundiiz
+[documents why transfers can still choose another version](https://support.soundiiz.com/hc/en-us/articles/32567703886098-Wrong-Track-Matches-Causes-How-to-Fix-Them);
+check the destination count and recordings after import.
+
+> "Use $mixtape to make a five-song late-night electronic playlist. Start with
+> 'A Walk' by Tycho, build gently, and finish somewhere quiet. Check the US Apple
+> Music catalog and give me one link where I can choose Apple Music or Spotify."
+
+One sample result, **Low Light, Steady Hands**:
+
+1. Tycho — A Walk
+2. Yppah — Never Mess With Sunday
+3. Bonobo — Kerala
+4. Four Tet — Two Thousand and Seventeen
+5. Brian Eno — An Ending (Ascent)
+
+| Check | Sample status |
+|---|---|
+| Apple catalog | 5 of 5 recordings confirmed in the US storefront |
+| Soundiiz import preview | Soundiiz accepted all 5 tracks and opened the playlist preview without a preset destination |
+| Destination library | Awaiting user confirmation and a transfer result |
+
+Each Soundiiz import link expires after 24 hours. To try the same example, use
+[the sample tracklist](skills/mixtape/examples/low-light.json) from a fresh
+checkout of this repository. Run these commands from its root to check the catalog
+and create your own preview link:
+
+```bash
+mixtape_preview=$(mktemp -d)
+python3 skills/mixtape/scripts/canonicalize.py skills/mixtape/examples/low-light.json \
+  --country us --out "$mixtape_preview/playlist.json" --report "$mixtape_preview/catalog.json"
+bash skills/mixtape/scripts/post_playlist.sh "$mixtape_preview/playlist.json"
+```
+
+After import, compare the count and recording versions in your destination.
+If the link fails, Mixtape can give you a paste-ready `Artist - Title` list for
+[Soundiiz's plain-text import](https://support.soundiiz.com/hc/en-us/articles/37958924057234-How-to-Import-a-Playlist-from-a-URL-CSV-File-or-Plain-Text).
 
 ## What it does
 
@@ -78,8 +119,11 @@ Then just ask for a playlist in a session — no command to memorize.
 
 | Platform | Import link preselect |
 |---|---|
-| Spotify, YouTube Music, YouTube, Deezer, Tidal | ✅ preselected |
-| Apple Music | one extra tap on the import page |
+| Apple Music | `applemusicapp` |
+| Spotify | `spotify` |
+| YouTube Music | `ytmusic` |
+| YouTube, Deezer, Tidal | `youtube`, `deezer`, `tidal` |
+| Choose in Soundiiz | Leave the destination unset |
 
 ## How it works
 
@@ -137,6 +181,22 @@ City Pop，20首」）、给几首种子歌，或让它分析你已有歌单；�
 MIT © [m1nga](https://github.com/m1nga)
 
 ## What “verified” covers
+
+For a saved YouTube playlist, a playback queue is insufficient evidence. Pin the
+intended video IDs, export their exact URLs and compare the saved `PL...` playlist
+against the full ordered list. The read-only helper reports missing tracks,
+unexpected tracks and order changes. Private-library access requires an authorized
+runtime token; without access, the check stays blocked.
+See the [YouTube workflow](skills/mixtape/SKILL.md#youtube-saved-playlists).
+
+The Soundiiz response count is also checked: accepting 1 of 12 tracks is a failure
+even when the service labels its response successful. No live private playlist was
+read or changed during this release.
+
+On 2026-11-10, 23 offline tests passed, including partial acceptance, a one-track
+saved result for a twelve-track intention, pagination, changed counts, order,
+duplicates, missing authorization and protection of an existing URL export.
+Provider responses in these cases are fixtures, not live destination receipts.
 
 Apple catalog confirmation checks recording identity in the selected storefront.
 It does not prove Spotify, YouTube Music or another destination will match every

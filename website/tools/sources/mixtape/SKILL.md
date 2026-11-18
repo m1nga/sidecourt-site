@@ -1,6 +1,6 @@
 ---
 name: mixtape
-description: Make the user an authored playlist and deliver a verified one-click Soundiiz import link for Apple Music, YouTube Music, Spotify, Deezer, or Tidal without platform API keys. Supports quick orders from a scene or mood, expansion from seed songs, and taste-profile curation from playlists the user shares. Use for "make me a playlist," "songs for late-night coding," 给我来个歌单, 根据这几首帮我扩展, 找类似的歌, 分析我的听歌口味, or any request for songs to listen to. Not for audio narration, transferring an existing playlist unchanged, or controlling playback.
+description: Make the user an authored playlist and check its recordings in Apple Music and deliver a Soundiiz import link for Apple Music, YouTube Music, Spotify, Deezer, or Tidal without platform API keys. Supports quick orders from a scene or mood, expansion from seed songs, and taste-profile curation from playlists the user shares. Use for "make me a playlist," "songs for late-night coding," 给我来个歌单, 根据这几首帮我扩展, 找类似的歌, 分析我的听歌口味, or any request for songs to listen to. Not for audio narration, transferring an existing playlist unchanged, or controlling playback.
 ---
 
 # Mixtape · 亲手做的歌单
@@ -92,7 +92,6 @@ presenting so the user sees both comfort and discovery.
 2. Write the payload to a JSON file in the session scratchpad (or any temp dir):
    ```json
    {"title": "...", "description": "...", "sourceName": "Mixtape",
-    "destination": "youtube",
     "tracklist": [{"title": "...", "artists": ["...", "..."]}]}
    ```
 3. **Canonicalize before posting**: `python3 <skill-dir>/scripts/canonicalize.py
@@ -105,9 +104,9 @@ presenting so the user sees both comfort and discovery.
    it exists, add its numeric URL ID as `"appleMusicId": 1702056850` on that track
    and rerun. The script looks that ID up in the target storefront and still
    verifies its title+artist; this is evidence, never a bypass.
-Apple confirmation establishes catalog identity in that storefront, not matching
-coverage on other destination services. The fingerprint detects later track edits;
-it is not an authenticated signature. Report destination matches separately.
+   Apple confirmation covers recording identity in the named storefront. The
+   fingerprint detects later track edits. Destination matches require their own
+   evidence from the transfer result or destination library.
 
 4. POST only the fingerprinted canonical file: `bash
    <skill-dir>/scripts/post_playlist.sh payload.canonical.json`. The poster refuses
@@ -118,17 +117,60 @@ it is not an authenticated signature. Report destination matches separately.
 5. Hand over the link with: 有效期 24 小时;打开 → 确认目标平台 → 导入。That
    confirmation click doubles as the user's preview/veto step — do not try to
    automate it away.
-6. For an iteration, finish the platform-side reconciliation below after the
+6. In the handoff, give three short statuses: **Apple catalog** (storefront
+   and confirmed count), **Import link** (ready with expiry, or unavailable),
+   and **Destination library** (awaiting confirmation, reported by the user, or
+   directly verified). With a receipt, report the matched count and any wrong
+   version or missing track. Without one, keep the destination pending. If the
+   user shares a receipt later, compare recording identity and count before
+   labeling the playlist complete. For a saved YouTube playlist, compare the complete
+   ordered native recording IDs using the read-back route below. A temporary queue
+   or a source accepted count does not prove that the full playlist was saved.
+7. For an iteration, finish the platform-side reconciliation below after the
    import succeeds. A new import link is an implementation detail, not permission
    to leave duplicate or version-numbered playlists in the user's library.
 
 **Destination preselect** (`destination` field): verified corenames `spotify`,
 `ytmusic` (YouTube Music), `youtube` (plain YouTube video playlist — prefer
 `ytmusic` when the user says "YouTube" but means music), `deezer`, `tidal`.
-**Apple Music has no preselect corename** — omit the
-field and tell the user to pick Apple Music on the import page (one tap; their
-Soundiiz account holds the platform authorization). Remember the user's platform in
-`taste.md` and stop asking.
+Use `applemusicapp` for Apple Music, as documented by the
+[public import API](https://support.soundiiz.com/hc/en-us/articles/36613501259922--API-Let-your-users-import-any-tracklist-to-Soundiiz).
+If the user asks for either Apple Music or Spotify, asks to choose during import,
+or has no platform preference, omit `destination`. Soundiiz then lets them
+choose any eligible service. An explicit choice to decide later takes precedence
+over a saved preference. Remember an explicitly selected platform in `taste.md`.
+
+## YouTube saved playlists
+
+Pin each chosen recording to an observed YouTube video ID. Check its artist,
+version and approximate duration. Copy the canonical payload to `youtube.json`,
+add a `youtubeVideoId` to every track, and retain the approved order and catalog
+fingerprint. The fingerprint covers titles and artists, not independent proof of
+the added YouTube identities; retain the source of those choices with the manifest.
+
+```bash
+python3 <skill-dir>/scripts/youtube_playlist.py youtube.json --write-urls tracks.txt
+python3 <skill-dir>/scripts/youtube_playlist.py youtube.json --playlist-id PL...
+```
+
+The first command writes one exact watch URL per line to a new file for
+Soundiiz → Import Playlist → From Plain Text. Review the selected entries and the
+destination (YouTube or YouTube Music). The normal Soundiiz POST matches titles
+and artists; the local video IDs identify the YouTube recordings expected later.
+
+A `watch_videos?video_ids=...` link is a temporary playback queue, not a saved
+playlist receipt. Obtain the saved playlist's own `PL...` ID. If an authorized
+Google OAuth read connection is available, supply its token through the runtime's
+`YOUTUBE_ACCESS_TOKEN` environment variable. Keep tokens out of messages, files and
+command arguments. Do not ask the user to paste credentials into chat.
+The second command reads all pages using [YouTube's playlistItems API](https://developers.google.com/youtube/data/reference/rest/v3/playlistItems/list)
+and checks sequence and count. Exit 0 means a match, 1 means mismatch, and 2 means
+read-back is blocked. Without a supported authorized connection, retain that gap
+and let the user inspect the saved playlist; do not invent a successful read.
+
+If only one of twelve tracks arrived, retain the intended twelve and the existing
+playlist. Report missing recordings and complete an authorized repair or supply
+the full URL list for import. Read back again before reporting verified completion.
 
 ## Iteration: one living playlist with a stable identity
 
@@ -203,8 +245,9 @@ One line when delivering: 导入后如果有没匹配上或踩雷的歌，说一
   reconcile it back to the stable platform identity. Do not default to a top-up
   fragment.
 - `Too many requests` → wait 60s, retry once.
-- API error or format change → don't strand the user: deliver the tracklist as
-  plain text plus manual path (soundiiz.com → Import playlist → paste text), and
-  note the API issue so the skill can be updated.
+- API error or format change → deliver the ordered tracklist as one
+  `Artist - Title` entry per line. Give the [Soundiiz plain-text import steps](https://support.soundiiz.com/hc/en-us/articles/37958924057234-How-to-Import-a-Playlist-from-a-URL-CSV-File-or-Plain-Text)
+  and keep the import link and destination statuses separate. The manual route
+  still needs the user's confirmation and a destination match check.
 - Free Soundiiz converts one playlist (≤200 tracks) per transfer — normal personal
   use never hits this; only mention limits if the user does.

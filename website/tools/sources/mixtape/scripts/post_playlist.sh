@@ -68,6 +68,9 @@ if verification.get("tracklistSha256") != fingerprint:
     )
 
 clean = {key: value for key, value in payload.items() if not key.startswith("_")}
+if clean.get("destination") is None:
+    # Soundiiz opens the chooser only when this optional field is omitted.
+    clean.pop("destination", None)
 clean["tracklist"] = normalized
 with open(target, "w", encoding="utf-8") as handle:
     json.dump(clean, handle, ensure_ascii=False, indent=2)
@@ -82,7 +85,7 @@ fi
 curl -sS -X POST https://soundiiz.com/go/import-playlist \
   -H "Content-Type: application/json" --data-binary @"$prepared" -o "$response"
 
-python3 - "$response" <<'PY'
+python3 - "$response" "$prepared" <<'PY'
 import datetime, json, sys
 
 try:
@@ -97,8 +100,14 @@ if response.get("status") != "success":
     print(f"ERROR: {response.get('message', response)}", file=sys.stderr)
     raise SystemExit(1)
 
+with open(sys.argv[2], encoding="utf-8") as handle:
+    expected = len(json.load(handle)["tracklist"])
+accepted = response.get("nbTracks")
+if type(accepted) is not int or accepted != expected:
+    raise SystemExit(f"ERROR: Soundiiz accepted {accepted!r} of {expected} tracks")
+
 expires = datetime.datetime.fromtimestamp(response["expiresAt"]).strftime("%Y-%m-%d %H:%M")
-print(f"OK {response['nbTracks']} tracks")
+print(f"Ready to import: Soundiiz accepted {accepted} tracks. Destination save is unverified.")
 print(f"link: {response['shareUrl']}")
 print(f"expires: {expires}")
 PY

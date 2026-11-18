@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import subprocess
 import tempfile
 import unittest
@@ -150,6 +151,75 @@ class HandoffTests(unittest.TestCase):
         self.assertEqual(posted["tracklist"][0]["artists"], "Daft Punk")
         self.assertNotIn("artist", posted["tracklist"][0])
         self.assertNotIn("_mixtape", posted)
+
+    def test_poster_omits_null_destination_and_preserves_corenames(self) -> None:
+        tracklist = [{"title": "One More Time", "artists": "Daft Punk"}]
+        payload = {
+            "title": "Test",
+            "tracklist": tracklist,
+            "_mixtape": {
+                "catalogVerified": True,
+                "tracklistSha256": canonicalize.tracklist_fingerprint(tracklist),
+            },
+        }
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir) / "payload.json"
+            for destination in (None, "applemusicapp", "spotify", "ytmusic"):
+                with self.subTest(destination=destination):
+                    path.write_text(json.dumps({**payload, "destination": destination}))
+                    result = subprocess.run(
+                        ["bash", str(SKILL_DIR / "scripts" / "post_playlist.sh"),
+                         str(path), "--dry-run"],
+                        check=True, capture_output=True, text=True,
+                    )
+                    posted = json.loads(result.stdout)
+                    self.assertEqual("destination" in posted, destination is not None)
+                    self.assertEqual(posted.get("destination"), destination)
+
+    def test_poster_rejects_partial_source_acceptance(self) -> None:
+        tracks = [{"title": f"Track {i}", "artists": "Artist"} for i in range(12)]
+        payload = {"title": "Mix", "tracklist": tracks, "_mixtape": {
+            "catalogVerified": True, "tracklistSha256": canonicalize.tracklist_fingerprint(tracks)
+        }}
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir) / "payload.json"
+            path.write_text(json.dumps(payload))
+            curl = Path(temp_dir) / "curl"
+            curl.write_text("""#!/bin/sh
+while [ "$1" != "-o" ]; do shift; done
+echo '{"status":"success","nbTracks":1}' > "$2"
+""")
+            curl.chmod(0o755)
+            result = subprocess.run(
+                ["bash", str(SKILL_DIR / "scripts" / "post_playlist.sh"), str(path)],
+                env={**os.environ, "PATH": temp_dir + os.pathsep + os.environ["PATH"]},
+                capture_output=True, text=True,
+            )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("accepted 1 of 12", result.stderr)
+
+    def test_poster_reports_complete_acceptance_as_ready_not_saved(self) -> None:
+        tracks = [{"title": "Track", "artists": ["Artist"]}]
+        payload = {"title": "Mix", "tracklist": tracks, "_mixtape": {
+            "catalogVerified": True, "tracklistSha256": canonicalize.tracklist_fingerprint(tracks)
+        }}
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir) / "payload.json"
+            path.write_text(json.dumps(payload))
+            curl = Path(temp_dir) / "curl"
+            curl.write_text("""#!/bin/sh
+while [ "$1" != "-o" ]; do shift; done
+echo '{"status":"success","nbTracks":1,"expiresAt":2000000000,"shareUrl":"https://example.org/import"}' > "$2"
+""")
+            curl.chmod(0o755)
+            result = subprocess.run(
+                ["bash", str(SKILL_DIR / "scripts" / "post_playlist.sh"), str(path)],
+                env={**os.environ, "PATH": temp_dir + os.pathsep + os.environ["PATH"]},
+                capture_output=True, text=True,
+            )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("Destination save is unverified", result.stdout)
+        self.assertIn("https://example.org/import", result.stdout)
 
     def test_poster_rejects_edit_after_verification(self) -> None:
         original = [{"title": "One More Time", "artists": "Daft Punk"}]

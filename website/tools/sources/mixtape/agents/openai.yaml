@@ -1,4 +1,4 @@
 interface:
   display_name: "Playlist Builder"
-  short_description: "Build a verified playlist that imports without broken matches"
-  default_prompt: "Use $mixtape to turn my mood or seed songs into an authored playlist, verify every track against my storefront, and keep future iterations under one stable library title."
+  short_description: "Build a mood playlist with checked tracks and an import link"
+  default_prompt: "Use $mixtape to make a playlist from my mood, check the tracks, and give me a link where I can pick Apple Music or Spotify."

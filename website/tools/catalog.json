@@ -158,10 +158,11 @@
     },
     {
       "slug": "mixtape",
+      "source_commit": "d22c5725a2f5308b752a18655a94248dc6cb8106",
       "name": "Playlist Builder",
-      "title": "Mixtape — What does this moment sound like?",
+      "title": "Mixtape — Build a Playlist from a Mood in Codex",
       "kind": "Skill",
-      "description": "Use the Mixtape skill to turn a feeling into a playlist for Spotify, Apple Music, or YouTube Music.",
+      "description": "Review a playlist from a mood or seed tracks in Codex, then import it into Spotify, Apple Music, or YouTube Music with a Soundiiz link.",
       "url": "/skills/mixtape/",
       "action": "/skills/mixtape/",
       "status": "Available",

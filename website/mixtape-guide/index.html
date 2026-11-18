@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#171b17">
-  <title>Mixtape — What does this moment sound like?</title>
-  <meta name="description" content="Turn a feeling into a playlist with the Mixtape skill for Codex.">
+  <title>Mixtape — Build a Playlist from a Mood in Codex</title>
+  <meta name="description" content="Review a playlist from a mood or seed tracks in Codex, then import it into Spotify, Apple Music, or YouTube Music with a Soundiiz link.">
   <link rel="canonical" href="https://sidecourt.space/skills/mixtape/">
   <link rel="icon" href="/favicon.svg">
   <link rel="stylesheet" href="style.css">
@@ -16,7 +16,7 @@
       "@type": "SoftwareSourceCode",
       "@id": "https://sidecourt.space/skills/mixtape/#entity",
       "name": "Mixtape",
-      "description": "A skill that turns a mood, scene, or seed tracks into a playlist to review and import.",
+      "description": "A Codex skill for creating and reviewing a playlist from a mood or seed tracks, then preparing a Soundiiz import link.",
       "url": "https://sidecourt.space/skills/mixtape/",
       "codeRepository": "https://github.com/m1nga/mixtape",
       "author": {"@type": "Person", "name": "Ming", "url": "https://sidecourt.space/people/m1nga/"}
@@ -24,7 +24,7 @@
   </script>
 </head>
 <body class="guide">
-  <a class="skip-link" href="#prompts">Skip to prompts</a>
+  <a class="skip-link" href="#install">Skip to setup</a>
   <header>
     <a class="brand" href="./">mixtape<span>✳</span></a>
     <nav aria-label="Main navigation">
@@ -37,8 +37,11 @@
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero-copy">
         <h1 id="hero-title">What does this moment <em>sound like?</em></h1>
-        <p class="lead">Tell your AI what you want to hear. Mixtape turns the feeling into a playlist you can take to Spotify, Apple Music, or YouTube Music.</p>
-        <a class="button dark hero-cta" href="#prompts">Try a prompt <span aria-hidden="true">↗</span></a>
+        <p class="lead">Build a playlist from a mood or a few songs in Codex. Review the tracklist, then use a Soundiiz link to import it into Spotify, Apple Music, or YouTube Music.</p>
+        <div class="hero-actions">
+          <a class="button dark hero-cta" href="#install">Install in Codex <span aria-hidden="true">↓</span></a>
+          <a class="hero-examples" href="#prompts">See example prompts</a>
+        </div>
       </div>
       <div class="tape-stage" aria-hidden="true">
         <div class="orbit orbit-one"></div>
@@ -85,13 +88,13 @@
       <h2 id="install-title">Use Mixtape in Codex</h2>
       <ol>
         <li>
-          Install the skill.
+          Run this command in your terminal.
           <pre id="command"><code>npx skills add m1nga/mixtape</code></pre>
           <button type="button" data-copy="command" class="quiet">Copy install command</button>
           <p class="copy-result" role="status"></p>
         </li>
-        <li>Open Codex or another assistant that supports skills. Paste an example or describe your own moment. Include where you listen if you have a preference.</li>
-        <li>Review the tracklist. Open the Soundiiz link, connect your music account there, and confirm the import. Check the tracks in your music library.</li>
+        <li>Open Codex and <a href="#prompts">choose an example prompt</a> or describe your mood. Name your music service, or ask to choose it in Soundiiz later.</li>
+        <li>Review the tracklist. Open the Soundiiz link, connect your music account there, and confirm the import. Check the track count and versions in your music library.</li>
       </ol>
       <p class="resources">
         <a href="/tools/packages/mixtape.zip" download>Download skill package</a>
