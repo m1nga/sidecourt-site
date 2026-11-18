@@ -152,7 +152,7 @@
   const status = document.getElementById('demo-status');
   let active = false, began = null, frame = 0, sequence = '';
   function cancelHold() { began = null; cancelAnimationFrame(frame); hold.style.setProperty('--progress', 0); }
-  function finish(completed = true) {
+  function finish({ completed = true, restoreFocus = true } = {}) {
     if (!active) return;
     active = false; cancelHold();
     panel.classList.remove('is-cleaning'); hold.hidden = true; reset.hidden = true;
@@ -160,7 +160,7 @@
     document.getElementById('preview-subtitle').textContent = 'A little pause. That’s all.';
     start.textContent = 'Try again';
     status.textContent = 'Preview finished. Your Mac’s input was never blocked.';
-    start.focus({preventScroll:true});
+    if (restoreFocus) start.focus({preventScroll:true});
     if (completed && !document.hidden) recordMetric('preview_completed');
   }
   function tick(now) {
@@ -172,7 +172,7 @@
   function beginHold() { if (active && began === null) { began = performance.now(); frame = requestAnimationFrame(tick); } }
   start.addEventListener('click', () => {
     active = true; sequence = ''; panel.classList.add('is-cleaning'); hold.hidden = false; reset.hidden = false;
-    status.textContent = 'Only this preview is paused. Hold the ring for 3 seconds, type done, or use Exit preview.';
+    status.textContent = 'Only this preview is paused. Press Escape or choose Exit preview to finish. You can also hold the ring for 3 seconds or type done while focused on the preview.';
     hold.focus({preventScroll:true});
   });
   hold.addEventListener('pointerdown', event => { if (event.button !== 0) return; hold.setPointerCapture(event.pointerId); beginHold(); });
@@ -181,11 +181,15 @@
   hold.addEventListener('keyup', event => { if ([' ','Enter'].includes(event.key)) cancelHold(); });
   panel.addEventListener('keydown', event => {
     if (!active) return;
-    if (event.key === 'Escape') finish();
-    else if (event.key.length === 1 && !event.metaKey && !event.ctrlKey) { sequence = (sequence + event.key.toLowerCase()).slice(-4); if (sequence === 'done') finish(); }
+    if (event.key.length === 1 && !event.metaKey && !event.ctrlKey) { sequence = (sequence + event.key.toLowerCase()).slice(-4); if (sequence === 'done') finish(); }
+  });
+  document.addEventListener('keydown', event => {
+    if (!active || event.key !== 'Escape' || event.defaultPrevented) return;
+    const focused = document.activeElement;
+    finish({ restoreFocus: panel.contains(focused) || focused === reset });
   });
   reset.addEventListener('click', () => finish());
-  document.addEventListener('visibilitychange', () => { if (document.hidden && active) finish(false); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden && active) finish({ completed: false }); });
 })();
 </script>
 </body>
