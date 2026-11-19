@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Use Mixtape in ChatGPT to turn chosen YouTube tracks into an ordered browser preview.">
+  <link rel="canonical" href="https://sidecourt.space/mixtape/ai/">
+  <title>Use Mixtape with AI</title>
+  <link rel="stylesheet" href="../brand-tokens.css">
+  <link rel="stylesheet" href="../studio.css">
+</head>
+<body>
+  <header><a href="../">Back to Mixtape</a></header>
+  <main class="privacy">
+    <h1>Use Mixtape with AI</h1>
+    <p>Send your chosen YouTube recordings from ChatGPT to CD Studio, in the order you want to hear them.</p>
+    <p><a href="https://chatgpt.com/plugins">Open ChatGPT Plugins ↗</a></p>
+    <ol>
+      <li>Choose <strong>Add → Add custom MCP server</strong>.</li>
+      <li>Name it <strong>Mixtape</strong>. Paste this server URL and select <strong>No authentication</strong>.</li>
+      <li>Choose <strong>Create as a plugin</strong>, then connect it.</li>
+    </ol>
+    <label for="server-url">Server URL</label>
+    <input id="server-url" value="https://mixtape-playlist-preview.ming4uk-1bf.workers.dev/mcp" readonly>
+    <p>Try asking: <q>Use Mixtape to make a preview with these YouTube links, in this order.</q></p>
+    <p><a href="mixtape-plugin.zip" download>Download the plugin ZIP</a> · <a href="/skills/mixtape/">Existing Codex skill</a> · <a href="../privacy/">Privacy</a></p>
+  </main>
+</body>
+</html>

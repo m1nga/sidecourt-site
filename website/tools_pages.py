@@ -104,7 +104,7 @@ def publish_tools(root,out):
   (folder/'index.html').write_text(page(x['title'],x['description'],'/skills/'+slug+'/',body,{'@context':'https://schema.org','@type':'SoftwareSourceCode','name':x['title'],'description':x['description'],'url':'https://sidecourt.space/skills/'+slug+'/','codeRepository':x['repository'],'author':{'@type':'Person','name':'Ming','url':'https://sidecourt.space/people/m1nga/'}}))
   urls.append('https://sidecourt.space/skills/'+slug+'/')
  shutil.copytree(root/'mixtape',out/'mixtape',dirs_exist_ok=True)
- urls += ['https://sidecourt.space/mixtape/','https://sidecourt.space/mixtape/privacy/']
+ urls += ['https://sidecourt.space/mixtape/','https://sidecourt.space/mixtape/privacy/','https://sidecourt.space/mixtape/ai/']
  shutil.copytree(root/'redbot',out/'drops/redbot',dirs_exist_ok=True)
  urls += ['https://sidecourt.space/drops/redbot/','https://sidecourt.space/drops/redbot/app/']
  # Familiar route aliases enter the same canonical platform page.
