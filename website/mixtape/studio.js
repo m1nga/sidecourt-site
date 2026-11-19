@@ -105,7 +105,7 @@ byId("play").addEventListener("click", () => {
   const src = new URL("https://www.youtube-nocookie.com/embed/" + mix.tracks[0]);
   src.searchParams.set("autoplay", "1");
   src.searchParams.set("playsinline", "1");
-  if (mix.tracks.length > 1) src.searchParams.set("playlist", mix.tracks.slice(1).join(","));
+  if (mix.tracks.length > 1) src.searchParams.set("playlist", mix.tracks.join(","));
   frame.src = src.href;
   frame.title = mix.title + " — YouTube player";
   frame.allow = "autoplay; encrypted-media; fullscreen; picture-in-picture";
