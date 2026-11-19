@@ -1,0 +1,16 @@
+/* Mixtape identity and English studio site. All properties are namespaced. */
+:root {
+  --mixtape-carbon: #101014;
+  --mixtape-cream: #f6f5e9;
+  --mixtape-chartreuse: #d7ff3d;
+
+  --mixtape-background: #100f12;
+  --mixtape-text: #f3f1ea;
+  --mixtape-muted: #b9b6bc;
+  --mixtape-divider: #39363b;
+  --mixtape-lilac: #b8a4ed;
+  --mixtape-hero-sheen: linear-gradient(116deg, #eee7fa 12%, #cdb8df 48%, #c1c8f3 80%, #e4e9c0);
+
+  --mixtape-sans: Arial, Helvetica, sans-serif;
+  --mixtape-mono: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+}

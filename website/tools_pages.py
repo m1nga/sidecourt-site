@@ -103,6 +103,8 @@ def publish_tools(root,out):
   body+='<script>document.querySelector("#copy").onclick=async()=>{try{await navigator.clipboard.writeText(document.querySelector("#install").textContent);document.querySelector("#copy-status").textContent="Copied. Paste into your terminal to install.";}catch{document.querySelector("#copy-status").textContent="Copy the command above manually.";}};</script>'
   (folder/'index.html').write_text(page(x['title'],x['description'],'/skills/'+slug+'/',body,{'@context':'https://schema.org','@type':'SoftwareSourceCode','name':x['title'],'description':x['description'],'url':'https://sidecourt.space/skills/'+slug+'/','codeRepository':x['repository'],'author':{'@type':'Person','name':'Ming','url':'https://sidecourt.space/people/m1nga/'}}))
   urls.append('https://sidecourt.space/skills/'+slug+'/')
+ shutil.copytree(root/'mixtape',out/'mixtape',dirs_exist_ok=True)
+ urls += ['https://sidecourt.space/mixtape/','https://sidecourt.space/mixtape/privacy/']
  shutil.copytree(root/'redbot',out/'drops/redbot',dirs_exist_ok=True)
  urls += ['https://sidecourt.space/drops/redbot/','https://sidecourt.space/drops/redbot/app/']
  # Familiar route aliases enter the same canonical platform page.

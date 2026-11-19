@@ -20,12 +20,18 @@ class ToolsTest(unittest.TestCase):
   self.assertEqual(row.count('<a '),1)
   self.assertIn('alt="" width="36" height="36"',row)
  def test_catalog_routes_packages_and_no_private_library(self):
-  data=json.loads((ROOT/'tools/catalog.json').read_text());self.assertEqual(len(data['items']),21)
-  self.assertEqual(len({x['slug'] for x in data['items']}),21)
+  data=json.loads((ROOT/'tools/catalog.json').read_text());self.assertEqual(len(data['items']),22)
+  self.assertEqual(len({x['slug'] for x in data['items']}),22)
   with tempfile.TemporaryDirectory() as tmp:
    out=Path(tmp);urls=publish_tools(ROOT,out)
-   self.assertEqual(len(urls),22)
+   self.assertEqual(len(urls),24)
    self.assertNotIn('https://sidecourt.space/drops/redbot/test/',urls)
+   self.assertIn('https://sidecourt.space/mixtape/',urls)
+   self.assertIn('https://sidecourt.space/mixtape/privacy/',urls)
+   studio=(out/'mixtape/index.html').read_text()
+   self.assertIn('id="editor"',studio)
+   self.assertIn('href="/skills/mixtape/"',studio)
+   self.assertTrue((out/'mixtape/studio.js').is_file())
    products=(out/'products/index.html').read_text();skills=(out/'skills/index.html').read_text()
    self.assertIn('Less friction.',products);self.assertIn('<h1>Skills</h1>',skills)
    self.assertNotIn('class="catalog-tabs"',skills)
@@ -44,7 +50,7 @@ class ToolsTest(unittest.TestCase):
    self.assertIn('id="tool-search" type="search"',skills)
    self.assertIn('No match. Try a different task or clear the search.',skills)
    self.assertNotIn('http-equiv="refresh"',products)
-   self.assertEqual(products.count('data-entry='),5);self.assertEqual(skills.count('data-entry='),17)
+   self.assertEqual(products.count('data-entry='),6);self.assertEqual(skills.count('data-entry='),17)
    for category in SKILL_CATEGORIES:
     self.assertIn('data-skill-category="'+category+'"',skills)
    for item in data['items']:
@@ -76,6 +82,7 @@ class ToolsTest(unittest.TestCase):
     if item['slug']=='mixtape':
      self.assertIn('What does this moment <em>sound like?</em>',detail)
      self.assertIn('npx skills add m1nga/mixtape',detail)
+     self.assertIn('href="/mixtape/">Open Mixtape',detail)
      self.assertNotIn('<select',detail)
      self.assertNotIn('<form',detail)
      for platform in ['Spotify','Apple Music','YouTube Music']:

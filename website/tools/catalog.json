@@ -157,6 +157,18 @@
       "category": "Design"
     },
     {
+      "slug": "mixtape-web",
+      "name": "Mixtape CD Studio",
+      "kind": "Web app",
+      "description": "Play and share a YouTube mix in your chosen order.",
+      "url": "/mixtape/",
+      "action": "/mixtape/",
+      "status": "Available",
+      "bring": "A few YouTube tracks or try the studio selection.",
+      "result": "An ordered preview you can play and share.",
+      "example": ""
+    },
+    {
       "slug": "mixtape",
       "source_commit": "d22c5725a2f5308b752a18655a94248dc6cb8106",
       "name": "Playlist Builder",

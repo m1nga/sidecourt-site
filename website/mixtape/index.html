@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#100f12">
+  <meta name="description" content="Make and play an ordered YouTube mix. Paste video links, preview the sequence, and share it.">
+  <link rel="canonical" href="https://sidecourt.space/mixtape/">
+  <title>Mixtape · CD Studio</title>
+  <link rel="stylesheet" href="brand-tokens.css"><link rel="stylesheet" href="studio.css">
+  <script defer src="studio.js"></script>
+</head>
+<body>
+  <header><a href="./" aria-label="Mixtape home"><img src="logo.svg" width="154" height="35" alt="Mixtape"></a>
+    <nav><a href="/skills/mixtape/">Use with AI ↗</a><a href="/">SideCourt ↗</a></nav>
+  </header>
+  <main>
+    <section class="deck" aria-labelledby="mix-title">
+      <div class="cover"><img id="cover" src="player.webp" alt="A silver portable CD player with an iridescent disc." width="1280" height="960"><div id="player"></div></div>
+      <div class="readout">
+        <p id="source" class="caption">Studio selection</p>
+        <h1 id="mix-title">After the rain</h1>
+        <p id="summary">Three instrumental jazz recordings.</p>
+        <div class="actions"><button type="button" id="play">Play mix</button><button type="button" class="secondary" id="share">Copy preview link</button></div>
+        <p role="status" id="share-status"></p>
+        <input id="share-url" readonly aria-label="Preview link" hidden>
+      </div>
+    </section>
+    <div class="studio">
+      <section aria-labelledby="tracks-heading"><h2 id="tracks-heading">Tracklist</h2><ol id="tracklist"></ol></section>
+      <section aria-labelledby="edit-heading"><h2 id="edit-heading">Make your mix</h2>
+        <form id="editor"><label for="name">Mix title</label><input id="name" maxlength="120" placeholder="Untitled mix">
+          <label for="tracks">YouTube links or video IDs</label>
+          <textarea id="tracks" rows="5" required aria-describedby="format" placeholder="Paste your tracks here"></textarea>
+          <small id="format">Add 1–30 in playing order. Separate with spaces, commas or new lines.</small>
+          <button type="submit">Build preview</button><p role="status" id="edit-status"></p>
+        </form>
+      </section>
+    </div>
+  </main>
+  <footer><a href="privacy/">Privacy</a></footer>
+</body></html>
